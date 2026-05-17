@@ -1,5 +1,6 @@
 const express = require('express');
 const sequelize = require('./config/database'); 
+const appointmentRoutes = require('./routes/appointmentRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -11,6 +12,7 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send('Amend Landscaping API is running!');
 });
+app.use('/appointments', appointmentRoutes);
 
 // Initialize database and start the server
 async function startServer() {
