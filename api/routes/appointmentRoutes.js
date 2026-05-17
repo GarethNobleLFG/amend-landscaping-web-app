@@ -14,6 +14,9 @@ router.get('/:id', appointmentController.getById);
 // Update an appointment by ID
 router.put('/:id', appointmentController.update);
 
+// Approve an appointment by ID
+router.patch('/:id/approve', appointmentController.approve);
+
 // Delete an appointment by ID
 router.delete('/:id', appointmentController.remove);
 
