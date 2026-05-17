@@ -1,6 +1,6 @@
 const appointmentService = require('../services/appointmentService');
 
-// POST /appointments
+// POST /appointments.
 const create = async (req, res) => {
     try {
         const newAppointment = await appointmentService.createAppointment(req.body);
