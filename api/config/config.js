@@ -3,7 +3,7 @@ module.exports = {
     username: "postgres",
     password: process.env.LOCAL_POSTGRES_PASSWORD,
     database: "amend_landscaping",
-    host: "host.docker.internal",
+    host: "db",
     dialect: "postgres"
   }
 };
