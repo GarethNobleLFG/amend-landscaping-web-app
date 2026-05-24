@@ -6,7 +6,7 @@ on:
 
 jobs:
   api-build:
-    name: build
+    name: build api
     runs-on: ubuntu-latest
     
     defaults:
@@ -29,7 +29,7 @@ jobs:
       run: npm run build
 
   api-test:
-    name: test
+    name: test api
     runs-on: ubuntu-latest
     needs: api-build 
     
@@ -53,7 +53,7 @@ jobs:
       run: npm test
 
   frontend-build:
-    name: build
+    name: build frontend
     runs-on: ubuntu-latest
     
     defaults:
