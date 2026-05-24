@@ -112,21 +112,41 @@ describe('Appointment Controller Logic', () => {
         });
     });
 
-    describe('Canceling an Appointment', () => {
-        it('should return 200 when an appointment is successfully deleted', async () => {
-            appointmentService.deleteAppointment.mockResolvedValue(true);
+    describe('Denying an Appointment', () => {
+        it('should return 200 when an appointment is successfully denied', async () => {
+            appointmentService.denyAppointment.mockResolvedValue(true);
 
-            const res = await request(app).delete('/appointments/123');
+            const res = await request(app).patch('/appointments/123/deny');
 
-            expect(appointmentService.deleteAppointment).toHaveBeenCalledWith('123');
+            expect(appointmentService.denyAppointment).toHaveBeenCalledWith('123');
             expect(res.status).toBe(200);
-            expect(res.body.message).toBe('Appointment deleted successfully');
+            expect(res.body.message).toBe('Appointment denied');
         });
 
-        it('should return 404 if the appointment to delete is not found', async () => {
-            appointmentService.deleteAppointment.mockResolvedValue(false);
+        it('should return 404 if the appointment to deny is not found', async () => {
+            appointmentService.denyAppointment.mockResolvedValue(false);
 
-            const res = await request(app).delete('/appointments/999');
+            const res = await request(app).patch('/appointments/999/deny');
+
+            expect(res.status).toBe(404);
+        });
+    });
+
+    describe('Canceling an Appointment', () => {
+        it('should return 200 when an appointment is successfully canceled', async () => {
+            appointmentService.cancelAppointment.mockResolvedValue(true);
+
+            const res = await request(app).patch('/appointments/123/cancel');
+
+            expect(appointmentService.cancelAppointment).toHaveBeenCalledWith('123');
+            expect(res.status).toBe(200);
+            expect(res.body.message).toBe('Appointment cancelled');
+        });
+
+        it('should return 404 if the appointment to cancel is not found', async () => {
+            appointmentService.cancelAppointment.mockResolvedValue(false);
+
+            const res = await request(app).patch('/appointments/999/cancel');
 
             expect(res.status).toBe(404);
         });

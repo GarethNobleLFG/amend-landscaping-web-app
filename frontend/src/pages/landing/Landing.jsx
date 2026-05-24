@@ -67,9 +67,6 @@ function Landing() {
           <a href="#services" className="text-gray-600 hover:text-green-700 transition-colors">Services</a>
           <a href="#portfolio" className="text-gray-600 hover:text-green-700 transition-colors">Portfolio</a>
           <a href="#about" className="text-gray-600 hover:text-green-700 transition-colors">About</a>
-          <button className="text-white bg-green-700 hover:bg-green-800 shadow-md hover:shadow-lg shadow-green-700/20 px-6 py-2.5 rounded-full transition-all duration-300">
-            Client Login
-          </button>
         </nav>
       </motion.header>
 

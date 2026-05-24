@@ -18,7 +18,10 @@ router.put('/:id', authenticateToken, requireAdmin, appointmentController.update
 // Approve an appointment by ID
 router.patch('/:id/approve', authenticateToken, requireAdmin, appointmentController.approve);
 
-// Delete an appointment by ID
-router.delete('/:id', authenticateToken, requireAdmin, appointmentController.remove);
+// Deny an appointment by ID
+router.patch('/:id/deny', authenticateToken, requireAdmin, appointmentController.deny);
+
+// Cancel an appointment by ID
+router.patch('/:id/cancel', authenticateToken, requireAdmin, appointmentController.cancel);
 
 module.exports = router;

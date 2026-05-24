@@ -58,20 +58,37 @@ const update = async (req, res) => {
     }
 };
 
-// DELETE /appointments/:id
-const remove = async (req, res) => {
+// PATCH /appointments/:id/deny
+const deny = async (req, res) => {
     try {
-        const success = await appointmentService.deleteAppointment(req.params.id);
+        const success = await appointmentService.denyAppointment(req.params.id);
 
         if (!success) {
             return res.status(404).json({ error: 'Appointment not found' });
         }
 
-        res.status(200).json({ message: 'Appointment deleted successfully' });
+        res.status(200).json({ message: 'Appointment denied' });
     }
     catch (error) {
-        console.error('Error deleting appointment:', error);
-        res.status(500).json({ error: 'Failed to delete appointment' });
+        console.error('Error denying appointment:', error);
+        res.status(500).json({ error: 'Failed to deny appointment' });
+    }
+};
+
+// PATCH /appointments/:id/cancel
+const cancel = async (req, res) => {
+    try {
+        const success = await appointmentService.cancelAppointment(req.params.id);
+
+        if (!success) {
+            return res.status(404).json({ error: 'Appointment not found' });
+        }
+
+        res.status(200).json({ message: 'Appointment cancelled' });
+    }
+    catch (error) {
+        console.error('Error cancelling appointment:', error);
+        res.status(500).json({ error: 'Failed to cancel appointment' });
     }
 };
 
@@ -97,6 +114,7 @@ module.exports = {
     getAll,
     getById,
     update,
-    remove,
+    deny,
+    cancel,
     approve
 };

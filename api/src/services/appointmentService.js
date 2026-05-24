@@ -18,7 +18,13 @@ const updateAppointment = async (id, updateData) => {
     return await appointmentRepo.update(id, updateData);
 };
 
-const deleteAppointment = async (id) => {
+const denyAppointment = async (id) => {
+    // Refusal email could be added here later
+    return await appointmentRepo.deleteAppointment(id);
+};
+
+const cancelAppointment = async (id) => {
+    // Cancellation hook could be added here later
     return await appointmentRepo.deleteAppointment(id);
 };
 
@@ -32,6 +38,7 @@ module.exports = {
     getAllAppointments,
     getAppointmentById,
     updateAppointment,
-    deleteAppointment,
+    denyAppointment,
+    cancelAppointment,
     approveAppointment
 };

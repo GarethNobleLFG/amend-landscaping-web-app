@@ -1,7 +1,8 @@
-// frontend/src/App.jsx
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/landing/Landing';
 import Booking from './pages/booking/Booking';
+import AdminDash from './pages/admin-dashboard/AdminDashboard';
+import AdminLogin from './pages/admin-dashboard/AdminLogin';
 
 function App() {
   return (
@@ -9,10 +10,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/book" element={<Booking />} />
-        
-        {/* Future routes */}
-        {/* <Route path="/login" element={<Login />} /> */}
-        {/* <Route path="/dashboard" element={<AdminDashboard />} /> */}
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin-dashboard" element={<AdminDash />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

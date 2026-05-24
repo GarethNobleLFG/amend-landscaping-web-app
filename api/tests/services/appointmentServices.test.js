@@ -67,10 +67,19 @@ describe('Appointment Business Logic (Service)', () => {
     });
 
     describe('Removing Appointments', () => {
-        it('should pass the correct ID to the repository for deletion', async () => {
+        it('should correctly process denying an appointment', async () => {
             appointmentRepo.deleteAppointment.mockResolvedValue(true);
 
-            const result = await appointmentService.deleteAppointment(1);
+            const result = await appointmentService.denyAppointment(1);
+
+            expect(appointmentRepo.deleteAppointment).toHaveBeenCalledWith(1);
+            expect(result).toBe(true);
+        });
+
+        it('should correctly process canceling an appointment', async () => {
+            appointmentRepo.deleteAppointment.mockResolvedValue(true);
+
+            const result = await appointmentService.cancelAppointment(1);
 
             expect(appointmentRepo.deleteAppointment).toHaveBeenCalledWith(1);
             expect(result).toBe(true);

@@ -8,8 +8,7 @@
     "dev": "nodemon -L index.js",
     "test": "jest",
     "lint": "eslint src/ index.js tests/",
-    "lint:fix": "eslint src/ index.js tests/ --fix",
-    "build": "eslint src/ index.js tests/"
+    "lint:fix": "eslint src/ index.js tests/ --fix"
   },
   "keywords": [],
   "author": "",
@@ -25,7 +24,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@vercel/ncc": "^0.38.4",
     "eslint": "^10.4.0",
     "globals": "^17.6.0",
     "jest": "^30.4.2",

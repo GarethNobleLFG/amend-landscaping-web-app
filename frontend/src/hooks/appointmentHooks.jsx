@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
     return {
@@ -114,28 +113,27 @@ export function useGetAppointmentById() {
     return { appointment, fetchAppointment, isLoading, error };
 }
 
-// 4. Update Appointment (PUT) - Useful for editing/approving
-export function useUpdateAppointment() {
+// 4. Approve Appointment (PATCH)
+export function useApproveAppointment() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const updateAppointment = async (id, updateData) => {
+    const approveAppointment = async (id) => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch(`${API_BASE_URL}/appointments/${id}`, {
-                method: 'PUT',
+            const response = await fetch(`${API_BASE_URL}/appointments/${id}/approve`, {
+                method: 'PATCH',
                 headers: getAuthHeaders(),
-                body: JSON.stringify(updateData),
             });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Failed to update appointment');
+                throw new Error(errorData.message || 'Failed to approve appointment');
             }
 
-            const updatedAppointment = await response.json();
-            return { success: true, data: updatedAppointment };
+            const result = await response.json();
+            return { success: true, data: result.appointment };
         }
         catch (err) {
             setError(err.message);
@@ -146,27 +144,26 @@ export function useUpdateAppointment() {
         }
     };
 
-    return { updateAppointment, isLoading, error };
+    return { approveAppointment, isLoading, error };
 }
 
-// 5. Delete Appointment (DELETE)
-export function useDeleteAppointment() {
+// 5. Deny Appointment (PATCH)
+export function useDenyAppointment() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const deleteAppointment = async (id) => {
+    const denyAppointment = async (id) => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch(`${API_BASE_URL}/appointments/${id}`, {
-                method: 'DELETE',
-                // DELETE requests generally don't need a Content-Type body, but keeping it in the helper is fine
+            const response = await fetch(`${API_BASE_URL}/appointments/${id}/deny`, {
+                method: 'PATCH',
                 headers: getAuthHeaders(),
             });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Failed to delete appointment');
+                throw new Error(errorData.message || 'Failed to deny appointment');
             }
 
             return { success: true };
@@ -180,5 +177,38 @@ export function useDeleteAppointment() {
         }
     };
 
-    return { deleteAppointment, isLoading, error };
+    return { denyAppointment, isLoading, error };
+}
+
+// 6. Cancel Appointment (PATCH)
+export function useCancelAppointment() {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const cancelAppointment = async (id) => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`${API_BASE_URL}/appointments/${id}/cancel`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to cancel appointment');
+            }
+
+            return { success: true };
+        }
+        catch (err) {
+            setError(err.message);
+            return { success: false, error: err.message };
+        }
+        finally {
+            setIsLoading(false);
+        }
+    };
+
+    return { cancelAppointment, isLoading, error };
 }
