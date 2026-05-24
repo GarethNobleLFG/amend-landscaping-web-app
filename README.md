@@ -17,6 +17,8 @@ The frontend is a Single Page Application (SPA) built with **React**, **Vite**, 
 
 The backend is built with **Express.js**, uses **Sequelize ORM** to interact with a **PostgreSQL** database, and utilizes **Nodemailer** for automated transactional emails based on appointment state.
 
+### Appointment Endpoints
+
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | **GET** | `/appointments` | Retrieves a list of all appointments. |
@@ -28,6 +30,12 @@ The backend is built with **Express.js**, uses **Sequelize ORM** to interact wit
 | **PATCH** | `/appointments/:id/cancel` | Cancels an existing appointment, removes it from the database, and sends a cancellation email. |
 
 *(Note: The `approve`, `deny`, and `cancel` endpoints all accept an optional `{ "message": "Your custom text here" }` in the JSON body to dynamically insert custom notes into the HTML emails.)*
+
+### User & Admin Endpoints
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| **POST** | `/users/login` | Authenticates an admin user and returns a JWT token. |
 
 #### Appointment Data Model
 When creating (`POST`) or updating (`PUT`) an appointment, the JSON payload should match the following model:
