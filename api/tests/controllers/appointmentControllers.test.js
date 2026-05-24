@@ -19,7 +19,7 @@ describe('Appointment Controller Logic', () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
-        jest.spyOn(console, 'error').mockImplementation(() => {});
+        jest.spyOn(console, 'error').mockImplementation(() => { });
 
         app = express();
         app.use(express.json());
@@ -34,7 +34,6 @@ describe('Appointment Controller Logic', () => {
 
     describe('Scheduling a New Appointment', () => {
         it('should return 201 and the new record when creation is successful', async () => {
-            // Tell the mock service to return our mock appointment
             appointmentService.createAppointment.mockResolvedValue(mockAppointment);
 
             const res = await request(app)
@@ -92,13 +91,15 @@ describe('Appointment Controller Logic', () => {
     });
 
     describe('Managing Pending Appointments (Approve)', () => {
-        it('should return 200 and update status when approving a pending appointment', async () => {
+        it('should return 200, update status, and pass custom message when approving', async () => {
             const approvedAppointment = { ...mockAppointment, approved: true };
             appointmentService.approveAppointment.mockResolvedValue(approvedAppointment);
 
-            const res = await request(app).patch('/appointments/123/approve');
+            const res = await request(app)
+                .patch('/appointments/123/approve')
+                .send({ message: 'Great news! See you soon.' });
 
-            expect(appointmentService.approveAppointment).toHaveBeenCalledWith('123');
+            expect(appointmentService.approveAppointment).toHaveBeenCalledWith('123', 'Great news! See you soon.');
             expect(res.status).toBe(200);
             expect(res.body.appointment.approved).toBe(true);
         });
@@ -113,12 +114,14 @@ describe('Appointment Controller Logic', () => {
     });
 
     describe('Denying an Appointment', () => {
-        it('should return 200 when an appointment is successfully denied', async () => {
+        it('should return 200 and pass custom message when an appointment is successfully denied', async () => {
             appointmentService.denyAppointment.mockResolvedValue(true);
 
-            const res = await request(app).patch('/appointments/123/deny');
+            const res = await request(app)
+                .patch('/appointments/123/deny')
+                .send({ message: 'Unfortunately we are fully booked.' });
 
-            expect(appointmentService.denyAppointment).toHaveBeenCalledWith('123');
+            expect(appointmentService.denyAppointment).toHaveBeenCalledWith('123', 'Unfortunately we are fully booked.');
             expect(res.status).toBe(200);
             expect(res.body.message).toBe('Appointment denied');
         });
@@ -133,12 +136,14 @@ describe('Appointment Controller Logic', () => {
     });
 
     describe('Canceling an Appointment', () => {
-        it('should return 200 when an appointment is successfully canceled', async () => {
+        it('should return 200 and pass custom message when an appointment is successfully canceled', async () => {
             appointmentService.cancelAppointment.mockResolvedValue(true);
 
-            const res = await request(app).patch('/appointments/123/cancel');
+            const res = await request(app)
+                .patch('/appointments/123/cancel')
+                .send({ message: 'Weather cancel.' });
 
-            expect(appointmentService.cancelAppointment).toHaveBeenCalledWith('123');
+            expect(appointmentService.cancelAppointment).toHaveBeenCalledWith('123', 'Weather cancel.');
             expect(res.status).toBe(200);
             expect(res.body.message).toBe('Appointment cancelled');
         });

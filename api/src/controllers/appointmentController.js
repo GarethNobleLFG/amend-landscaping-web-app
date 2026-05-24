@@ -61,7 +61,7 @@ const update = async (req, res) => {
 // PATCH /appointments/:id/deny
 const deny = async (req, res) => {
     try {
-        const { message } = req.body; 
+        const message = req.body?.message || ''; 
         const success = await appointmentService.denyAppointment(req.params.id, message);
 
         if (!success) {
@@ -79,7 +79,7 @@ const deny = async (req, res) => {
 // PATCH /appointments/:id/cancel
 const cancel = async (req, res) => {
     try {
-        const { message } = req.body; 
+        const message = req.body?.message || ''; 
         const success = await appointmentService.cancelAppointment(req.params.id, message);
 
         if (!success) {
@@ -97,7 +97,7 @@ const cancel = async (req, res) => {
 // PATCH /appointments/:id/approve
 const approve = async (req, res) => {
     try {
-        const { message } = req.body; 
+        const message = req.body?.message || ''; 
         
         const updatedAppointment = await appointmentService.approveAppointment(req.params.id, message);
 

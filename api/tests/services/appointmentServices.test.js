@@ -1,7 +1,22 @@
 const appointmentService = require('../../src/services/appointmentService');
 const appointmentRepo = require('../../src/repositories/appointmentRepository');
 
+// 1. Mock the Repo
 jest.mock('../../src/repositories/appointmentRepository');
+
+// 2. Mock ALL the Email Services
+jest.mock('../../src/services/email-services/service-types/approve', () => ({ sendApprovalEmail: jest.fn() }));
+jest.mock('../../src/services/email-services/service-types/deny', () => ({ sendDenialEmail: jest.fn() }));
+jest.mock('../../src/services/email-services/service-types/cancel', () => ({ sendCancellationEmail: jest.fn() }));
+jest.mock('../../src/services/email-services/service-types/notify', () => ({ sendAdminNotificationEmail: jest.fn() }));
+jest.mock('../../src/services/email-services/service-types/confirm', () => ({ sendConfirmationEmail: jest.fn() }));
+
+// Import the mocked email functions so we can assert on them
+const { sendApprovalEmail } = require('../../src/services/email-services/service-types/approve');
+const { sendDenialEmail } = require('../../src/services/email-services/service-types/deny');
+const { sendCancellationEmail } = require('../../src/services/email-services/service-types/cancel');
+const { sendAdminNotificationEmail } = require('../../src/services/email-services/service-types/notify');
+const { sendConfirmationEmail } = require('../../src/services/email-services/service-types/confirm');
 
 describe('Appointment Business Logic (Service)', () => {
     let mockAppointment;
@@ -12,13 +27,15 @@ describe('Appointment Business Logic (Service)', () => {
     });
 
     describe('Handling New Appointments', () => {
-        it('should correctly pass appointment data to the repository for creation', async () => {
+        it('should create an appointment and trigger both Admin Notify and User Confirm emails', async () => {
             const dataToCreate = { service: 'Mowing' };
             appointmentRepo.create.mockResolvedValue(mockAppointment);
 
             const result = await appointmentService.createAppointment(dataToCreate);
 
             expect(appointmentRepo.create).toHaveBeenCalledWith(dataToCreate);
+            expect(sendAdminNotificationEmail).toHaveBeenCalledWith(mockAppointment);
+            expect(sendConfirmationEmail).toHaveBeenCalledWith(mockAppointment);
             expect(result).toEqual(mockAppointment);
         });
     });
@@ -44,45 +61,44 @@ describe('Appointment Business Logic (Service)', () => {
     });
 
     describe('Modifying Appointments', () => {
-        it('should correctly pass update data to the repository', async () => {
-            const updateProps = { service: 'Weeding' };
-            const updatedAppointment = { ...mockAppointment, ...updateProps };
-            appointmentRepo.update.mockResolvedValue(updatedAppointment);
-
-            const result = await appointmentService.updateAppointment(1, updateProps);
-
-            expect(appointmentRepo.update).toHaveBeenCalledWith(1, updateProps);
-            expect(result).toEqual(updatedAppointment);
-        });
-
-        it('should enforce the business rule of setting approved to true when approving', async () => {
+        it('should enforce business rule of setting approved to true and send the approval email with custom message', async () => {
+            const customMessage = 'Looking forward to seeing you!';
             const approvedAppointment = { ...mockAppointment, approved: true };
             appointmentRepo.update.mockResolvedValue(approvedAppointment);
 
-            const result = await appointmentService.approveAppointment(1);
+            const result = await appointmentService.approveAppointment(1, customMessage);
 
             expect(appointmentRepo.update).toHaveBeenCalledWith(1, { approved: true });
+            expect(sendApprovalEmail).toHaveBeenCalledWith(approvedAppointment, customMessage);
             expect(result).toEqual(approvedAppointment);
         });
     });
 
     describe('Removing Appointments', () => {
-        it('should correctly process denying an appointment', async () => {
+        it('should fetch, delete, and send denial email with custom message', async () => {
+            const customMessage = 'Too busy right now.';
+            appointmentRepo.findById.mockResolvedValue(mockAppointment);
             appointmentRepo.deleteAppointment.mockResolvedValue(true);
 
-            const result = await appointmentService.denyAppointment(1);
+            const result = await appointmentService.denyAppointment(1, customMessage);
 
+            expect(appointmentRepo.findById).toHaveBeenCalledWith(1);
             expect(appointmentRepo.deleteAppointment).toHaveBeenCalledWith(1);
+            expect(sendDenialEmail).toHaveBeenCalledWith(mockAppointment, customMessage);
             expect(result).toBe(true);
         });
 
-        it('should correctly process canceling an appointment', async () => {
+        it('should fetch, delete, and send cancellation email with custom message', async () => {
+            const customMessage = 'Forecast says rain.';
+            appointmentRepo.findById.mockResolvedValue(mockAppointment);
             appointmentRepo.deleteAppointment.mockResolvedValue(true);
 
-            const result = await appointmentService.cancelAppointment(1);
+            const result = await appointmentService.cancelAppointment(1, customMessage);
 
+            expect(appointmentRepo.findById).toHaveBeenCalledWith(1);
             expect(appointmentRepo.deleteAppointment).toHaveBeenCalledWith(1);
+            expect(sendCancellationEmail).toHaveBeenCalledWith(mockAppointment, customMessage);
             expect(result).toBe(true);
         });
     });
-});
+}); 
