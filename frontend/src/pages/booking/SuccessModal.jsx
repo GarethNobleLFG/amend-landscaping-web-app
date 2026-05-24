@@ -36,7 +36,7 @@ export default function SuccessModal({ isOpen, firstName }) {
             <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-3 sm:mb-4 tracking-tight">Request Received!</h2>
             
             <p className="text-lg sm:text-xl text-gray-600 font-medium mb-8 leading-relaxed">
-              Thanks for reaching out{firstName ? `, ${firstName}` : ''}. Our team will review your requested services and contact you shortly to confirm the appointment.
+              Thanks for reaching out{firstName ? `, ${firstName}` : ''}. Our team will review your requested services and contact you shortly to confirm the appointment. <strong>Please check your email for confirmation.</strong>
             </p>
             
             <Link 

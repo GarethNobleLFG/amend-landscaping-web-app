@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ClipboardList, LayoutDashboard } from 'lucide-react';
 import { useGetAppointments, useApproveAppointment, useDenyAppointment, useCancelAppointment } from '../../hooks/appointmentHooks';
 import AppointmentCard from '../../components/AppointmentCard';
+import ApproveModal from './ApproveModal';
+import DenyCancelModal from './DenyCancelModal';
 import { useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 
@@ -11,8 +13,14 @@ const AdminDashboard = () => {
     const { approveAppointment } = useApproveAppointment();
     const { denyAppointment } = useDenyAppointment();
     const { cancelAppointment } = useCancelAppointment();
+    
     const [processingId, setProcessingId] = useState(null);
     const [activeTab, setActiveTab] = useState('pending');
+    
+    // Modal State Control
+    const [actionState, setActionState] = useState({ type: null, id: null });
+    const closeModals = () => setActionState({ type: null, id: null });
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -38,41 +46,26 @@ const AdminDashboard = () => {
         fetchAppointments();
     }, [fetchAppointments]);
 
-    const handleApprove = async (id) => {
+    const handleConfirmAction = async (customMessage) => {
+        const { type, id } = actionState;
         setProcessingId(id);
-        const result = await approveAppointment(id);
-
-        if (result.success) {
-            fetchAppointments();
-        } else {
-            alert(result.error || 'Failed to approve appointment.');
+        
+        let result;
+        if (type === 'approve') {
+            result = await approveAppointment(id, customMessage);
+        } else if (type === 'deny') {
+            result = await denyAppointment(id, customMessage);
+        } else if (type === 'cancel') {
+            result = await cancelAppointment(id, customMessage);
         }
-        setProcessingId(null);
-    };
 
-    const handleDeny = async (id) => {
-        if (!window.confirm("Are you sure you want to deny this request?")) return;
-        setProcessingId(id);
-        const result = await denyAppointment(id);
-
-        if (result.success) {
+        if (result && result.success) {
             fetchAppointments();
-        } else {
-            alert(result.error || 'Failed to deny appointment.');
+            closeModals();
+        } else if (result) {
+            alert(result.error || `Failed to ${type} appointment.`);
         }
-        setProcessingId(null);
-    };
-
-    const handleCancel = async (id) => {
-        if (!window.confirm("Are you sure you want to cancel this approved appointment?")) return;
-        setProcessingId(id);
-        const result = await cancelAppointment(id);
-
-        if (result.success) {
-            fetchAppointments();
-        } else {
-            alert(result.error || 'Failed to cancel appointment.');
-        }
+        
         setProcessingId(null);
     };
 
@@ -196,9 +189,9 @@ const AdminDashboard = () => {
                                         <AppointmentCard
                                             key={appointment.id}
                                             appointment={appointment}
-                                            onApprove={handleApprove}
-                                            onDeny={handleDeny}
-                                            onCancel={handleCancel}
+                                            onApprove={(id) => setActionState({ type: 'approve', id })}
+                                            onDeny={(id) => setActionState({ type: 'deny', id })}
+                                            onCancel={(id) => setActionState({ type: 'cancel', id })}
                                             isUpdating={processingId === appointment.id}
                                         />
                                     ))}
@@ -208,6 +201,22 @@ const AdminDashboard = () => {
                     </motion.div>
                 )}
             </main>
+
+            {/* Render Modals */}
+            <ApproveModal 
+                isOpen={actionState.type === 'approve'}
+                onClose={closeModals}
+                onConfirm={handleConfirmAction}
+                isProcessing={processingId === actionState.id}
+            />
+            
+            <DenyCancelModal 
+                isOpen={actionState.type === 'deny' || actionState.type === 'cancel'}
+                actionType={actionState.type}
+                onClose={closeModals}
+                onConfirm={handleConfirmAction}
+                isProcessing={processingId === actionState.id}
+            />
         </div>
     );
 };

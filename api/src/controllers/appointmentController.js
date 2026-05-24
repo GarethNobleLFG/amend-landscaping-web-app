@@ -61,7 +61,8 @@ const update = async (req, res) => {
 // PATCH /appointments/:id/deny
 const deny = async (req, res) => {
     try {
-        const success = await appointmentService.denyAppointment(req.params.id);
+        const { message } = req.body; 
+        const success = await appointmentService.denyAppointment(req.params.id, message);
 
         if (!success) {
             return res.status(404).json({ error: 'Appointment not found' });
@@ -78,7 +79,8 @@ const deny = async (req, res) => {
 // PATCH /appointments/:id/cancel
 const cancel = async (req, res) => {
     try {
-        const success = await appointmentService.cancelAppointment(req.params.id);
+        const { message } = req.body; 
+        const success = await appointmentService.cancelAppointment(req.params.id, message);
 
         if (!success) {
             return res.status(404).json({ error: 'Appointment not found' });
@@ -95,7 +97,9 @@ const cancel = async (req, res) => {
 // PATCH /appointments/:id/approve
 const approve = async (req, res) => {
     try {
-        const updatedAppointment = await appointmentService.approveAppointment(req.params.id);
+        const { message } = req.body; 
+        
+        const updatedAppointment = await appointmentService.approveAppointment(req.params.id, message);
 
         if (!updatedAppointment) {
             return res.status(404).json({ error: 'Appointment not found' });

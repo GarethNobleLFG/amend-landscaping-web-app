@@ -10,7 +10,6 @@ const getAuthHeaders = () => {
     };
 };
 
-// 1. Create Appointment (POST)
 export function useCreateAppointment() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -45,7 +44,6 @@ export function useCreateAppointment() {
     return { createAppointment, isLoading, error };
 }
 
-// 2. Get All Appointments (GET) - Useful for an Admin Dashboard
 export function useGetAppointments() {
     const [appointments, setAppointments] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -79,7 +77,6 @@ export function useGetAppointments() {
     return { appointments, fetchAppointments, isLoading, error };
 }
 
-// 3. Get Single Appointment by ID (GET)
 export function useGetAppointmentById() {
     const [appointment, setAppointment] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -113,18 +110,18 @@ export function useGetAppointmentById() {
     return { appointment, fetchAppointment, isLoading, error };
 }
 
-// 4. Approve Appointment (PATCH)
 export function useApproveAppointment() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const approveAppointment = async (id) => {
+    const approveAppointment = async (id, message = '') => {
         setIsLoading(true);
         setError(null);
         try {
             const response = await fetch(`${API_BASE_URL}/appointments/${id}/approve`, {
                 method: 'PATCH',
                 headers: getAuthHeaders(),
+                body: JSON.stringify({ message })
             });
 
             if (!response.ok) {
@@ -147,18 +144,18 @@ export function useApproveAppointment() {
     return { approveAppointment, isLoading, error };
 }
 
-// 5. Deny Appointment (PATCH)
 export function useDenyAppointment() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const denyAppointment = async (id) => {
+    const denyAppointment = async (id, message = '') => {
         setIsLoading(true);
         setError(null);
         try {
             const response = await fetch(`${API_BASE_URL}/appointments/${id}/deny`, {
                 method: 'PATCH',
                 headers: getAuthHeaders(),
+                body: JSON.stringify({ message })
             });
 
             if (!response.ok) {
@@ -180,18 +177,18 @@ export function useDenyAppointment() {
     return { denyAppointment, isLoading, error };
 }
 
-// 6. Cancel Appointment (PATCH)
 export function useCancelAppointment() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const cancelAppointment = async (id) => {
+    const cancelAppointment = async (id, message = '') => {
         setIsLoading(true);
         setError(null);
         try {
             const response = await fetch(`${API_BASE_URL}/appointments/${id}/cancel`, {
                 method: 'PATCH',
                 headers: getAuthHeaders(),
+                body: JSON.stringify({ message })
             });
 
             if (!response.ok) {

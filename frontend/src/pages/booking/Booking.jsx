@@ -85,8 +85,14 @@ export default function Booking() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const servicesObj = formData.servicesRequested.reduce((acc, curr) => {
+            acc[curr] = true;
+            return acc;
+        }, {});
+
         const payload = {
             ...formData,
+            servicesRequested: servicesObj,
             scheduledDate: formData.scheduledDate === '' ? null : formData.scheduledDate
         };
 
