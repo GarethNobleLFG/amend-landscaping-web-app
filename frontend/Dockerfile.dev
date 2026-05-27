@@ -1,0 +1,7 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Only copy package files and install dependencies
+COPY package*.json ./
+RUN npm install
