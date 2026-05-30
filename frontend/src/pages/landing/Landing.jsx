@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
-import { Leaf, Scissors, TreePine, ArrowRight, Star } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Leaf,  ArrowRight, Star } from 'lucide-react';
+import { useEffect } from 'react';
 import { useGetServices } from '../../hooks/serviceHooks';
 import Hero from './Hero';
 
