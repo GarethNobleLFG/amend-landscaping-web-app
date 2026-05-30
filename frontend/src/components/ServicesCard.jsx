@@ -7,17 +7,20 @@ import {
 
 // ── Service Form Modal ────────────────────────────────────────────────────────
 const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
-  const [description, setDescription] = useState('');
-  const [isAvailable, setIsAvailable] = useState(true);
+
   const [saving, setSaving] = useState(false);
+  const [description, setDescription] = useState(
+  service?.description ?? ''
+);
+
+const [isAvailable, setIsAvailable] = useState(
+  service?.is_available ?? true
+);
 
   const { createService } = useCreateService();
   const { updateService } = useUpdateService();
 
-  useEffect(() => {
-    setDescription(service?.description ?? '');
-    setIsAvailable(service?.is_available ?? true);
-  }, [service, isOpen]);
+
 
   if (!isOpen) return null;
 
