@@ -1,65 +1,41 @@
 const Service = require('../models/services');
 
 const createService = async (description, is_available = true) => {
-  try {
-    const service = await Service.create({ description, is_available });
-    return { success: true, data: service };
-  } catch (error) {
-    throw error;
-  }
+  const service = await Service.create({ description, is_available });
+  return { success: true, data: service };
 };
 
 const getAllServices = async () => {
-  try {
-    const services = await Service.findAll();
-    return services;
-  } catch (error) {
-    throw error;
-  }
+  const services = await Service.findAll();
+  return services;
 };
 
 const getAvailableServices = async () => {
-  try {
-    const services = await Service.findAll({ where: { is_available: true } });
-    return services;
-  } catch (error) {
-    throw error;
-  }
+  const services = await Service.findAll({ where: { is_available: true } });
+  return services;
 };
 
 const getServiceById = async (id) => {
-  try {
-    const service = await Service.findByPk(id);
-    return service;
-  } catch (error) {
-    throw error;
-  }
+  const service = await Service.findByPk(id);
+  return service;
 };
 
 const updateService = async (id, description, is_available) => {
-  try {
-    const service = await Service.findByPk(id);
-    if (!service) {
-      return null;
-    }
-    await service.update({ description, is_available });
-    return service;
-  } catch (error) {
-    throw error;
+  const service = await Service.findByPk(id);
+  if (!service) {
+    return null;
   }
+  await service.update({ description, is_available });
+  return service;
 };
 
 const deleteService = async (id) => {
-  try {
-    const service = await Service.findByPk(id);
-    if (!service) {
-      return null;
-    }
-    await service.destroy();
-    return true;
-  } catch (error) {
-    throw error;
+  const service = await Service.findByPk(id);
+  if (!service) {
+    return null;
   }
+  await service.destroy();
+  return true;
 };
 
 module.exports = {
