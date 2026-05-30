@@ -47,6 +47,11 @@ const Appointment = sequelize.define('Appointment', {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false
+    },
+    is_commercial: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
     }
 }, {
     tableName: 'appointments',
