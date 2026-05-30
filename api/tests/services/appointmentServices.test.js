@@ -1,17 +1,14 @@
 const appointmentService = require('../../src/services/appointmentService');
 const appointmentRepo = require('../../src/repositories/appointmentRepository');
 
-// 1. Mock the Repo
 jest.mock('../../src/repositories/appointmentRepository');
 
-// 2. Mock ALL the Email Services
 jest.mock('../../src/services/email-services/service-types/approve', () => ({ sendApprovalEmail: jest.fn() }));
 jest.mock('../../src/services/email-services/service-types/deny', () => ({ sendDenialEmail: jest.fn() }));
 jest.mock('../../src/services/email-services/service-types/cancel', () => ({ sendCancellationEmail: jest.fn() }));
 jest.mock('../../src/services/email-services/service-types/notify', () => ({ sendAdminNotificationEmail: jest.fn() }));
 jest.mock('../../src/services/email-services/service-types/confirm', () => ({ sendConfirmationEmail: jest.fn() }));
 
-// Import the mocked email functions so we can assert on them
 const { sendApprovalEmail } = require('../../src/services/email-services/service-types/approve');
 const { sendDenialEmail } = require('../../src/services/email-services/service-types/deny');
 const { sendCancellationEmail } = require('../../src/services/email-services/service-types/cancel');
@@ -23,7 +20,7 @@ describe('Appointment Business Logic (Service)', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        mockAppointment = { id: 1, service: 'Mowing', approved: false };
+        mockAppointment = { id: 1, service: 'Mowing', approved: false, is_commercial: false };
     });
 
     describe('Handling New Appointments', () => {
@@ -37,6 +34,29 @@ describe('Appointment Business Logic (Service)', () => {
             expect(sendAdminNotificationEmail).toHaveBeenCalledWith(mockAppointment);
             expect(sendConfirmationEmail).toHaveBeenCalledWith(mockAppointment);
             expect(result).toEqual(mockAppointment);
+        });
+
+        it('should handle commercial status correctly when creating an appointment', async () => {
+            const dataToCreate = { service: 'Lawn Care', is_commercial: true };
+            const commercialAppointment = { ...mockAppointment, is_commercial: true };
+            appointmentRepo.create.mockResolvedValue(commercialAppointment);
+
+            const result = await appointmentService.createAppointment(dataToCreate);
+
+            expect(appointmentRepo.create).toHaveBeenCalledWith(dataToCreate);
+            expect(result.is_commercial).toBe(true);
+        });
+
+        it('should not trigger email services if appointment creation fails', async () => {
+            const dataToCreate = { service: 'Mowing' };
+            appointmentRepo.create.mockResolvedValue(null);
+
+            const result = await appointmentService.createAppointment(dataToCreate);
+
+            expect(appointmentRepo.create).toHaveBeenCalledWith(dataToCreate);
+            expect(sendAdminNotificationEmail).not.toHaveBeenCalled();
+            expect(sendConfirmationEmail).not.toHaveBeenCalled();
+            expect(result).toBeNull();
         });
     });
 
@@ -72,6 +92,16 @@ describe('Appointment Business Logic (Service)', () => {
             expect(sendApprovalEmail).toHaveBeenCalledWith(approvedAppointment, customMessage);
             expect(result).toEqual(approvedAppointment);
         });
+
+        it('should not send approval email if the appointment update fails or is not found', async () => {
+            appointmentRepo.update.mockResolvedValue(null);
+
+            const result = await appointmentService.approveAppointment(999, 'Welcome!');
+
+            expect(appointmentRepo.update).toHaveBeenCalledWith(999, { approved: true });
+            expect(sendApprovalEmail).not.toHaveBeenCalled();
+            expect(result).toBeNull();
+        });
     });
 
     describe('Removing Appointments', () => {
@@ -88,6 +118,29 @@ describe('Appointment Business Logic (Service)', () => {
             expect(result).toBe(true);
         });
 
+        it('should not send denial email or delete if the appointment is not found', async () => {
+            appointmentRepo.findById.mockResolvedValue(null);
+
+            const result = await appointmentService.denyAppointment(999, 'Sorry!');
+
+            expect(appointmentRepo.findById).toHaveBeenCalledWith(999);
+            expect(appointmentRepo.deleteAppointment).not.toHaveBeenCalled();
+            expect(sendDenialEmail).not.toHaveBeenCalled();
+            expect(result).toBe(false);
+        });
+
+        it('should not send denial email if the found appointment deletion fails', async () => {
+            appointmentRepo.findById.mockResolvedValue(mockAppointment);
+            appointmentRepo.deleteAppointment.mockResolvedValue(false);
+
+            const result = await appointmentService.denyAppointment(1, 'Error on delete');
+
+            expect(appointmentRepo.findById).toHaveBeenCalledWith(1);
+            expect(appointmentRepo.deleteAppointment).toHaveBeenCalledWith(1);
+            expect(sendDenialEmail).not.toHaveBeenCalled();
+            expect(result).toBe(false);
+        });
+
         it('should fetch, delete, and send cancellation email with custom message', async () => {
             const customMessage = 'Forecast says rain.';
             appointmentRepo.findById.mockResolvedValue(mockAppointment);
@@ -100,5 +153,28 @@ describe('Appointment Business Logic (Service)', () => {
             expect(sendCancellationEmail).toHaveBeenCalledWith(mockAppointment, customMessage);
             expect(result).toBe(true);
         });
+
+        it('should not send cancellation email or delete if the appointment is not found', async () => {
+            appointmentRepo.findById.mockResolvedValue(null);
+
+            const result = await appointmentService.cancelAppointment(999, 'Cancellation failed');
+
+            expect(appointmentRepo.findById).toHaveBeenCalledWith(999);
+            expect(appointmentRepo.deleteAppointment).not.toHaveBeenCalled();
+            expect(sendCancellationEmail).not.toHaveBeenCalled();
+            expect(result).toBe(false);
+        });
+
+        it('should not send cancellation email if the found appointment deletion fails', async () => {
+            appointmentRepo.findById.mockResolvedValue(mockAppointment);
+            appointmentRepo.deleteAppointment.mockResolvedValue(false);
+
+            const result = await appointmentService.cancelAppointment(1, 'Error on cancel');
+
+            expect(appointmentRepo.findById).toHaveBeenCalledWith(1);
+            expect(appointmentRepo.deleteAppointment).toHaveBeenCalledWith(1);
+            expect(sendCancellationEmail).not.toHaveBeenCalled();
+            expect(result).toBe(false);
+        });
     });
-}); 
+});

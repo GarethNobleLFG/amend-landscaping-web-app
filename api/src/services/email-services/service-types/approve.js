@@ -2,6 +2,7 @@ const { transporter } = require('../transporter');
 const { approvalHeader, standardFooter } = require('../../../utils/emailBranding');
 
 const sendApprovalEmail = async (appointment, customMessage = '') => {
+    const isCommercial = !!appointment.is_commercial;
     const dateToUse = appointment.scheduledDate || appointment.createdAt;
     const appointmentDate = dateToUse ? new Date(dateToUse).toLocaleDateString('en-US', {
         weekday: 'long',
@@ -34,16 +35,17 @@ const sendApprovalEmail = async (appointment, customMessage = '') => {
                 <p style="color: #334155; font-size: 18px; margin-top: 0;">Dear ${appointment.name},</p>
                 
                 <p style="color: #475569; font-size: 16px; line-height: 1.6;">
-                    Thank you for choosing Amend Landscaping! We are thrilled to inform you that your service request has been reviewed and <strong>officially approved</strong> by our team.
+                    Thank you for choosing Amend Landscaping! We are thrilled to inform you that your ${isCommercial ? 'commercial ' : ''}service request has been reviewed and <strong>officially approved</strong> by our team.
                 </p>
                 
                 ${customMessageHtml}
                 
                 <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; margin: 24px 0;">
-                    <h3 style="color: #0f172a; margin-top: 0; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px;">Appointment Details</h3>
+                    <h3 style="color: #0f172a; margin-top: 0; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px;">${isCommercial ? 'Commercial ' : ''}Appointment Details</h3>
                     <p style="color: #475569; margin: 10px 0;"><strong>Date:</strong> ${appointmentDate}</p>
                     <p style="color: #475569; margin: 10px 0;"><strong>Address:</strong> ${appointment.address}</p>
                     <p style="color: #475569; margin: 10px 0;"><strong>Services Requested:</strong> ${servicesList}</p>
+                    <p style="color: #475569; margin: 10px 0;"><strong>Property Type:</strong> ${isCommercial ? 'Commercial Property' : 'Residential Property'}</p>
                 </div>
                 
                 <p style="color: #475569; font-size: 16px; line-height: 1.6;">
@@ -51,7 +53,7 @@ const sendApprovalEmail = async (appointment, customMessage = '') => {
                 </p>
 
                 <p style="color: #475569; font-size: 16px; line-height: 1.6;">
-                    We look forward to transforming your outdoor space!
+                    We look forward to transforming your outdoor ${isCommercial ? 'commercial ' : ''}space!
                 </p>
                 
                 <p style="color: #334155; font-size: 16px; font-weight: bold; margin-bottom: 0;">
@@ -67,7 +69,9 @@ const sendApprovalEmail = async (appointment, customMessage = '') => {
     const mailOptions = {
         from: `"Amend Landscaping"`,
         to: appointment.email,
-        subject: 'Your Amend Landscaping Appointment is Approved!',
+        subject: isCommercial 
+            ? 'Your Commercial Amend Landscaping Service is Approved!' 
+            : 'Your Amend Landscaping Appointment is Approved!',
         html: htmlBody
     };
 
