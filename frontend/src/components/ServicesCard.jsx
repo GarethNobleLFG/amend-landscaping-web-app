@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Pencil, Trash2, Wrench, CheckCircle2 } from 'lucide-react';
 import {
-  useGetServices, useCreateService, useUpdateService, useDeleteService,
+  useGetAllServices, useCreateService, useUpdateService, useDeleteService,
 } from '../hooks/serviceHooks';
 
 // ── Service Form Modal ────────────────────────────────────────────────────────
@@ -84,7 +84,7 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
           <button
             onClick={handleSubmit}
             disabled={saving || !description.trim()}
-            className="flex-[2] py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition"
+            className="flex-2 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition"
           >
             {saving ? 'Saving…' : service ? 'Save Changes' : 'Create Service'}
           </button>
@@ -171,18 +171,18 @@ const ServiceCard = ({ service, onEdit, onDelete }) => (
 
 // ── Main ServicesTab ──────────────────────────────────────────────────────────
 const ServicesTab = () => {
-  const { services, fetchServices, isLoading, error } = useGetServices();
+  const { services, fetchAllServices, isLoading, error } = useGetAllServices();
   const { deleteService } = useDeleteService();
 
   const [formState, setFormState] = useState({ open: false, service: null }); // null = create
   const [deleteState, setDeleteState] = useState({ open: false, service: null });
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => { fetchServices(); }, [fetchServices]);
+  useEffect(() => { fetchAllServices(); }, [fetchAllServices]);
 
   const handleSaved = () => {
     setFormState({ open: false, service: null });
-    fetchServices();
+    fetchAllServices();
   };
 
   const handleDeleteConfirm = async () => {
@@ -191,7 +191,7 @@ const ServicesTab = () => {
     setIsDeleting(false);
     if (result.success) {
       setDeleteState({ open: false, service: null });
-      fetchServices();
+      fetchAllServices();
     } else {
       alert(result.error);
     }

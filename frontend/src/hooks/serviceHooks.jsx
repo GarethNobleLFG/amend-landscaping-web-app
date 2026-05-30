@@ -29,6 +29,30 @@ export const useGetServices = () => {
   return { services, fetchServices, isLoading, error };
 };
 
+export const useGetAllServices = () => {
+  const [services, setServices] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchAllServices = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/services/all`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Failed to load services');
+      setServices(await res.json());
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return { services, fetchAllServices, isLoading, error };
+};
+
 export const useCreateService = () => {
   const createService = async (description, is_available) => {
     try {

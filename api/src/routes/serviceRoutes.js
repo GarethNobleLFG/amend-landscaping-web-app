@@ -4,12 +4,14 @@ const router = express.Router();
 const serviceController = require('../controllers/serviceController');
 const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
 
-
 // Create a new service (admin only)
 router.post('/', authenticateToken, requireAdmin, serviceController.createService);
 
-// Get all services (public)
-router.get('/', serviceController.getAllServices);
+// Get all services including unavailable ones (admin only)
+router.get('/all', authenticateToken, requireAdmin, serviceController.getAllServices);
+
+// Get only available services (public)
+router.get('/', serviceController.getAvailableServices);
 
 // Get a service by ID (public)
 router.get('/:id', serviceController.getServiceById);

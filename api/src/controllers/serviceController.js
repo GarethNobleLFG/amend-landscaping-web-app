@@ -20,6 +20,15 @@ const getAllServices = async (req, res) => {
   }
 };
 
+const getAvailableServices = async (req, res) => {
+  try {
+    const services = await Service.findAll({ where: { is_available: true } });
+    res.status(200).json(services);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const getServiceById = async (req, res) => {
   try {
     const service = await Service.findByPk(req.params.id);
@@ -57,6 +66,7 @@ const deleteService = async (req, res) => {
 module.exports = {
   createService,
   getAllServices,
+  getAvailableServices,
   getServiceById,
   updateService,
   deleteService,
