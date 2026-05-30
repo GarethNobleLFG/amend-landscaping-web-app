@@ -2,6 +2,7 @@ const { transporter } = require('../transporter');
 const { bookingHeader, standardFooter } = require('../../../utils/emailBranding');
 
 const sendConfirmationEmail = async (appointment) => {
+    const isCommercial = !!appointment.is_commercial;
     const dateToUse = appointment.scheduledDate || appointment.createdAt;
     const appointmentDate = dateToUse ? new Date(dateToUse).toLocaleDateString('en-US', {
         weekday: 'long',
@@ -30,12 +31,12 @@ const sendConfirmationEmail = async (appointment) => {
                 <p style="color: #334155; font-size: 18px; margin-top: 0;">Dear ${appointment.name},</p>
                 
                 <p style="color: #475569; font-size: 16px; line-height: 1.6;">
-                    Thank you for reaching out to Amend Landscaping! We have successfully received your service request. 
+                    Thank you for reaching out to Amend Landscaping! We have successfully received your ${isCommercial ? 'commercial ' : ''}service request. 
                 </p>
                 
                 <p style="color: #475569; font-size: 16px; line-height: 1.6;">
                     <strong>What happens next?</strong><br>
-                    A member of our team is reviewing your request and will be reaching out to you shortly to finalize details and officially approve your appointment.
+                    A member of our team is reviewing your request and will be reaching out to you shortly to finalize details and officially approve your ${isCommercial ? 'commercial ' : ''}appointment.
                 </p>
                 
                 <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; margin: 24px 0;">
@@ -43,6 +44,7 @@ const sendConfirmationEmail = async (appointment) => {
                     <p style="color: #475569; margin: 10px 0;"><strong>Requested Date:</strong> ${appointmentDate}</p>
                     <p style="color: #475569; margin: 10px 0;"><strong>Address:</strong> ${appointment.address}</p>
                     <p style="color: #475569; margin: 10px 0;"><strong>Services Requested:</strong> ${servicesList}</p>
+                    <p style="color: #475569; margin: 10px 0;"><strong>Property Type:</strong> ${isCommercial ? 'Commercial Property' : 'Residential Property'}</p>
                     ${appointment.notes ? `<p style="color: #475569; margin: 10px 0;"><strong>Additional Notes:</strong> ${appointment.notes}</p>` : ''}
                 </div>
                 
@@ -63,7 +65,9 @@ const sendConfirmationEmail = async (appointment) => {
     const mailOptions = {
         from: `"Amend Landscaping"`,
         to: appointment.email,
-        subject: 'We received your service request!',
+        subject: isCommercial 
+            ? 'We received your commercial service request!' 
+            : 'We received your service request!',
         html: htmlBody
     };
 
