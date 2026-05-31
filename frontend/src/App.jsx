@@ -3,6 +3,7 @@ import Landing from './pages/landing/Landing';
 import Booking from './pages/booking/Booking';
 import AdminDash from './pages/admin-dashboard/AdminDashboard';
 import AdminLogin from './pages/admin-dashboard/AdminLogin';
+import Commercial from './pages/commercial/Commercial';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/book" element={<Booking />} />
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin-dashboard" element={<AdminDash />} />
+        <Route path="/commercial" element={<Commercial />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

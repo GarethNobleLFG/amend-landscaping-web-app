@@ -29,7 +29,6 @@ export default function Booking() {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const navigate = useNavigate();
-    const location = useLocation();
 
     // Dynamically retrieve the commercial boolean flag from router state
     const isCommercial = !!location.state?.isCommercial;
