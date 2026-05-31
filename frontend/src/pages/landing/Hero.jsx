@@ -27,7 +27,7 @@ export default function Hero() {
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-green-50/50 to-green-100/30 text-gray-900 min-h-[85vh] flex flex-col lg:flex-row items-center w-full">
-      
+
       {/* 
         -------------
         Left Side: Text Content 
@@ -42,23 +42,23 @@ export default function Hero() {
         <div className="inline-block bg-white text-green-800 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-6 shadow-sm border border-green-200">
           Premium Lawn Care
         </div>
-        
+
         <h1 className="text-5xl lg:text-7xl font-extrabold mb-5 leading-tight tracking-tight text-gray-900 drop-shadow-sm">
           Transform Your <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-700 to-green-500 drop-shadow-sm hover:-translate-y-1 inline-block transition-transform duration-300">
             Outdoor Space
           </span>
         </h1>
-        
+
         <p className="text-lg md:text-xl leading-relaxed mb-8 text-gray-700 font-medium max-w-lg">
           Professional landscaping, lawn maintenance, and custom design to bring your vision to life effortlessly.
         </p>
 
-        {/* Changed lg:justify-center to lg:justify-start so it lines up with the text above it */}
-        <div className="flex w-full justify-center lg:justify-start mt-4">
+        {/* Matched Width Double-Button Layout */}
+        <div className="flex flex-col items-center lg:items-start gap-4 w-full mt-4">
           <motion.button
-            onClick={() => navigate('/book')} 
-            animate={{ 
+            onClick={() => navigate('/book')}
+            animate={{
               scale: [1, 1.05, 1],
               boxShadow: [
                 "0px 0px 0px 0px rgba(21, 128, 61, 0.6)",
@@ -66,16 +66,25 @@ export default function Hero() {
                 "0px 0px 0px 0px rgba(21, 128, 61, 0)"
               ]
             }}
-            transition={{ 
-              duration: 2, 
+            transition={{
+              duration: 2,
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-green-700 text-white px-10 py-4 rounded-xl font-bold text-xl hover:bg-green-600 transition-colors sm:w-auto overflow-visible relative"
+            className="bg-green-700 text-white px-10 py-4 rounded-xl font-bold text-xl hover:bg-green-600 transition-all w-full sm:w-[290px] overflow-visible relative text-center shadow-lg"
           >
             Book an Appointment
+          </motion.button>
+
+          <motion.button
+            onClick={() => navigate('/commercial')}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-white border-2 border-gray-100 hover:border-gray-200 text-green-850 hover:text-green-700 px-6 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all w-full sm:w-[290px] text-center"
+          >
+            Commercial Property Service
           </motion.button>
         </div>
       </motion.div>
@@ -87,13 +96,13 @@ export default function Hero() {
       */}
       {/* On desktop, this container breaks out of the normal flex flow to absolutely pin to the right edge and stretch full height */}
       <div className="relative z-10 w-full h-[600px] lg:h-auto lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:w-1/2 flex justify-center items-center mt-8 lg:mt-0">
-        
+
         {/* Massive background blob */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-green-300 rounded-full blur-[140px] opacity-40 mix-blend-multiply"></div>
 
         <div className="relative w-full h-full pointer-events-none perspective-[1000px]">
           <AnimatePresence mode="popLayout">
-            
+
             {/* Background/Offset Image (Previous) */}
             <motion.img
               key={`prev-${currentIndex}`}
