@@ -71,7 +71,7 @@ const [isAvailable, setIsAvailable] = useState(
               isAvailable ? 'bg-green-500' : 'bg-gray-200'
             }`}
           >
-            <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
+            <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
               isAvailable ? 'translate-x-6' : 'translate-x-1'
             }`} />
           </button>
