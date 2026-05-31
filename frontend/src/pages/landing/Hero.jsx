@@ -37,7 +37,7 @@ export default function Hero() {
         initial={{ opacity: 0, x: -30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative z-20 w-full lg:w-1/2 px-8 lg:pl-16 lg:pr-12 pt-12 pb-12 lg:pt-16 lg:pb-24 lg:-mt-4 flex flex-col items-center lg:items-start text-center lg:text-left"
+        className="relative z-20 w-full lg:w-1/2 px-8 lg:pl-16 lg:pr-12 pt-16 pb-12 lg:py-24 flex flex-col items-center lg:items-start text-center lg:text-left"
       >
         <div className="inline-block bg-white text-green-800 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-6 shadow-sm border border-green-200">
           Premium Lawn Care
@@ -57,7 +57,7 @@ export default function Hero() {
         {/* Matched Width Double-Button Layout */}
         <div className="flex flex-col items-center lg:items-start gap-4 w-full mt-4">
           <motion.button
-            onClick={() => navigate('/book', { state: { isCommercial: false } })}
+            onClick={() => navigate('/book')}
             animate={{
               scale: [1, 1.05, 1],
               boxShadow: [
