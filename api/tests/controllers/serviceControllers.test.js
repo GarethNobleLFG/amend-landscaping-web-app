@@ -26,8 +26,9 @@ describe('Service Controller', () => {
         app.use('/services', serviceRoutes);
 
         mockService = { 
-            id: 1, 
-            description: 'Lawn Mowing', 
+            id: 1,
+            name: 'Lawn Mowing',
+            description: 'Lawn mowing and edging service',
             is_available: true,
             createdAt: new Date(),
             updatedAt: new Date()
@@ -44,12 +45,13 @@ describe('Service Controller', () => {
 
             const res = await request(app)
                 .post('/services')
-                .send({ description: 'Lawn Mowing', is_available: true });
+                .send({ name: 'Lawn Mowing', description: 'Lawn mowing and edging service', is_available: true });
 
-            expect(Service.create).toHaveBeenCalledWith({ description: 'Lawn Mowing', is_available: true });
+            expect(Service.create).toHaveBeenCalledWith({ name: 'Lawn Mowing', description: 'Lawn mowing and edging service', is_available: true });
             expect(res.status).toBe(201);
             expect(res.body.id).toBe(1);
-            expect(res.body.description).toBe('Lawn Mowing');
+            expect(res.body.name).toBe('Lawn Mowing');
+            expect(res.body.description).toBe('Lawn mowing and edging service');
         });
 
         it('should create a service with is_available defaulting to true', async () => {
@@ -57,18 +59,18 @@ describe('Service Controller', () => {
 
             const res = await request(app)
                 .post('/services')
-                .send({ description: 'Tree Trimming' });
+                .send({ name: 'Tree Trimming', description: 'Tree trimming and removal service' });
 
-            expect(Service.create).toHaveBeenCalledWith({ description: 'Tree Trimming', is_available: undefined });
+            expect(Service.create).toHaveBeenCalledWith({ name: 'Tree Trimming', description: 'Tree trimming and removal service', is_available: true });
             expect(res.status).toBe(201);
         });
 
         it('should return 400 if the service creation fails due to validation error', async () => {
-            Service.create.mockRejectedValue(new Error('Description is required'));
+            Service.create.mockRejectedValue(new Error('Name and description are required'));
 
             const res = await request(app)
                 .post('/services')
-                .send({ description: '' });
+                .send({ name: '', description: '', is_available: true });
 
             expect(res.status).toBe(400);
             expect(res.body.error).toBeDefined();
@@ -78,8 +80,8 @@ describe('Service Controller', () => {
     describe('Getting All Services (Admin Only)', () => {
         it('should return 200 and a list of all services including unavailable ones', async () => {
             const allServices = [
-                { id: 1, description: 'Lawn Mowing', is_available: true },
-                { id: 2, description: 'Tree Trimming', is_available: false }
+                { id: 1, name: 'Lawn Mowing', description: 'Lawn mowing and edging service', is_available: true },
+                { id: 2, name: 'Tree Trimming', description: 'Tree trimming and removal service', is_available: false }
             ];
             Service.findAll.mockResolvedValue(allServices);
 
@@ -113,8 +115,8 @@ describe('Service Controller', () => {
     describe('Getting Available Services (Public)', () => {
         it('should return 200 and only available services', async () => {
             const availableServices = [
-                { id: 1, description: 'Lawn Mowing', is_available: true },
-                { id: 3, description: 'Landscaping', is_available: true }
+                { id: 1, name: 'Lawn Mowing', description: 'Lawn mowing and edging service', is_available: true },
+                { id: 3, name: 'Landscaping', description: 'Full landscaping design service', is_available: true }
             ];
             Service.findAll.mockResolvedValue(availableServices);
 
@@ -154,7 +156,8 @@ describe('Service Controller', () => {
             expect(Service.findByPk).toHaveBeenCalledWith('1');
             expect(res.status).toBe(200);
             expect(res.body.id).toBe(1);
-            expect(res.body.description).toBe('Lawn Mowing');
+            expect(res.body.name).toBe('Lawn Mowing');
+            expect(res.body.description).toBe('Lawn mowing and edging service');
         });
 
         it('should return 404 when the service does not exist', async () => {
@@ -187,11 +190,12 @@ describe('Service Controller', () => {
 
             const res = await request(app)
                 .put('/services/1')
-                .send({ description: 'Updated Lawn Mowing', is_available: false });
+                .send({ name: 'Updated Lawn Mowing', description: 'Updated description', is_available: false });
 
             expect(Service.findByPk).toHaveBeenCalledWith('1');
             expect(res.status).toBe(200);
-            expect(res.body.description).toBe('Updated Lawn Mowing');
+            expect(res.body.name).toBe('Updated Lawn Mowing');
+            expect(res.body.description).toBe('Updated description');
             expect(res.body.is_available).toBe(false);
         });
 
@@ -200,7 +204,7 @@ describe('Service Controller', () => {
 
             const res = await request(app)
                 .put('/services/999')
-                .send({ description: 'Updated Service' });
+                .send({ name: 'Updated Service', description: 'Updated description' });
 
             expect(res.status).toBe(404);
             expect(res.body.error).toBe('Service not found');
@@ -213,7 +217,7 @@ describe('Service Controller', () => {
 
             const res = await request(app)
                 .put('/services/1')
-                .send({ description: '' });
+                .send({ name: '', description: '' });
 
             expect(res.status).toBe(400);
             expect(res.body.error).toBeDefined();

@@ -7,29 +7,22 @@ import {
 
 // ── Service Form Modal ────────────────────────────────────────────────────────
 const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
-
   const [saving, setSaving] = useState(false);
-  const [description, setDescription] = useState(
-  service?.description ?? ''
-);
-
-const [isAvailable, setIsAvailable] = useState(
-  service?.is_available ?? true
-);
+  const [name, setName] = useState(service?.name ?? '');
+  const [description, setDescription] = useState(service?.description ?? '');
+  const [isAvailable, setIsAvailable] = useState(service?.is_available ?? true);
 
   const { createService } = useCreateService();
   const { updateService } = useUpdateService();
 
-
-
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
-    if (!description.trim()) return;
+    if (!name.trim()) return;
     setSaving(true);
     const result = service
-      ? await updateService(service.id, description.trim(), isAvailable)
-      : await createService(description.trim(), isAvailable);
+      ? await updateService(service.id, name.trim(), description.trim(), isAvailable)
+      : await createService(name.trim(), description.trim(), isAvailable);
     setSaving(false);
     if (result.success) onSaved();
     else alert(result.error);
@@ -47,9 +40,21 @@ const [isAvailable, setIsAvailable] = useState(
           {service ? 'Edit Service' : 'Add New Service'}
         </h2>
         <p className="text-sm text-gray-500 mb-6">
-          {service ? 'Update the details for this service.' : 'Enter a description for the new service.'}
+          {service ? 'Update the details for this service.' : 'Enter a name for the new service.'}
         </p>
 
+        <div className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Service Name
+          </label>
+          <input
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+            placeholder="e.g. Lawn Mowing & Edging"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        
         <div className="mb-4">
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Service Description
@@ -57,7 +62,7 @@ const [isAvailable, setIsAvailable] = useState(
           <textarea
             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
             rows={3}
-            placeholder="e.g. Lawn Mowing & Edging"
+            placeholder="e.g. Full lawn mowing, edging, and cleanup"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
@@ -86,7 +91,7 @@ const [isAvailable, setIsAvailable] = useState(
           </button>
           <button
             onClick={handleSubmit}
-            disabled={saving || !description.trim()}
+            disabled={saving || !name.trim()}
             className="flex-2 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition"
           >
             {saving ? 'Saving…' : service ? 'Save Changes' : 'Create Service'}
@@ -142,7 +147,12 @@ const ServiceCard = ({ service, onEdit, onDelete }) => (
     className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow"
   >
     <div className="flex items-start justify-between gap-2">
-      <p className="font-semibold text-gray-900 text-sm leading-snug flex-1">{service.description}</p>
+      <div className="flex-1">
+        <p className="font-semibold text-gray-900 text-sm leading-snug">{service.name}</p>
+        {service.description && (
+          <p className="text-xs text-gray-500 mt-1 leading-snug">{service.description}</p>
+        )}
+      </div>
       <span className="text-xs text-gray-400 font-medium">#{service.id}</span>
     </div>
 

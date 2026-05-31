@@ -1,7 +1,7 @@
 const Service = require('../models/services');
 
-const createService = async (description, is_available = true) => {
-  const service = await Service.create({ description, is_available });
+const createService = async (name, description, is_available = true) => {
+  const service = await Service.create({ name, description, is_available });
   return { success: true, data: service };
 };
 
@@ -20,12 +20,12 @@ const getServiceById = async (id) => {
   return service;
 };
 
-const updateService = async (id, description, is_available) => {
+const updateService = async (id, name, description, is_available) => {
   const service = await Service.findByPk(id);
   if (!service) {
     return null;
   }
-  await service.update({ description, is_available });
+  await service.update({ name, description, is_available });
   return service;
 };
 

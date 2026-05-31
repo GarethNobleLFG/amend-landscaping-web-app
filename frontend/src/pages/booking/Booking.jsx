@@ -214,16 +214,23 @@ export default function Booking() {
                                             <div
                                                 key={service.id}
                                                 onClick={() => handleServiceToggle(service.id.toString())}
-                                                className={`cursor-pointer p-5 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between ${isSelected ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-green-200 hover:bg-white bg-white/50'
-                                                    }`}
+                                                className={`cursor-pointer p-5 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between ${
+                                                    isSelected ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-green-200 hover:bg-white bg-white/50'
+                                                }`}
                                             >
-                                                <span className={`font-bold ${isSelected ? 'text-green-800' : 'text-gray-700'}`}>{service.description}</span>
-                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300'
-                                                    }`}>
+                                                <div className="flex flex-col gap-1 flex-1 mr-3">
+                                                    <span className={`font-bold ${isSelected ? 'text-green-800' : 'text-gray-700'}`}>{service.name}</span>
+                                                    {service.description && (
+                                                        <span className={`text-sm font-medium ${isSelected ? 'text-green-600' : 'text-gray-400'}`}>{service.description}</span>
+                                                    )}
+                                                </div>
+                                                <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
+                                                    isSelected ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300'
+                                                }`}>
                                                     {isSelected && <Check className="w-4 h-4" />}
                                                 </div>
                                             </div>
-                                        );
+                                                                                    );
                                     })}
                                 </div>
                             )}

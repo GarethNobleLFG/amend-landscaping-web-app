@@ -118,16 +118,16 @@ function Landing() {
                 <motion.div key={service.id} variants={itemVariants} className="group rounded-[2rem] bg-gray-50 overflow-hidden shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 border border-gray-100 flex flex-col">
                   <div className="relative h-64 lg:h-72 overflow-hidden bg-gradient-to-br from-green-100 to-green-50 flex items-center justify-center">
                     {slideImages[index % slideImages.length] && (
-                      <img src={slideImages[index % slideImages.length]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt={service.description} />
+                      <img src={slideImages[index % slideImages.length]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt={service.name} />
                     )}
                     <div className="absolute top-4 right-4 bg-white/95 backdrop-blur shadow-sm p-3.5 rounded-2xl text-green-600">
                       <Leaf className="w-6 h-6" />
                     </div>
                   </div>
                   <div className="p-8 lg:p-10 flex flex-col flex-grow">
-                    <h4 className="text-2xl font-bold mb-4 text-gray-900 tracking-tight">{service.description}</h4>
+                    <h4 className="text-2xl font-bold mb-4 text-gray-900 tracking-tight">{service.name}</h4>
                     <p className="text-gray-600 text-lg leading-relaxed mb-8 flex-grow">
-                      Premium {service.description.toLowerCase()} services tailored to keep your outdoor space in perfect condition.
+                      {service.description} 
                     </p>
                     <a href="#" className="inline-flex items-center text-base font-bold text-green-700 hover:text-green-600 transition-colors w-fit">
                       Book Now <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform" />

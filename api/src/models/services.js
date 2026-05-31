@@ -7,6 +7,10 @@ const Service = sequelize.define('Service', {
     autoIncrement: true,
     primaryKey: true,
   },
+  name: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
   description: {
     type: DataTypes.TEXT,
     allowNull: false,
