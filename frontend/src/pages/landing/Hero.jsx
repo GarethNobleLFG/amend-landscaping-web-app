@@ -54,8 +54,8 @@ export default function Hero() {
           Professional landscaping, lawn maintenance, and custom design to bring your vision to life effortlessly.
         </p>
 
-        {/* Changed lg:justify-center to lg:justify-start so it lines up with the text above it */}
-        <div className="flex w-full justify-center lg:justify-start mt-4">
+        {/* Primary Button + Helpers Block */}
+        <div className="flex flex-col items-center lg:items-start gap-2 w-full mt-4">
           <motion.button
             onClick={() => navigate('/book')} 
             animate={{ 
@@ -71,12 +71,17 @@ export default function Hero() {
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-green-700 text-white px-10 py-4 rounded-xl font-bold text-xl hover:bg-green-600 transition-colors sm:w-auto overflow-visible relative"
+            className="bg-green-700 text-white px-10 py-4 rounded-xl font-bold text-xl hover:bg-green-600 transition-all w-full sm:w-auto overflow-visible relative text-center"
           >
             Book an Appointment
           </motion.button>
+          
+          {/* Subtext under primary button */}
+          <span className="text-xs text-gray-500 italic mt-1 font-medium select-none">
+            (Residential or Commercial)
+          </span>
         </div>
       </motion.div>
 
