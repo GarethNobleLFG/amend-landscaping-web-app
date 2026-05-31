@@ -57,7 +57,7 @@ export default function Hero() {
         {/* Matched Width Double-Button Layout */}
         <div className="flex flex-col items-center lg:items-start gap-4 w-full mt-4">
           <motion.button
-            onClick={() => navigate('/book')}
+            onClick={() => navigate('/book', { state: { isCommercial: false } })}
             animate={{
               scale: [1, 1.05, 1],
               boxShadow: [
