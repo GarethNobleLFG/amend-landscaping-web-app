@@ -220,9 +220,6 @@ export default function Booking() {
                                             >
                                                 <div className="flex flex-col gap-1 flex-1 mr-3">
                                                     <span className={`font-bold ${isSelected ? 'text-green-800' : 'text-gray-700'}`}>{service.name}</span>
-                                                    {service.description && (
-                                                        <span className={`text-sm font-medium ${isSelected ? 'text-green-600' : 'text-gray-400'}`}>{service.description}</span>
-                                                    )}
                                                 </div>
                                                 <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
                                                     isSelected ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300'
