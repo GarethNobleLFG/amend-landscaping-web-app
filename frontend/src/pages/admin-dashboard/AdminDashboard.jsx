@@ -6,7 +6,9 @@ import AppointmentCard from '../../components/AppointmentCard';
 import ApproveModal from './ApproveModal';
 import DenyCancelModal from './DenyCancelModal';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Building, User } from 'lucide-react';
+import { LogOut, Building, User,Wrench } from 'lucide-react';
+import ServicesTab from '../../components/ServicesCard';
+
 
 const AdminDashboard = () => {
     const { appointments, fetchAppointments, isLoading, error } = useGetAppointments();
@@ -150,9 +152,23 @@ const AdminDashboard = () => {
                             {approvedAppointments.length}
                         </span>
                     </button>
+                    <button
+                    onClick={() => setActiveTab('services')}
+                    className={`pb-3 px-2 transition-all font-bold text-lg flex items-center gap-2 ${
+                        activeTab === 'services'
+                        ? 'border-b-2 border-green-600 text-green-700'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                    >
+                        <Wrench className="w-4 h-4" />
+                        Manage Services
+                    </button>
                 </div>
+                
 
-                {isLoading && appointments.length === 0 ? (
+                {activeTab === 'services' ? (
+                    <ServicesTab />
+                ) :isLoading && appointments.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
                         <p className="mt-4 text-gray-500 font-medium text-lg">Fetching requests...</p>

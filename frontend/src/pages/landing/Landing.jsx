@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
-import { Leaf, Scissors, TreePine, ArrowRight, Star } from 'lucide-react';
+import { Leaf,  ArrowRight, Star } from 'lucide-react';
+import { useEffect } from 'react';
+import { useGetServices } from '../../hooks/serviceHooks';
 import Hero from './Hero';
 
 const slideImages = [
@@ -37,6 +39,12 @@ const testimonials = [
 ];
 
 function Landing() {
+  const { services, fetchServices, isLoading } = useGetServices();
+  
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -95,65 +103,39 @@ function Landing() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.1 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10 w-full"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 w-full"
           >
-            {/* Card 1 */}
-            <motion.div variants={itemVariants} className="group rounded-[2rem] bg-gray-50 overflow-hidden shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 border border-gray-100 flex flex-col">
-              <div className="relative h-64 lg:h-72 overflow-hidden bg-gray-200">
-                <img src={slideImages[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt="Lawn Mowing" />
-                <div className="absolute top-4 right-4 bg-white/95 backdrop-blur shadow-sm p-3.5 rounded-2xl text-green-600">
-                  <Scissors className="w-6 h-6" />
-                </div>
+            {isLoading ? (
+              <div className="col-span-full flex justify-center py-20">
+                <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
               </div>
-              <div className="p-8 lg:p-10 flex flex-col flex-grow">
-                <h4 className="text-2xl font-bold mb-4 text-gray-900 tracking-tight">Precision Mowing</h4>
-                <p className="text-gray-600 text-lg leading-relaxed mb-8 flex-grow">
-                  Regular mowing, precision edging, and scheduled lawn care to keep your grass lush, uniform, and healthy all season.
-                </p>
-                <a href="#" className="inline-flex items-center text-base font-bold text-green-700 hover:text-green-600 transition-colors w-fit">
-                  Explore Service <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform" />
-                </a>
+            ) : services.length === 0 ? (
+              <div className="col-span-full text-center py-20">
+                <p className="text-xl text-gray-600 font-medium">No services available at this time. Please check back soon.</p>
               </div>
-            </motion.div>
-
-            {/* Card 2 */}
-            <motion.div variants={itemVariants} className="group rounded-[2rem] bg-gray-50 overflow-hidden shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 border border-gray-100 flex flex-col">
-              <div className="relative h-64 lg:h-72 overflow-hidden bg-gray-200">
-                <img src={slideImages[1]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt="Custom Landscaping" />
-                <div className="absolute top-4 right-4 bg-white/95 backdrop-blur shadow-sm p-3.5 rounded-2xl text-green-600">
-                  <Leaf className="w-6 h-6" />
-                </div>
-              </div>
-              <div className="p-8 lg:p-10 flex flex-col flex-grow">
-                <h4 className="text-2xl font-bold mb-4 text-gray-900 tracking-tight">Custom Landscaping</h4>
-                <p className="text-gray-600 text-lg leading-relaxed mb-8 flex-grow">
-                  Full garden redesigns, seasonal planting, and premium mulch installation to build breathtaking outdoor environments.
-                </p>
-                <a href="#" className="inline-flex items-center text-base font-bold text-green-700 hover:text-green-600 transition-colors w-fit">
-                  Explore Service <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform" />
-                </a>
-              </div>
-            </motion.div>
-
-            {/* Card 3 */}
-            <motion.div variants={itemVariants} className="group rounded-[2rem] bg-gray-50 overflow-hidden shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 border border-gray-100 flex flex-col">
-              <div className="relative h-64 lg:h-72 overflow-hidden bg-gray-200">
-                <img src={slideImages[2]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt="Arborist Services" />
-                <div className="absolute top-4 right-4 bg-white/95 backdrop-blur shadow-sm p-3.5 rounded-2xl text-green-600">
-                  <TreePine className="w-6 h-6" />
-                </div>
-              </div>
-              <div className="p-8 lg:p-10 flex flex-col flex-grow">
-                <h4 className="text-2xl font-bold mb-4 text-gray-900 tracking-tight">Arborist Services</h4>
-                <p className="text-gray-600 text-lg leading-relaxed mb-8 flex-grow">
-                  Professional pruning, structural shaping, and safe removal to ensure your property's trees grow beautifully and safely.
-                </p>
-                <a href="#" className="inline-flex items-center text-base font-bold text-green-700 hover:text-green-600 transition-colors w-fit">
-                  Explore Service <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform" />
-                </a>
-              </div>
-            </motion.div>
-
+            ) : (
+              services.map((service, index) => (
+                <motion.div key={service.id} variants={itemVariants} className="group rounded-[2rem] bg-gray-50 overflow-hidden shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 border border-gray-100 flex flex-col">
+                  <div className="relative h-64 lg:h-72 overflow-hidden bg-gradient-to-br from-green-100 to-green-50 flex items-center justify-center">
+                    {slideImages[index % slideImages.length] && (
+                      <img src={slideImages[index % slideImages.length]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt={service.name} />
+                    )}
+                    <div className="absolute top-4 right-4 bg-white/95 backdrop-blur shadow-sm p-3.5 rounded-2xl text-green-600">
+                      <Leaf className="w-6 h-6" />
+                    </div>
+                  </div>
+                  <div className="p-8 lg:p-10 flex flex-col flex-grow">
+                    <h4 className="text-2xl font-bold mb-4 text-gray-900 tracking-tight">{service.name}</h4>
+                    <p className="text-gray-600 text-lg leading-relaxed mb-8 flex-grow">
+                      {service.description} 
+                    </p>
+                    <a href="#" className="inline-flex items-center text-base font-bold text-green-700 hover:text-green-600 transition-colors w-fit">
+                      Book Now <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform" />
+                    </a>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </motion.div>
         </div>
       </section>

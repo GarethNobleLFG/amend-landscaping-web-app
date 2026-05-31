@@ -3,16 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Leaf, ArrowRight, ArrowLeft, Check, User, Sparkles, MapPin } from 'lucide-react';
 import { useCreateAppointment } from '../../hooks/appointmentHooks';
+import { useGetServices } from '../../hooks/serviceHooks';
 import SuccessModal from './SuccessModal';
-
-const availableServices = [
-    { id: 'mowing', label: 'Precision Mowing' },
-    { id: 'landscaping', label: 'Custom Landscaping' },
-    { id: 'tree_trimming', label: 'Arborist / Tree Trimming' },
-    { id: 'cleanup', label: 'Seasonal Yard Cleanup' },
-    { id: 'fertilization', label: 'Fertilization & Weed Control' },
-    { id: 'design', label: '3D Backyard Design' }
-];
 
 const slideImages = [
     '/sample-imgs/betsys-cropped.jpg',
@@ -28,8 +20,12 @@ export default function Booking() {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const navigate = useNavigate();
-
     const { createAppointment, isLoading, error } = useCreateAppointment();
+    const { services, fetchServices } = useGetServices();
+
+    useEffect(() => {
+        fetchServices();
+    }, [fetchServices]);
 
     const handleBackClick = () => {
         if (step === 2) {
@@ -85,10 +81,12 @@ export default function Booking() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const servicesObj = formData.servicesRequested.reduce((acc, curr) => {
-            acc[curr] = true;
-            return acc;
-        }, {});
+        const servicesObj = formData.servicesRequested.length > 0 
+            ? formData.servicesRequested.reduce((acc, curr) => {
+                acc[curr] = true;
+                return acc;
+            }, {})
+            : null;
 
         const payload = {
             ...formData,
@@ -203,25 +201,36 @@ export default function Booking() {
                                 <h2 className="text-3xl font-bold text-gray-900">What does your yard need?</h2>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                                {availableServices.map((service) => {
-                                    const isSelected = formData.servicesRequested.includes(service.id);
-                                    return (
-                                        <div
-                                            key={service.id}
-                                            onClick={() => handleServiceToggle(service.id)}
-                                            className={`cursor-pointer p-5 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between ${isSelected ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-green-200 hover:bg-white bg-white/50'
+                            {services.length === 0 ? (
+                                <div className="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-8 text-center mb-8">
+                                    <p className="text-lg font-bold text-yellow-800 mb-2">No Services Available Right Now</p>
+                                    <p className="text-yellow-700">We're currently at capacity. Please check back soon or contact us directly.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                                    {services.map((service) => {
+                                        const isSelected = formData.servicesRequested.includes(service.id.toString());
+                                        return (
+                                            <div
+                                                key={service.id}
+                                                onClick={() => handleServiceToggle(service.id.toString())}
+                                                className={`cursor-pointer p-5 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between ${
+                                                    isSelected ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-green-200 hover:bg-white bg-white/50'
                                                 }`}
-                                        >
-                                            <span className={`font-bold ${isSelected ? 'text-green-800' : 'text-gray-700'}`}>{service.label}</span>
-                                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300'
+                                            >
+                                                <div className="flex flex-col gap-1 flex-1 mr-3">
+                                                    <span className={`font-bold ${isSelected ? 'text-green-800' : 'text-gray-700'}`}>{service.name}</span>
+                                                </div>
+                                                <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
+                                                    isSelected ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300'
                                                 }`}>
-                                                {isSelected && <Check className="w-4 h-4" />}
+                                                    {isSelected && <Check className="w-4 h-4" />}
+                                                </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                                                                    );
+                                    })}
+                                </div>
+                            )}
 
                             <div className="mb-8">
                                 <label className="block text-sm font-bold text-gray-700 mb-2">Tell us more about the project (Optional)</label>
@@ -237,7 +246,7 @@ export default function Booking() {
 
                             <button
                                 onClick={nextStep}
-                                disabled={formData.servicesRequested.length === 0}
+                                disabled={formData.servicesRequested.length === 0 || services.length === 0}
                                 className="mt-auto w-full flex items-center justify-center gap-2 bg-green-700 disabled:bg-gray-300 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 disabled:hover:bg-gray-300 transition-colors shadow-lg"
                             >
                                 Next: Personal Details <ArrowRight className="w-5 h-5" />

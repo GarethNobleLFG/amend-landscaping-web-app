@@ -1,8 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./src/config/database'); 
+
 const appointmentRoutes = require('./src/routes/appointmentRoutes');
 const userRoutes = require('./src/routes/userRoutes');
+const serviceRoutes = require('./src/routes/serviceRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -15,8 +17,10 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send('Amend Landscaping API is running!');
 });
+
 app.use('/appointments', appointmentRoutes);
 app.use('/users', userRoutes);
+app.use('/services', serviceRoutes);
 
 // Initialize database and start the server
 async function startServer() {
