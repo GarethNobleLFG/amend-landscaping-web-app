@@ -34,9 +34,6 @@ export default function Booking() {
     // Dynamically retrieve the commercial boolean flag from router state
     const isCommercial = !!location.state?.isCommercial;
 
-    // Dynamically retrieve the commercial boolean flag from router state
-    const isCommercial = !!location.state?.isCommercial;
-
     const { createAppointment, isLoading, error } = useCreateAppointment();
 
     const handleBackClick = () => {
