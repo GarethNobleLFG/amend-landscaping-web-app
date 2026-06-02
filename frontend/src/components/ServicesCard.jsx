@@ -4,7 +4,7 @@ import { Plus, Pencil, Trash2, Wrench, CheckCircle2, Image as ImageIcon, X } fro
 import {
   useGetAllServices, useCreateService, useUpdateService, useDeleteService,
 } from '../hooks/serviceHooks';
-import { compressImage } from '../util/imageUtils';
+import { compressImage } from "../util/compressImage";
 
 // ── Service Form Modal ────────────────────────────────────────────────────────
 const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
