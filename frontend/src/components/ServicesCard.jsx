@@ -6,7 +6,7 @@ import {
 } from '../hooks/serviceHooks';
 import { compressImage } from "../util/compressImage";
 
-// ── Service Form Modal ────────────────────────────────────────────────────────
+// ── Service Form Modal ───────────────────────────────────────────────────────
 const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState(service?.name ?? '');
