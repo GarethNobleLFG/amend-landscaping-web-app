@@ -14,7 +14,7 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
   const [isAvailable, setIsAvailable] = useState(service?.is_available ?? true);
 
   // Track the ID for the database and the data for the preview
-  const [imageId, setImageId] = useState(service?.image_id ?? '');
+  const [imageId, setImageId] = useState(service?.image_id ?? null);
   const [imagePreview, setImagePreview] = useState(service?.image?.image_data ?? '');
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
@@ -95,7 +95,7 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setImageId(''); setImagePreview(''); }}
+                    onClick={() => { setImageId(null); setImagePreview(''); }} 
                     className="bg-red-500 text-white p-1.5 rounded-lg hover:bg-red-600 transition shadow-sm"
                   >
                     <X className="w-4 h-4" />
