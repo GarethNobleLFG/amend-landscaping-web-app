@@ -119,10 +119,10 @@ const AdminDashboard = () => {
                 >
                     <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
                         <ClipboardList className="w-8 h-8 text-green-500" />
-                        Service Requests
+                        Application Management
                     </h1>
                     <p className="mt-3 text-lg text-gray-600 max-w-2xl font-medium">
-                        Review and approve incoming landscaping requests. Approved appointments will automatically be scheduled.
+                        Centralized portal to manage your appointment requests and user interface.
                     </p>
                 </motion.div>
 

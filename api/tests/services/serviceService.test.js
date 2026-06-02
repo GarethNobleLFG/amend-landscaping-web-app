@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const serviceService = require('../../src/services/serviceService');
 const serviceRepo = require('../../src/repositories/serviceRepository');
 
@@ -13,58 +14,122 @@ describe('Service Business Logic (Service Layer)', () => {
         mockService = {
             id: 1,
             name: 'Lawn Mowing',
-            description: 'Lawn mowing and edging service',
+            description: 'Professional lawn care',
             is_available: true,
-            image_id: 'uuid-1234',
-            save: jest.fn(),
-            update: jest.fn(),
-            destroy: jest.fn()
+            image_id: '123e4567-e89b-12d3-a456-426614174000',
         };
     });
 
-    afterEach(() => {
-        jest.restoreAllMocks();
-    });
-
-    describe('Creating a Service', () => {
-        it('should successfully create a new service', async () => {
+    describe('createService', () => {
+        it('should successfully create a service with all fields', async () => {
             serviceRepo.create.mockResolvedValue(mockService);
 
-            const result = await serviceService.createService('Lawn Mowing', 'Lawn mowing and edging service', true, 'uuid-1234');
+            const result = await serviceService.createService(
+                'Lawn Mowing', 'Professional lawn care', true, '123e4567-e89b-12d3-a456-426614174000'
+            );
 
-            expect(serviceRepo.create).toHaveBeenCalledWith({ name: 'Lawn Mowing', description: 'Lawn mowing and edging service', is_available: true, image_id: 'uuid-1234' });
-            expect(result.id).toBe(1);
-            expect(result.name).toBe('Lawn Mowing');
+            expect(result).toEqual(mockService);
+            expect(serviceRepo.create).toHaveBeenCalledWith({
+                name: 'Lawn Mowing',
+                description: 'Professional lawn care',
+                is_available: true,
+                image_id: '123e4567-e89b-12d3-a456-426614174000'
+            });
         });
 
-        it('should throw an error if creation fails', async () => {
-            serviceRepo.create.mockRejectedValue(new Error('Database error'));
-            await expect(serviceService.createService('Lawn Mowing', 'Lawn mowing', true)).rejects.toThrow('Database error');
+        it('should sanitize empty string image_id to null', async () => {
+            serviceRepo.create.mockResolvedValue({ ...mockService, image_id: null });
+
+            await serviceService.createService('Lawn Mowing', 'Desc', true, '');
+
+            expect(serviceRepo.create).toHaveBeenCalledWith(expect.objectContaining({
+                image_id: null
+            }));
+        });
+
+        it('should apply default value for is_available if not provided', async () => {
+            await serviceService.createService('Lawn Mowing', 'Desc');
+            
+            expect(serviceRepo.create).toHaveBeenCalledWith(expect.objectContaining({
+                is_available: true
+            }));
         });
     });
 
-    describe('Fetching All Services', () => {
-        it('should return all services', async () => {
-            serviceRepo.findAll.mockResolvedValue([mockService]);
-            const result = await serviceService.getAllServices();
+    describe('getAvailableServices', () => {
+        it('should return only available services from the repository', async () => {
+            serviceRepo.findAvailable.mockResolvedValue([mockService]);
+
+            const result = await serviceService.getAvailableServices();
+
             expect(result).toHaveLength(1);
-            expect(result[0].name).toBe('Lawn Mowing');
+            expect(serviceRepo.findAvailable).toHaveBeenCalled();
         });
     });
 
-    describe('Updating a Service', () => {
+    describe('getServiceById', () => {
+        it('should return a service if it exists', async () => {
+            serviceRepo.findById.mockResolvedValue(mockService);
+
+            const result = await serviceService.getServiceById(1);
+
+            expect(result).toEqual(mockService);
+            expect(serviceRepo.findById).toHaveBeenCalledWith(1);
+        });
+
+        it('should return null if the service does not exist', async () => {
+            serviceRepo.findById.mockResolvedValue(null);
+
+            const result = await serviceService.getServiceById(999);
+
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('updateService', () => {
         it('should successfully update a service', async () => {
-            serviceRepo.update.mockResolvedValue({ ...mockService, name: 'Updated' });
-            const result = await serviceService.updateService(1, 'Updated', 'Desc', false, 'new-uuid');
-            expect(result.name).toBe('Updated');
+            const updateData = { ...mockService, name: 'Lawn Care Pro' };
+            serviceRepo.update.mockResolvedValue(updateData);
+
+            const result = await serviceService.updateService(1, 'Lawn Care Pro', 'Desc', true, 'uuid');
+
+            expect(result.name).toBe('Lawn Care Pro');
+            expect(serviceRepo.update).toHaveBeenCalledWith(1, expect.any(Object));
+        });
+
+        it('should sanitize empty string image_id to null during update', async () => {
+            await serviceService.updateService(1, 'Name', 'Desc', true, '');
+
+            expect(serviceRepo.update).toHaveBeenCalledWith(1, expect.objectContaining({
+                image_id: null
+            }));
+        });
+
+        it('should return null if service to update is not found', async () => {
+            serviceRepo.update.mockResolvedValue(null);
+
+            const result = await serviceService.updateService(999, 'Name', 'Desc', true, null);
+
+            expect(result).toBeNull();
         });
     });
 
-    describe('Deleting a Service', () => {
-        it('should successfully delete a service', async () => {
+    describe('deleteService', () => {
+        it('should return true on successful deletion', async () => {
             serviceRepo.deleteService.mockResolvedValue(true);
+
             const result = await serviceService.deleteService(1);
+
             expect(result).toBe(true);
+            expect(serviceRepo.deleteService).toHaveBeenCalledWith(1);
+        });
+
+        it('should return false if service to delete was not found', async () => {
+            serviceRepo.deleteService.mockResolvedValue(false);
+
+            const result = await serviceService.deleteService(999);
+
+            expect(result).toBe(false);
         });
     });
 });

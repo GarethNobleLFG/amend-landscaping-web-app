@@ -1,7 +1,8 @@
 const serviceRepo = require('../repositories/serviceRepository');
 
 const createService = async (name, description, is_available = true, image_id = null) => {
-  return await serviceRepo.create({ name, description, is_available, image_id });
+  const sanitizedImageId = image_id === '' ? null : image_id;
+  return await serviceRepo.create({ name, description, is_available, image_id: sanitizedImageId });
 };
 
 const getAllServices = async () => {
@@ -17,7 +18,8 @@ const getServiceById = async (id) => {
 };
 
 const updateService = async (id, name, description, is_available, image_id) => {
-  return await serviceRepo.update(id, { name, description, is_available, image_id });
+  const sanitizedImageId = image_id === '' ? null : image_id;
+  return await serviceRepo.update(id, { name, description, is_available, image_id: sanitizedImageId });
 };
 
 const deleteService = async (id) => {
