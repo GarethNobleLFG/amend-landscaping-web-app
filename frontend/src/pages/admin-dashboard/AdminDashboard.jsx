@@ -8,18 +8,24 @@ import DenyCancelModal from './DenyCancelModal';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Building, User, Wrench } from 'lucide-react';
 import ServicesTab from '../../components/ServicesCard';
+
 import ImageRegistryTab from '../../components/ImageRegistryTab';
 import LandingImagesTab from '../../components/LandingImagesTab';
 import TestimoniesTab from '../../components/TestimoniesTab';
+import SessionExpiredModal from '../../components/SessionExpiredModal';
+import { useSessionExpired } from '../../hooks/useSessionExpired';
+
 
 const AdminDashboard = () => {
     const { appointments, fetchAppointments, isLoading, error } = useGetAppointments();
     const { approveAppointment } = useApproveAppointment();
     const { denyAppointment } = useDenyAppointment();
     const { cancelAppointment } = useCancelAppointment();
+    const { isSessionExpiredOpen, closeSessionExpired } = useSessionExpired();
 
     const [processingId, setProcessingId] = useState(null);
     const [activeTab, setActiveTab] = useState('pending');
+    
 
     // Modal State Control
     const [actionState, setActionState] = useState({ type: null, id: null });
@@ -30,22 +36,20 @@ const AdminDashboard = () => {
     useEffect(() => {
         const token = localStorage.getItem('token');
         const userStr = localStorage.getItem('user');
+
         let isAdmin = false;
 
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                isAdmin = user.admin === true;
-            } catch (e) {
-                console.error("Failed to parse user", e);
-            }
+        try {
+            const user = userStr ? JSON.parse(userStr) : null;
+            isAdmin = user?.admin === true;
+        } catch (e) {
+            console.error("Failed to parse user", e);
         }
 
         if (!token || !isAdmin) {
             navigate('/admin');
         }
     }, [navigate]);
-
     useEffect(() => {
         fetchAppointments();
     }, [fetchAppointments]);
@@ -80,6 +84,8 @@ const AdminDashboard = () => {
     // Segment into Residential and Commercial
     const commercialAppointments = displayedAppointments.filter(app => app.is_commercial);
     const residentialAppointments = displayedAppointments.filter(app => !app.is_commercial);
+
+   
 
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
@@ -309,6 +315,14 @@ const AdminDashboard = () => {
                 onClose={closeModals}
                 onConfirm={handleConfirmAction}
                 isProcessing={processingId === actionState.id}
+            />
+
+            <SessionExpiredModal
+                isOpen={isSessionExpiredOpen}
+                onConfirm={() => {
+                    closeSessionExpired();
+                    navigate('/admin');
+                }}
             />
         </div>
     );
