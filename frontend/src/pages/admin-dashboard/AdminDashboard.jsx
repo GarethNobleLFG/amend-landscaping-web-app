@@ -23,6 +23,11 @@ const AdminDashboard = () => {
     const { cancelAppointment } = useCancelAppointment();
     const { isSessionExpiredOpen, closeSessionExpired } = useSessionExpired();
 
+    useEffect(() => {
+     // Reset any stale session-expired state on mount
+    closeSessionExpired();
+    }, []); 
+
     const [processingId, setProcessingId] = useState(null);
     const [activeTab, setActiveTab] = useState('pending');
     
