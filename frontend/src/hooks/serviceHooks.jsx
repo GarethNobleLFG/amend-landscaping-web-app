@@ -84,6 +84,7 @@ export const useGetAllServices = () => {
 };
 
 export const useCreateService = () => {
+<<<<<<< HEAD
   const [isLoading, setIsLoading] = useState(false); // Added loading state for consistency
 
  
@@ -91,6 +92,11 @@ export const useCreateService = () => {
   const navigate = useNavigate();
   const { showSessionExpired } = useSessionExpired();
   const createService = async (name, description, is_available,image_id) => {
+=======
+  const navigate = useNavigate();
+  const { showSessionExpired } = useSessionExpired();
+  const createService = async (name, description, is_available,image) => {
+>>>>>>> 3d24204 (Fixed conflicts)
 
     try {
       const res = await fetch(`${API_BASE_URL}/services`, {
