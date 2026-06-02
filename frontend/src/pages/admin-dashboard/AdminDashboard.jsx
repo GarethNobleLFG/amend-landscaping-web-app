@@ -25,7 +25,7 @@ const AdminDashboard = () => {
 
     const [processingId, setProcessingId] = useState(null);
     const [activeTab, setActiveTab] = useState('pending');
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    
 
     // Modal State Control
     const [actionState, setActionState] = useState({ type: null, id: null });
@@ -36,31 +36,23 @@ const AdminDashboard = () => {
     useEffect(() => {
         const token = localStorage.getItem('token');
         const userStr = localStorage.getItem('user');
+
         let isAdmin = false;
 
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                isAdmin = user.admin === true;
-            } catch (e) {
-                console.error("Failed to parse user", e);
-            }
+        try {
+            const user = userStr ? JSON.parse(userStr) : null;
+            isAdmin = user?.admin === true;
+        } catch (e) {
+            console.error("Failed to parse user", e);
         }
-        console.log('isSessionExpiredOpen:', isSessionExpiredOpen);
 
         if (!token || !isAdmin) {
             navigate('/admin');
-            return;
         }
-
-        setIsAuthenticated(true);
     }, [navigate]);
-
     useEffect(() => {
-        if (isAuthenticated) {
-            fetchAppointments();
-        }
-    }, [isAuthenticated]);
+        fetchAppointments();
+    }, [fetchAppointments]);
 
     const handleConfirmAction = async (customMessage) => {
         const { type, id } = actionState;
@@ -93,7 +85,7 @@ const AdminDashboard = () => {
     const commercialAppointments = displayedAppointments.filter(app => app.is_commercial);
     const residentialAppointments = displayedAppointments.filter(app => !app.is_commercial);
 
-    if (!isAuthenticated  && !isSessionExpiredOpen){
+    if ( !isSessionExpiredOpen){
         return null;
     }
 
