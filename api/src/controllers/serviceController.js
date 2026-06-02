@@ -1,11 +1,10 @@
-const Service = require('../models/services');
-
+const serviceService = require('../services/serviceService');
 
 const createService = async (req, res) => {
   try {
-    const { name, description, is_available =true } = req.body;
-    const service = await Service.create({ name, description, is_available });
-    res.status(201).json(service);
+    const { name, description, is_available = true, image } = req.body;
+    const result = await serviceService.createService(name, description, is_available, image);
+    res.status(201).json(result.data);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -13,7 +12,7 @@ const createService = async (req, res) => {
 
 const getAllServices = async (req, res) => {
   try {
-    const services = await Service.findAll();
+    const services = await serviceService.getAllServices();
     res.status(200).json(services);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -22,7 +21,7 @@ const getAllServices = async (req, res) => {
 
 const getAvailableServices = async (req, res) => {
   try {
-    const services = await Service.findAll({ where: { is_available: true } });
+    const services = await serviceService.getAvailableServices();
     res.status(200).json(services);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -31,7 +30,7 @@ const getAvailableServices = async (req, res) => {
 
 const getServiceById = async (req, res) => {
   try {
-    const service = await Service.findByPk(req.params.id);
+    const service = await serviceService.getServiceById(req.params.id);
     if (!service) return res.status(404).json({ error: 'Service not found' });
     res.status(200).json(service);
   } catch (error) {
@@ -39,13 +38,11 @@ const getServiceById = async (req, res) => {
   }
 };
 
-
 const updateService = async (req, res) => {
   try {
-    const { name, description, is_available } = req.body;
-    const service = await Service.findByPk(req.params.id);
+    const { name, description, is_available, image } = req.body;
+    const service = await serviceService.updateService(req.params.id, name, description, is_available, image);
     if (!service) return res.status(404).json({ error: 'Service not found' });
-    await service.update({ name, description, is_available });
     res.status(200).json(service);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -54,9 +51,8 @@ const updateService = async (req, res) => {
 
 const deleteService = async (req, res) => {
   try {
-    const service = await Service.findByPk(req.params.id);
-    if (!service) return res.status(404).json({ error: 'Service not found' });
-    await service.destroy();
+    const success = await serviceService.deleteService(req.params.id);
+    if (!success) return res.status(404).json({ error: 'Service not found' });
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: error.message });

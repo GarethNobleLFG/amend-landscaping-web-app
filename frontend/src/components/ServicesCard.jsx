@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Pencil, Trash2, Wrench, CheckCircle2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Wrench, CheckCircle2, Image as ImageIcon, X } from 'lucide-react';
 import {
   useGetAllServices, useCreateService, useUpdateService, useDeleteService,
 } from '../hooks/serviceHooks';
+import { compressImage } from '../util/imageUtils';
 
 // ── Service Form Modal ────────────────────────────────────────────────────────
 const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
@@ -11,6 +12,7 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
   const [name, setName] = useState(service?.name ?? '');
   const [description, setDescription] = useState(service?.description ?? '');
   const [isAvailable, setIsAvailable] = useState(service?.is_available ?? true);
+  const [image, setImage] = useState(service?.image ?? '');
 
   const { createService } = useCreateService();
   const { updateService } = useUpdateService();
@@ -21,11 +23,25 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
     if (!name.trim()) return;
     setSaving(true);
     const result = service
-      ? await updateService(service.id, name.trim(), description.trim(), isAvailable)
-      : await createService(name.trim(), description.trim(), isAvailable);
+      ? await updateService(service.id, name.trim(), description.trim(), isAvailable, image)
+      : await createService(name.trim(), description.trim(), isAvailable, image);
     setSaving(false);
     if (result.success) onSaved();
     else alert(result.error);
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const compressedBase64 = await compressImage(file);
+      setImage(compressedBase64);
+    } 
+    catch (err) {
+      console.error('Image compression failed:', err);
+      alert('Failed to process image. Please try another one.');
+    }
   };
 
   return (
@@ -54,7 +70,7 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
             onChange={(e) => setName(e.target.value)}
           />
         </div>
-        
+
         <div className="mb-4">
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Service Description
@@ -68,17 +84,46 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
           />
         </div>
 
+        {/* New Image Upload Panel */}
+        <div className="mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Service Banner Image
+          </label>
+          {image ? (
+            <div className="relative rounded-xl overflow-hidden border border-gray-100">
+              <img src={image} alt="Compressed preview" className="w-full h-32 object-cover" />
+              <button
+                type="button"
+                onClick={() => setImage('')}
+                className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-full transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-6 cursor-pointer hover:border-green-400 hover:bg-green-50/20 transition">
+              <ImageIcon className="w-6 h-6 text-gray-400 mb-1" />
+              <span className="text-xs font-semibold text-gray-600">Upload Banner Image</span>
+              <span className="text-[10px] text-gray-400 mt-0.5">Optimizes & Compresses automatically</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
+
         <div className="flex items-center justify-between py-3 border-t border-gray-100">
           <span className="text-sm font-semibold text-gray-700">Available for Booking</span>
           <button
             onClick={() => setIsAvailable(!isAvailable)}
-            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-              isAvailable ? 'bg-green-500' : 'bg-gray-200'
-            }`}
+            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${isAvailable ? 'bg-green-500' : 'bg-gray-200'
+              }`}
           >
-            <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
-              isAvailable ? 'translate-x-6' : 'translate-x-1'
-            }`} />
+            <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${isAvailable ? 'translate-x-6' : 'translate-x-1'
+              }`} />
           </button>
         </div>
 
@@ -144,40 +189,51 @@ const ServiceCard = ({ service, onEdit, onDelete }) => (
     initial={{ opacity: 0, y: 8 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, scale: 0.95 }}
-    className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow"
+    className="bg-white border border-gray-100 rounded-2xl flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
   >
-    <div className="flex items-start justify-between gap-2">
-      <div className="flex-1">
-        <p className="font-semibold text-gray-900 text-sm leading-snug">{service.name}</p>
-        {service.description && (
-          <p className="text-xs text-gray-500 mt-1 leading-snug">{service.description}</p>
-        )}
+    {service.image && (
+      <div className="w-full h-36 relative overflow-hidden bg-gray-50 border-b border-gray-100">
+        <img
+          src={service.image}
+          alt={service.name}
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+        />
       </div>
-      <span className="text-xs text-gray-400 font-medium">#{service.id}</span>
-    </div>
+    )}
 
-    <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full w-fit ${
-      service.is_available
+    <div className="p-5 flex flex-col gap-3 flex-1 justify-between">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1">
+          <p className="font-semibold text-gray-900 text-sm leading-snug">{service.name}</p>
+          {service.description && (
+            <p className="text-xs text-gray-500 mt-1 leading-snug">{service.description}</p>
+          )}
+        </div>
+        <span className="text-xs text-gray-400 font-medium select-none">#{service.id}</span>
+      </div>
+
+      <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full w-fit ${service.is_available
         ? 'bg-green-50 text-green-700'
         : 'bg-red-50 text-red-600'
-    }`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${service.is_available ? 'bg-green-500' : 'bg-red-500'}`} />
-      {service.is_available ? 'Available' : 'Unavailable'}
-    </span>
+        }`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${service.is_available ? 'bg-green-500' : 'bg-red-500'}`} />
+        {service.is_available ? 'Available' : 'Unavailable'}
+      </span>
 
-    <div className="flex gap-2 pt-1">
-      <button
-        onClick={() => onEdit(service)}
-        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl text-xs font-bold transition border border-green-100"
-      >
-        <Pencil className="w-3 h-3" /> Edit
-      </button>
-      <button
-        onClick={() => onDelete(service)}
-        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition border border-red-100"
-      >
-        <Trash2 className="w-3 h-3" /> Delete
-      </button>
+      <div className="flex gap-2 pt-1">
+        <button
+          onClick={() => onEdit(service)}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl text-xs font-bold transition border border-green-100"
+        >
+          <Pencil className="w-3 h-3" /> Edit
+        </button>
+        <button
+          onClick={() => onDelete(service)}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition border border-red-100"
+        >
+          <Trash2 className="w-3 h-3" /> Delete
+        </button>
+      </div>
     </div>
   </motion.div>
 );

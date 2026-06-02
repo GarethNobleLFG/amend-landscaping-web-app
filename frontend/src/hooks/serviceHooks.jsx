@@ -55,12 +55,12 @@ export const useGetAllServices = () => {
 };
 
 export const useCreateService = () => {
-  const createService = async (name, description, is_available) => {
+  const createService = async (name, description, is_available, image) => {
     try {
       const res = await fetch(`${API_BASE_URL}/services`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ name, description, is_available }),
+        body: JSON.stringify({ name, description, is_available, image }),
       });
       const data = await res.json();
       return res.ok ? { success: true, data } : { success: false, error: data.error };
@@ -72,12 +72,12 @@ export const useCreateService = () => {
 };
 
 export const useUpdateService = () => {
-  const updateService = async (id, name, description, is_available) => {
+  const updateService = async (id, name, description, is_available, image) => {
     try {
       const res = await fetch(`${API_BASE_URL}/services/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ name, description, is_available }),
+        body: JSON.stringify({ name, description, is_available, image }),
       });
       const data = await res.json();
       return res.ok ? { success: true, data } : { success: false, error: data.error };
