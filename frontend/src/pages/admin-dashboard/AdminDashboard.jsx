@@ -13,7 +13,7 @@ import ImageRegistryTab from '../../components/ImageRegistryTab';
 import LandingImagesTab from '../../components/LandingImagesTab';
 import TestimoniesTab from '../../components/TestimoniesTab';
 import SessionExpiredModal from '../../components/SessionExpiredModal';
-
+import { useSessionExpired } from '../../hooks/useSessionExpired';
 
 
 const AdminDashboard = () => {
@@ -21,7 +21,7 @@ const AdminDashboard = () => {
     const { approveAppointment } = useApproveAppointment();
     const { denyAppointment } = useDenyAppointment();
     const { cancelAppointment } = useCancelAppointment();
-
+    const { isSessionExpiredOpen, closeSessionExpired } = useSessionExpired();
 
     const [processingId, setProcessingId] = useState(null);
     const [activeTab, setActiveTab] = useState('pending');
