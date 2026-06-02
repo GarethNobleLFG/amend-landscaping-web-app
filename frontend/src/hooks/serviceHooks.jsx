@@ -16,10 +16,10 @@ export const useGetServices = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/services`); 
+      const res = await fetch(`${API_BASE_URL}/services`);
       if (!res.ok) throw new Error('Failed to load services');
       const data = await res.json();
-        setServices(data);
+      setServices(data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -55,37 +55,47 @@ export const useGetAllServices = () => {
 };
 
 export const useCreateService = () => {
-  const createService = async (name, description, is_available, image) => {
+  const [isLoading, setIsLoading] = useState(false); // Added loading state for consistency
+
+  const createService = async (name, description, is_available, image_id) => {
+    setIsLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/services`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ name, description, is_available, image }),
+        body: JSON.stringify({ name, description, is_available, image_id }),
       });
       const data = await res.json();
       return res.ok ? { success: true, data } : { success: false, error: data.error };
     } catch {
       return { success: false, error: 'Network error' };
+    } finally {
+      setIsLoading(false);
     }
   };
-  return { createService };
+  return { createService, isLoading };
 };
 
 export const useUpdateService = () => {
-  const updateService = async (id, name, description, is_available, image) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const updateService = async (id, name, description, is_available, image_id) => {
+    setIsLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/services/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ name, description, is_available, image }),
+        body: JSON.stringify({ name, description, is_available, image_id }),
       });
       const data = await res.json();
       return res.ok ? { success: true, data } : { success: false, error: data.error };
     } catch {
       return { success: false, error: 'Network error' };
+    } finally {
+      setIsLoading(false);
     }
   };
-  return { updateService };
+  return { updateService, isLoading };
 };
 
 export const useDeleteService = () => {

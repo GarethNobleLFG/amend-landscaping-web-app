@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const ImageRegistry = require('./imageRegistry');
 
 const Service = sequelize.define('Service', {
   id: {
@@ -20,13 +21,22 @@ const Service = sequelize.define('Service', {
     allowNull: false,
     defaultValue: true,
   },
-  image: {
-    type: DataTypes.TEXT,
+  image_id: {
+    type: DataTypes.UUID,
     allowNull: true,
+    references: {
+      model: 'image_registry',
+      key: 'id'
+    }
   },
 }, {
   tableName: 'services',
   timestamps: false,
+});
+
+Service.belongsTo(ImageRegistry, { 
+  foreignKey: 'image_id',
+  as: 'image' 
 });
 
 module.exports = Service;
