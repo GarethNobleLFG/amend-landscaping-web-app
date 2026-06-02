@@ -8,18 +8,24 @@ import DenyCancelModal from './DenyCancelModal';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Building, User, Wrench } from 'lucide-react';
 import ServicesTab from '../../components/ServicesCard';
+
 import ImageRegistryTab from '../../components/ImageRegistryTab';
 import LandingImagesTab from '../../components/LandingImagesTab';
 import TestimoniesTab from '../../components/TestimoniesTab';
+import SessionExpiredModal from '../../components/SessionExpiredModal';
+import { useSessionExpired } from '../../hooks/SessionExpiredContext';
+
 
 const AdminDashboard = () => {
     const { appointments, fetchAppointments, isLoading, error } = useGetAppointments();
     const { approveAppointment } = useApproveAppointment();
     const { denyAppointment } = useDenyAppointment();
     const { cancelAppointment } = useCancelAppointment();
+    const { isSessionExpiredOpen, showSessionExpired, closeSessionExpired } = useSessionExpired();
 
     const [processingId, setProcessingId] = useState(null);
     const [activeTab, setActiveTab] = useState('pending');
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     // Modal State Control
     const [actionState, setActionState] = useState({ type: null, id: null });
@@ -40,15 +46,21 @@ const AdminDashboard = () => {
                 console.error("Failed to parse user", e);
             }
         }
+        console.log('isSessionExpiredOpen:', isSessionExpiredOpen);
 
         if (!token || !isAdmin) {
             navigate('/admin');
+            return;
         }
+
+        setIsAuthenticated(true);
     }, [navigate]);
 
     useEffect(() => {
-        fetchAppointments();
-    }, [fetchAppointments]);
+        if (isAuthenticated) {
+            fetchAppointments();
+        }
+    }, [isAuthenticated]);
 
     const handleConfirmAction = async (customMessage) => {
         const { type, id } = actionState;
@@ -80,6 +92,10 @@ const AdminDashboard = () => {
     // Segment into Residential and Commercial
     const commercialAppointments = displayedAppointments.filter(app => app.is_commercial);
     const residentialAppointments = displayedAppointments.filter(app => !app.is_commercial);
+
+    if (!isAuthenticated  && !isSessionExpiredOpen){
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
@@ -309,6 +325,14 @@ const AdminDashboard = () => {
                 onClose={closeModals}
                 onConfirm={handleConfirmAction}
                 isProcessing={processingId === actionState.id}
+            />
+
+            <SessionExpiredModal
+                isOpen={isSessionExpiredOpen}
+                onConfirm={() => {
+                    closeSessionExpired();
+                    navigate('/admin');
+                }}
             />
         </div>
     );

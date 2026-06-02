@@ -257,7 +257,9 @@ const ServicesTab = () => {
   const [deleteState, setDeleteState] = useState({ open: false, service: null });
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => { fetchAllServices(); }, [fetchAllServices]);
+  useEffect(() => {const token = localStorage.getItem('token');
+
+  if (!token) return; fetchAllServices(); }, [fetchAllServices]);
 
   const handleSaved = () => {
     setFormState({ open: false, service: null });

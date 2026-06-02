@@ -1,14 +1,29 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSessionExpired } from './SessionExpiredContext';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
-    return {
+    const headers = {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
     };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
 };
+
+const handleAuthError = (navigate, showSessionExpired) => {
+    localStorage.removeItem('token');
+    if (showSessionExpired) {
+    showSessionExpired();
+    }
+    
+};
+
+const isAuthError = (status) => status === 401 || status === 403;
 
 export function useCreateAppointment() {
     const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +60,8 @@ export function useCreateAppointment() {
 }
 
 export function useGetAppointments() {
+    const navigate = useNavigate();
+    const { showSessionExpired } = useSessionExpired();
     const [appointments, setAppointments] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -57,6 +74,11 @@ export function useGetAppointments() {
                 method: 'GET',
                 headers: getAuthHeaders(),
             });
+
+            if (isAuthError(response.status)) {
+                handleAuthError(navigate, showSessionExpired);
+                return { success: false, error: 'Session expired' };
+            }
 
             if (!response.ok) {
                 throw new Error('Failed to fetch appointments');
@@ -72,12 +94,14 @@ export function useGetAppointments() {
         finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [navigate, showSessionExpired]);
 
     return { appointments, fetchAppointments, isLoading, error };
 }
 
 export function useGetAppointmentById() {
+    const navigate = useNavigate();
+    const { showSessionExpired } = useSessionExpired();
     const [appointment, setAppointment] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -90,6 +114,11 @@ export function useGetAppointmentById() {
                 method: 'GET',
                 headers: getAuthHeaders(),
             });
+
+            if (isAuthError(response.status)) {
+                handleAuthError(navigate, showSessionExpired);
+                return { success: false, error: 'Session expired' };
+            }
 
             if (!response.ok) {
                 throw new Error('Failed to fetch appointment details');
@@ -105,12 +134,14 @@ export function useGetAppointmentById() {
         finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [navigate, showSessionExpired]);
 
     return { appointment, fetchAppointment, isLoading, error };
 }
 
 export function useApproveAppointment() {
+    const navigate = useNavigate();
+    const { showSessionExpired } = useSessionExpired();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -123,6 +154,11 @@ export function useApproveAppointment() {
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ message })
             });
+
+            if (isAuthError(response.status)) {
+                handleAuthError(navigate, showSessionExpired);
+                return { success: false, error: 'Session expired' };
+            }
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
@@ -145,6 +181,8 @@ export function useApproveAppointment() {
 }
 
 export function useDenyAppointment() {
+    const navigate = useNavigate();
+    const { showSessionExpired } = useSessionExpired();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -157,6 +195,11 @@ export function useDenyAppointment() {
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ message })
             });
+
+            if (isAuthError(response.status)) {
+                handleAuthError(navigate, showSessionExpired);
+                return { success: false, error: 'Session expired' };
+            }
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
@@ -178,6 +221,8 @@ export function useDenyAppointment() {
 }
 
 export function useCancelAppointment() {
+    const navigate = useNavigate();
+    const { showSessionExpired } = useSessionExpired();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -190,6 +235,11 @@ export function useCancelAppointment() {
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ message })
             });
+
+            if (isAuthError(response.status)) {
+                handleAuthError(navigate, showSessionExpired);
+                return { success: false, error: 'Session expired' };
+            }
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));

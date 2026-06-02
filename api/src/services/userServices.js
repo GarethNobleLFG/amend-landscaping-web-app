@@ -24,7 +24,7 @@ const loginUser = async (username, password) => {
         const token = jwt.sign(
             payload, 
             process.env.JWT_SECRET || 'super_secret_fallback_key', 
-            { expiresIn: '24h' }
+            { expiresIn: '1m' }
         );
 
         return {
