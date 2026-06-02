@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { SessionExpiredProvider } from './hooks/SessionExpiredContext';
+import { SessionExpiredProvider } from './hooks/SessionExpiredContextProvider';
 import './index.css'
 import App from './App.jsx'
 

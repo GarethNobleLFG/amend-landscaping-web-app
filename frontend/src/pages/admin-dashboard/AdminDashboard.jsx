@@ -13,7 +13,7 @@ import ImageRegistryTab from '../../components/ImageRegistryTab';
 import LandingImagesTab from '../../components/LandingImagesTab';
 import TestimoniesTab from '../../components/TestimoniesTab';
 import SessionExpiredModal from '../../components/SessionExpiredModal';
-import { useSessionExpired } from '../../hooks/SessionExpiredContext';
+import { useSessionExpired } from '../../hooks/useSessionExpired';
 
 
 const AdminDashboard = () => {

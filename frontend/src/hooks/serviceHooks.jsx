@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSessionExpired } from './SessionExpiredContext';
+import { useSessionExpired } from './useSessionExpired';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -87,11 +87,11 @@ export const useCreateService = () => {
   const [isLoading, setIsLoading] = useState(false); // Added loading state for consistency
 
  
-    setIsLoading(true);
+    
   const navigate = useNavigate();
   const { showSessionExpired } = useSessionExpired();
   const createService = async (name, description, is_available,image_id) => {
-
+    setIsLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/services`, {
         method: 'POST',
