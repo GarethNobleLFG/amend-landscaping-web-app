@@ -5,6 +5,9 @@ const sequelize = require('./src/config/database');
 const appointmentRoutes = require('./src/routes/appointmentRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const serviceRoutes = require('./src/routes/serviceRoutes');
+const imageRegistryRoutes = require('./src/routes/imageRegistryRoutes');
+const landingImageRoutes = require('./src/routes/landingImageRoutes');
+const testimonyRoutes = require('./src/routes/testimonyRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -22,6 +25,9 @@ app.get('/', (req, res) => {
 app.use('/appointments', appointmentRoutes);
 app.use('/users', userRoutes);
 app.use('/services', serviceRoutes);
+app.use('/images', imageRegistryRoutes);
+app.use('/landing-images', landingImageRoutes);
+app.use('/testimonies', testimonyRoutes);
 
 // Initialize database and start the server
 async function startServer() {

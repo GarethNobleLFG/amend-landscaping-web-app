@@ -4,7 +4,7 @@ import { Plus, Pencil, Trash2, Wrench, CheckCircle2, Image as ImageIcon, X } fro
 import {
   useGetAllServices, useCreateService, useUpdateService, useDeleteService,
 } from '../hooks/serviceHooks';
-import { compressImage } from "../util/compressImage";
+import ImageSelectorModal from './ImageSelectorModal';
 
 // ── Service Form Modal ───────────────────────────────────────────────────────
 const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
@@ -12,7 +12,11 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
   const [name, setName] = useState(service?.name ?? '');
   const [description, setDescription] = useState(service?.description ?? '');
   const [isAvailable, setIsAvailable] = useState(service?.is_available ?? true);
-  const [image, setImage] = useState(service?.image ?? '');
+
+  // Track the ID for the database and the data for the preview
+  const [imageId, setImageId] = useState(service?.image_id ?? '');
+  const [imagePreview, setImagePreview] = useState(service?.image?.image_data ?? '');
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
   const { createService } = useCreateService();
   const { updateService } = useUpdateService();
@@ -22,128 +26,134 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
   const handleSubmit = async () => {
     if (!name.trim()) return;
     setSaving(true);
+
+    // We send imageId (the UUID) to the backend
     const result = service
-      ? await updateService(service.id, name.trim(), description.trim(), isAvailable, image)
-      : await createService(name.trim(), description.trim(), isAvailable, image);
+      ? await updateService(service.id, name.trim(), description.trim(), isAvailable, imageId)
+      : await createService(name.trim(), description.trim(), isAvailable, imageId);
+
     setSaving(false);
     if (result.success) onSaved();
     else alert(result.error);
   };
 
-  const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-      const compressedBase64 = await compressImage(file);
-      setImage(compressedBase64);
-    } 
-    catch (err) {
-      console.error('Image compression failed:', err);
-      alert('Failed to process image. Please try another one.');
-    }
-  };
-
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 12 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 12 }}
-        className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-md"
-      >
-        <h2 className="text-xl font-bold text-gray-900 mb-1">
-          {service ? 'Edit Service' : 'Add New Service'}
-        </h2>
-        <p className="text-sm text-gray-500 mb-6">
-          {service ? 'Update the details for this service.' : 'Enter a name for the new service.'}
-        </p>
+    <>
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 12 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 12 }}
+          className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-md"
+        >
+          <h2 className="text-xl font-bold text-gray-900 mb-1">
+            {service ? 'Edit Service' : 'Add New Service'}
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            {service ? 'Update the details for this service.' : 'Enter a name for the new service.'}
+          </p>
 
-        <div className="mb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Service Name
-          </label>
-          <input
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
-            placeholder="e.g. Lawn Mowing & Edging"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Service Name
+            </label>
+            <input
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+              placeholder="e.g. Lawn Mowing & Edging"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
 
-        <div className="mb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Service Description
-          </label>
-          <textarea
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
-            rows={3}
-            placeholder="e.g. Full lawn mowing, edging, and cleanup"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Service Description
+            </label>
+            <textarea
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+              rows={3}
+              placeholder="e.g. Full lawn mowing, edging, and cleanup"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
 
-        {/* New Image Upload Panel */}
-        <div className="mb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Service Banner Image
-          </label>
-          {image ? (
-            <div className="relative rounded-xl overflow-hidden border border-gray-100">
-              <img src={image} alt="Compressed preview" className="w-full h-32 object-cover" />
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Service Banner Image
+            </label>
+            {imagePreview ? (
+              <div className="relative rounded-xl overflow-hidden border border-gray-100 group">
+                <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover" />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsSelectorOpen(true)}
+                    className="bg-white text-gray-900 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-100 transition shadow-sm"
+                  >
+                    Change Image
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setImageId(''); setImagePreview(''); }}
+                    className="bg-red-500 text-white p-1.5 rounded-lg hover:bg-red-600 transition shadow-sm"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
               <button
                 type="button"
-                onClick={() => setImage('')}
-                className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-full transition"
+                onClick={() => setIsSelectorOpen(true)}
+                className="w-full flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-6 cursor-pointer hover:border-green-400 hover:bg-green-50/20 transition"
               >
-                <X className="w-4 h-4" />
+                <ImageIcon className="w-6 h-6 text-gray-400 mb-1" />
+                <span className="text-xs font-semibold text-gray-600">Select Banner Image</span>
+                <span className="text-[10px] text-gray-400 mt-0.5">Browse from Image Registry</span>
               </button>
-            </div>
-          ) : (
-            <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-6 cursor-pointer hover:border-green-400 hover:bg-green-50/20 transition">
-              <ImageIcon className="w-6 h-6 text-gray-400 mb-1" />
-              <span className="text-xs font-semibold text-gray-600">Upload Banner Image</span>
-              <span className="text-[10px] text-gray-400 mt-0.5">Optimizes & Compresses automatically</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-              />
-            </label>
-          )}
-        </div>
+            )}
+          </div>
 
-        <div className="flex items-center justify-between py-3 border-t border-gray-100">
-          <span className="text-sm font-semibold text-gray-700">Available for Booking</span>
-          <button
-            onClick={() => setIsAvailable(!isAvailable)}
-            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${isAvailable ? 'bg-green-500' : 'bg-gray-200'
-              }`}
-          >
-            <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${isAvailable ? 'translate-x-6' : 'translate-x-1'
-              }`} />
-          </button>
-        </div>
+          <div className="flex items-center justify-between py-3 border-t border-gray-100">
+            <span className="text-sm font-semibold text-gray-700">Available for Booking</span>
+            <button
+              onClick={() => setIsAvailable(!isAvailable)}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${isAvailable ? 'bg-green-500' : 'bg-gray-200'
+                }`}
+            >
+              <span className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${isAvailable ? 'translate-x-6' : 'translate-x-1'
+                }`} />
+            </button>
+          </div>
 
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={saving || !name.trim()}
-            className="flex-2 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition"
-          >
-            {saving ? 'Saving…' : service ? 'Save Changes' : 'Create Service'}
-          </button>
-        </div>
-      </motion.div>
-    </div>
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={onClose}
+              className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={saving || !name.trim()}
+              className="flex-2 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition"
+            >
+              {saving ? 'Saving…' : service ? 'Save Changes' : 'Create Service'}
+            </button>
+          </div>
+        </motion.div>
+      </div>
+
+      <ImageSelectorModal
+        isOpen={isSelectorOpen}
+        onClose={() => setIsSelectorOpen(false)}
+        onSelect={(id, data) => {
+          setImageId(id);
+          setImagePreview(data);
+        }}
+      />
+    </>
   );
 };
 
@@ -155,7 +165,7 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, isDeleting }) => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-sm text-center"
+        className="bg-white rounded-2xl shadow-2xl p-7 w-full max-sm text-center"
       >
         <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
           <Trash2 className="w-6 h-6 text-red-500" />
@@ -191,10 +201,10 @@ const ServiceCard = ({ service, onEdit, onDelete }) => (
     exit={{ opacity: 0, scale: 0.95 }}
     className="bg-white border border-gray-100 rounded-2xl flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
   >
-    {service.image && (
+    {service.image?.image_data && (
       <div className="w-full h-36 relative overflow-hidden bg-gray-50 border-b border-gray-100">
         <img
-          src={service.image}
+          src={service.image.image_data}
           alt={service.name}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
@@ -243,7 +253,7 @@ const ServicesTab = () => {
   const { services, fetchAllServices, isLoading, error } = useGetAllServices();
   const { deleteService } = useDeleteService();
 
-  const [formState, setFormState] = useState({ open: false, service: null }); // null = create
+  const [formState, setFormState] = useState({ open: false, service: null });
   const [deleteState, setDeleteState] = useState({ open: false, service: null });
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -268,7 +278,6 @@ const ServicesTab = () => {
 
   return (
     <>
-      {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -285,14 +294,12 @@ const ServicesTab = () => {
         </button>
       </div>
 
-      {/* Error */}
       {error && (
         <div className="bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 mb-6">
           <p className="text-red-700 text-sm font-medium">Error: {error}</p>
         </div>
       )}
 
-      {/* Loading */}
       {isLoading && services.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20">
           <div className="w-10 h-10 border-4 border-green-200 border-t-green-600 rounded-full animate-spin" />
@@ -321,7 +328,6 @@ const ServicesTab = () => {
         </div>
       )}
 
-      {/* Modals */}
       <AnimatePresence>
         {formState.open && (
           <ServiceFormModal
