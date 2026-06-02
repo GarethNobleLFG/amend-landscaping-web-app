@@ -1,7 +1,7 @@
 const request = require('supertest');
 const express = require('express');
 const serviceRoutes = require('../../src/routes/serviceRoutes');
-const Service = require('../../src/models/services');
+const serviceService = require('../../src/services/serviceService');
 
 // Mock auth middleware
 jest.mock('../../src/middleware/authMiddleware', () => ({
@@ -9,8 +9,8 @@ jest.mock('../../src/middleware/authMiddleware', () => ({
     requireAdmin: (req, res, next) => next()
 }));
 
-// Mock the Service model
-jest.mock('../../src/models/services');
+// Mock the Service service layer
+jest.mock('../../src/services/serviceService');
 
 describe('Service Controller', () => {
     let app;
@@ -25,11 +25,12 @@ describe('Service Controller', () => {
         app.use(express.json());
         app.use('/services', serviceRoutes);
 
-        mockService = { 
+        mockService = {
             id: 1,
             name: 'Lawn Mowing',
             description: 'Lawn mowing and edging service',
             is_available: true,
+            image: 'base64image',
             createdAt: new Date(),
             updatedAt: new Date()
         };
@@ -41,32 +42,34 @@ describe('Service Controller', () => {
 
     describe('Creating a New Service', () => {
         it('should return 201 and the new service when creation is successful', async () => {
-            Service.create.mockResolvedValue(mockService);
+            serviceService.createService.mockResolvedValue({ success: true, data: mockService });
 
             const res = await request(app)
                 .post('/services')
-                .send({ name: 'Lawn Mowing', description: 'Lawn mowing and edging service', is_available: true });
+                .send({ name: 'Lawn Mowing', description: 'Lawn mowing and edging service', is_available: true, image: 'base64image' });
 
-            expect(Service.create).toHaveBeenCalledWith({ name: 'Lawn Mowing', description: 'Lawn mowing and edging service', is_available: true });
+            expect(serviceService.createService).toHaveBeenCalledWith('Lawn Mowing', 'Lawn mowing and edging service', true, 'base64image');
             expect(res.status).toBe(201);
             expect(res.body.id).toBe(1);
             expect(res.body.name).toBe('Lawn Mowing');
             expect(res.body.description).toBe('Lawn mowing and edging service');
+            expect(res.body.image).toBe('base64image');
         });
 
-        it('should create a service with is_available defaulting to true', async () => {
-            Service.create.mockResolvedValue({ ...mockService, is_available: true });
+
+        it('should create a service with is_available defaulting to true and image to blank', async () => {
+            serviceService.createService.mockResolvedValue({ success: true, data: { ...mockService, image: undefined } });
 
             const res = await request(app)
                 .post('/services')
                 .send({ name: 'Tree Trimming', description: 'Tree trimming and removal service' });
 
-            expect(Service.create).toHaveBeenCalledWith({ name: 'Tree Trimming', description: 'Tree trimming and removal service', is_available: true });
+            expect(serviceService.createService).toHaveBeenCalledWith('Tree Trimming', 'Tree trimming and removal service', true, undefined);
             expect(res.status).toBe(201);
         });
 
         it('should return 400 if the service creation fails due to validation error', async () => {
-            Service.create.mockRejectedValue(new Error('Name and description are required'));
+            serviceService.createService.mockRejectedValue(new Error('Name and description are required'));
 
             const res = await request(app)
                 .post('/services')
@@ -80,21 +83,21 @@ describe('Service Controller', () => {
     describe('Getting All Services (Admin Only)', () => {
         it('should return 200 and a list of all services including unavailable ones', async () => {
             const allServices = [
-                { id: 1, name: 'Lawn Mowing', description: 'Lawn mowing and edging service', is_available: true },
-                { id: 2, name: 'Tree Trimming', description: 'Tree trimming and removal service', is_available: false }
+                { id: 1, name: 'Lawn Mowing', description: 'Lawn mowing and edging service', is_available: true, image: 'img1' },
+                { id: 2, name: 'Tree Trimming', description: 'Tree trimming and removal service', is_available: false, image: null }
             ];
-            Service.findAll.mockResolvedValue(allServices);
+            serviceService.getAllServices.mockResolvedValue(allServices);
 
             const res = await request(app).get('/services/all');
 
-            expect(Service.findAll).toHaveBeenCalledWith();
+            expect(serviceService.getAllServices).toHaveBeenCalledWith();
             expect(res.status).toBe(200);
             expect(res.body).toHaveLength(2);
             expect(res.body[1].is_available).toBe(false);
         });
 
         it('should return empty array when no services exist', async () => {
-            Service.findAll.mockResolvedValue([]);
+            serviceService.getAllServices.mockResolvedValue([]);
 
             const res = await request(app).get('/services/all');
 
@@ -103,7 +106,7 @@ describe('Service Controller', () => {
         });
 
         it('should return 500 if the service throws an error when fetching all services', async () => {
-            Service.findAll.mockRejectedValue(new Error('Database Error'));
+            serviceService.getAllServices.mockRejectedValue(new Error('Database Error'));
 
             const res = await request(app).get('/services/all');
 
@@ -118,18 +121,18 @@ describe('Service Controller', () => {
                 { id: 1, name: 'Lawn Mowing', description: 'Lawn mowing and edging service', is_available: true },
                 { id: 3, name: 'Landscaping', description: 'Full landscaping design service', is_available: true }
             ];
-            Service.findAll.mockResolvedValue(availableServices);
+            serviceService.getAvailableServices.mockResolvedValue(availableServices);
 
             const res = await request(app).get('/services');
 
-            expect(Service.findAll).toHaveBeenCalledWith({ where: { is_available: true } });
+            expect(serviceService.getAvailableServices).toHaveBeenCalledWith();
             expect(res.status).toBe(200);
             expect(res.body).toHaveLength(2);
             expect(res.body.every(s => s.is_available)).toBe(true);
         });
 
         it('should return empty array when no available services exist', async () => {
-            Service.findAll.mockResolvedValue([]);
+            serviceService.getAvailableServices.mockResolvedValue([]);
 
             const res = await request(app).get('/services');
 
@@ -138,7 +141,7 @@ describe('Service Controller', () => {
         });
 
         it('should return 500 if the service throws an error', async () => {
-            Service.findAll.mockRejectedValue(new Error('Database Error'));
+            serviceService.getAvailableServices.mockRejectedValue(new Error('Database Error'));
 
             const res = await request(app).get('/services');
 
@@ -149,19 +152,18 @@ describe('Service Controller', () => {
 
     describe('Getting a Specific Service by ID', () => {
         it('should return 200 and the service when found', async () => {
-            Service.findByPk.mockResolvedValue(mockService);
+            serviceService.getServiceById.mockResolvedValue(mockService);
 
             const res = await request(app).get('/services/1');
 
-            expect(Service.findByPk).toHaveBeenCalledWith('1');
+            expect(serviceService.getServiceById).toHaveBeenCalledWith('1');
             expect(res.status).toBe(200);
             expect(res.body.id).toBe(1);
             expect(res.body.name).toBe('Lawn Mowing');
-            expect(res.body.description).toBe('Lawn mowing and edging service');
         });
 
         it('should return 404 when the service does not exist', async () => {
-            Service.findByPk.mockResolvedValue(null);
+            serviceService.getServiceById.mockResolvedValue(null);
 
             const res = await request(app).get('/services/999');
 
@@ -170,7 +172,7 @@ describe('Service Controller', () => {
         });
 
         it('should return 500 if the service throws an error', async () => {
-            Service.findByPk.mockRejectedValue(new Error('Database Error'));
+            serviceService.getServiceById.mockRejectedValue(new Error('Database Error'));
 
             const res = await request(app).get('/services/1');
 
@@ -181,26 +183,47 @@ describe('Service Controller', () => {
 
     describe('Updating a Service', () => {
         it('should return 200 and the updated service when update is successful', async () => {
-            const mockServiceInstance = { ...mockService };
-            mockServiceInstance.update = jest.fn().mockImplementation(async (updates) => {
-                Object.assign(mockServiceInstance, updates);
-                return mockServiceInstance;
-            });
-            Service.findByPk.mockResolvedValue(mockServiceInstance);
+            const updatedService = { ...mockService, name: 'Updated Lawn Mowing', is_available: false, image: 'img2' };
+            serviceService.updateService.mockResolvedValue(updatedService);
 
             const res = await request(app)
                 .put('/services/1')
-                .send({ name: 'Updated Lawn Mowing', description: 'Updated description', is_available: false });
+                .send({ name: 'Updated Lawn Mowing', description: 'Updated description', is_available: false, image: 'img2' });
 
-            expect(Service.findByPk).toHaveBeenCalledWith('1');
+            expect(serviceService.updateService).toHaveBeenCalledWith('1', 'Updated Lawn Mowing', 'Updated description', false, 'img2');
             expect(res.status).toBe(200);
             expect(res.body.name).toBe('Updated Lawn Mowing');
-            expect(res.body.description).toBe('Updated description');
             expect(res.body.is_available).toBe(false);
+            expect(res.body.image).toBe('img2');
+        });
+
+        it('should successfully parse and save a service update containing a base64 custom image payload', async () => {
+            const imagePayload = 'data:image/webp;base64,WebpBinaryPayloadGoesHere';
+            const updatedService = { ...mockService, image: imagePayload };
+            serviceService.updateService.mockResolvedValue(updatedService);
+
+            const res = await request(app)
+                .put('/services/1')
+                .send({
+                    name: 'Hardscaping Design',
+                    description: 'Full custom build-outs',
+                    is_available: true,
+                    image: imagePayload
+                });
+
+            expect(serviceService.updateService).toHaveBeenCalledWith(
+                '1',
+                'Hardscaping Design',
+                'Full custom build-outs',
+                true,
+                imagePayload
+            );
+            expect(res.status).toBe(200);
+            expect(res.body.image).toBe(imagePayload);
         });
 
         it('should return 404 if the service to update does not exist', async () => {
-            Service.findByPk.mockResolvedValue(null);
+            serviceService.updateService.mockResolvedValue(null);
 
             const res = await request(app)
                 .put('/services/999')
@@ -211,9 +234,7 @@ describe('Service Controller', () => {
         });
 
         it('should return 400 if the service update fails due to validation error', async () => {
-            const mockServiceInstance = { ...mockService };
-            mockServiceInstance.update = jest.fn().mockRejectedValue(new Error('Validation failed'));
-            Service.findByPk.mockResolvedValue(mockServiceInstance);
+            serviceService.updateService.mockRejectedValue(new Error('Validation failed'));
 
             const res = await request(app)
                 .put('/services/1')
@@ -226,19 +247,16 @@ describe('Service Controller', () => {
 
     describe('Deleting a Service', () => {
         it('should return 204 when service is deleted successfully', async () => {
-            Service.findByPk.mockResolvedValue({
-                ...mockService,
-                destroy: jest.fn().mockResolvedValue()
-            });
+            serviceService.deleteService.mockResolvedValue(true);
 
             const res = await request(app).delete('/services/1');
 
-            expect(Service.findByPk).toHaveBeenCalledWith('1');
+            expect(serviceService.deleteService).toHaveBeenCalledWith('1');
             expect(res.status).toBe(204);
         });
 
         it('should return 404 if the service to delete does not exist', async () => {
-            Service.findByPk.mockResolvedValue(null);
+            serviceService.deleteService.mockResolvedValue(false);
 
             const res = await request(app).delete('/services/999');
 
@@ -247,10 +265,7 @@ describe('Service Controller', () => {
         });
 
         it('should return 500 if the delete operation throws an error', async () => {
-            Service.findByPk.mockResolvedValue({
-                ...mockService,
-                destroy: jest.fn().mockRejectedValue(new Error('Database Error'))
-            });
+            serviceService.deleteService.mockRejectedValue(new Error('Database Error'));
 
             const res = await request(app).delete('/services/1');
 

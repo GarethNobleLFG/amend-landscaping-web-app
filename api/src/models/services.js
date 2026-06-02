@@ -20,6 +20,10 @@ const Service = sequelize.define('Service', {
     allowNull: false,
     defaultValue: true,
   },
+  image: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 }, {
   tableName: 'services',
   timestamps: false,

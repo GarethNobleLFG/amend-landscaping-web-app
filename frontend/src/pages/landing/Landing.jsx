@@ -1,14 +1,8 @@
 import { motion } from 'framer-motion';
-import { Leaf,  ArrowRight, Star } from 'lucide-react';
+import { Leaf, ArrowRight, Star } from 'lucide-react';
 import { useEffect } from 'react';
 import { useGetServices } from '../../hooks/serviceHooks';
 import Hero from './Hero';
-
-const slideImages = [
-  '/sample-imgs/istockphoto-1312760160-612x612.jpg',
-  '/sample-imgs/rsz_dsc_0034.jpg',
-  '/sample-imgs/istockphoto-1347784849-612x612.jpg',
-];
 
 const testimonials = [
   {
@@ -40,16 +34,16 @@ const testimonials = [
 
 function Landing() {
   const { services, fetchServices, isLoading } = useGetServices();
-  
+
   useEffect(() => {
     fetchServices();
   }, [fetchServices]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1, 
-      transition: { staggerChildren: 0.15 } 
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.15 }
     }
   };
 
@@ -60,9 +54,9 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-neutral-50 text-gray-800 font-sans selection:bg-green-200">
-      
+
       {/* --- Navigation Header --- */}
-      <motion.header 
+      <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -82,23 +76,22 @@ function Landing() {
       <Hero />
 
       {/* --- Services Section (Editorial Theme) --- */}
-      {/* Changed py-24 lg:py-32 to pt-12 pb-24 lg:pt-16 lg:pb-32 to pull it up closer to the hero */}
       <section id="services" className="pt-12 pb-24 lg:pt-16 lg:pb-32 px-6 bg-white w-full border-b border-gray-100">
         <div className="w-full max-w-7xl mx-auto">
-          
+
           <div className="text-center max-w-3xl mx-auto mb-20 lg:mb-24">
             <h2 className="text-green-700 font-extrabold tracking-[0.2em] uppercase text-sm mb-4">
               What We Do
             </h2>
             <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-tight">
-              Expert care for your <br/> outdoor spaces.
+              Expert care for your <br /> outdoor spaces.
             </h3>
-            <p className="text-xl text-gray-600 font-medium">
+            <p className="text-xl text-gray-600 font-medium font-medium">
               Tailored property maintenance designed to let you enjoy a stunning yard without the heavy lifting.
             </p>
           </div>
 
-          <motion.div 
+          <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -110,15 +103,22 @@ function Landing() {
                 <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
               </div>
             ) : services.length === 0 ? (
-              <div className="col-span-full text-center py-20">
-                <p className="text-xl text-gray-600 font-medium">No services available at this time. Please check back soon.</p>
+              <div className="col-span-full text-center py-20 bg-gray-50 border border-gray-100 rounded-3xl p-12">
+                <Leaf className="w-10 h-10 text-green-500 mx-auto mb-4" />
+                <h4 className="text-xl font-bold text-gray-900 mb-2">No active services offered today</h4>
+                <p className="text-gray-500 max-w-md mx-auto">We're temporarily at capacity and completing in-progress designs. Reach out to book customized services or inquiries directly.</p>
               </div>
             ) : (
-              services.map((service, index) => (
+              services.map((service) => (
                 <motion.div key={service.id} variants={itemVariants} className="group rounded-[2rem] bg-gray-50 overflow-hidden shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 border border-gray-100 flex flex-col">
                   <div className="relative h-64 lg:h-72 overflow-hidden bg-gradient-to-br from-green-100 to-green-50 flex items-center justify-center">
-                    {slideImages[index % slideImages.length] && (
-                      <img src={slideImages[index % slideImages.length]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt={service.name} />
+                    {service.image ? (
+                      <img src={service.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt={service.name} />
+                    ) : (
+                      <div className="text-center p-6 text-green-750">
+                        <Leaf className="w-12 h-12 mx-auto mb-2 text-green-600 fill-green-500/10" />
+                        <span className="font-bold text-sm">Amend Landscaping</span>
+                      </div>
                     )}
                     <div className="absolute top-4 right-4 bg-white/95 backdrop-blur shadow-sm p-3.5 rounded-2xl text-green-600">
                       <Leaf className="w-6 h-6" />
@@ -127,9 +127,9 @@ function Landing() {
                   <div className="p-8 lg:p-10 flex flex-col flex-grow">
                     <h4 className="text-2xl font-bold mb-4 text-gray-900 tracking-tight">{service.name}</h4>
                     <p className="text-gray-600 text-lg leading-relaxed mb-8 flex-grow">
-                      {service.description} 
+                      {service.description}
                     </p>
-                    <a href="#" className="inline-flex items-center text-base font-bold text-green-700 hover:text-green-600 transition-colors w-fit">
+                    <a href="/book" className="inline-flex items-center text-base font-bold text-green-700 hover:text-green-600 transition-colors w-fit">
                       Book Now <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform" />
                     </a>
                   </div>
@@ -153,7 +153,7 @@ function Landing() {
 
         {/* Scrolling Container */}
         <div className="relative w-full flex items-center">
-          
+
           <motion.div
             animate={{ x: ["0%", "-50%"] }}
             transition={{ ease: "linear", duration: 40, repeat: Infinity }}
@@ -161,8 +161,8 @@ function Landing() {
           >
             {/* Array duplicated so it scrolls infinitely without jump */}
             {[...testimonials, ...testimonials].map((testimonial, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="w-[350px] md:w-[420px] bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex-shrink-0"
               >
                 <div className="flex items-center gap-1 mb-6 text-green-500">
@@ -198,7 +198,7 @@ function Landing() {
           &copy; {new Date().getFullYear()} Amend Landscaping. All rights reserved.
         </p>
       </footer>
-      
+
     </div>
   );
 }

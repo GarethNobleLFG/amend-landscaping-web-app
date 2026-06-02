@@ -1,41 +1,28 @@
-const Service = require('../models/services');
+const serviceRepo = require('../repositories/serviceRepository');
 
-const createService = async (name, description, is_available = true) => {
-  const service = await Service.create({ name, description, is_available });
+const createService = async (name, description, is_available = true, image = null) => {
+  const service = await serviceRepo.create({ name, description, is_available, image });
   return { success: true, data: service };
 };
 
 const getAllServices = async () => {
-  const services = await Service.findAll();
-  return services;
+  return await serviceRepo.findAll();
 };
 
 const getAvailableServices = async () => {
-  const services = await Service.findAll({ where: { is_available: true } });
-  return services;
+  return await serviceRepo.findAvailable();
 };
 
 const getServiceById = async (id) => {
-  const service = await Service.findByPk(id);
-  return service;
+  return await serviceRepo.findById(id);
 };
 
-const updateService = async (id, name, description, is_available) => {
-  const service = await Service.findByPk(id);
-  if (!service) {
-    return null;
-  }
-  await service.update({ name, description, is_available });
-  return service;
+const updateService = async (id, name, description, is_available, image) => {
+  return await serviceRepo.update(id, { name, description, is_available, image });
 };
 
 const deleteService = async (id) => {
-  const service = await Service.findByPk(id);
-  if (!service) {
-    return null;
-  }
-  await service.destroy();
-  return true;
+  return await serviceRepo.deleteService(id);
 };
 
 module.exports = {
