@@ -85,9 +85,7 @@ const AdminDashboard = () => {
     const commercialAppointments = displayedAppointments.filter(app => app.is_commercial);
     const residentialAppointments = displayedAppointments.filter(app => !app.is_commercial);
 
-    if ( !isSessionExpiredOpen){
-        return null;
-    }
+   
 
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
