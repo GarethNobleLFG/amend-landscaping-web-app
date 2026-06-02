@@ -84,7 +84,6 @@ export const useGetAllServices = () => {
 };
 
 export const useCreateService = () => {
-<<<<<<< HEAD
   const [isLoading, setIsLoading] = useState(false); // Added loading state for consistency
 
  
@@ -92,11 +91,6 @@ export const useCreateService = () => {
   const navigate = useNavigate();
   const { showSessionExpired } = useSessionExpired();
   const createService = async (name, description, is_available,image_id) => {
-=======
-  const navigate = useNavigate();
-  const { showSessionExpired } = useSessionExpired();
-  const createService = async (name, description, is_available,image) => {
->>>>>>> 3d24204 (Fixed conflicts)
 
     try {
       const res = await fetch(`${API_BASE_URL}/services`, {
@@ -120,18 +114,17 @@ export const useCreateService = () => {
 };
 
 export const useUpdateService = () => {
-<<<<<<< HEAD
+
   const [isLoading, setIsLoading] = useState(false);
 
-  const updateService = async (id, name, description, is_available, image_id) => {
-    setIsLoading(true);
-=======
+    
 
   const navigate = useNavigate();
   const { showSessionExpired } = useSessionExpired();
-  const updateService = async (id, name, description, is_available,image) => {
+  const updateService = async (id, name, description, is_available,image_id) => {
+  setIsLoading(true);
 
->>>>>>> 0937a7c (Handled Token expiration with a popup and redirection)
+
     try {
       const res = await fetch(`${API_BASE_URL}/services/${id}`, {
         method: 'PUT',
