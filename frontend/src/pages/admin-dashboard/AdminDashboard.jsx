@@ -231,7 +231,7 @@ const AdminDashboard = () => {
                     <FeedbackTab />
                 ) : isLoading && appointments.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20">
-                        <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+                        <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full"></div>
                         <p className="mt-4 text-gray-500 font-medium text-lg">Fetching requests...</p>
                     </div>
                 ) : (
