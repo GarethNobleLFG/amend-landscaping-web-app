@@ -38,7 +38,7 @@ function Landing() {
         <nav className="space-x-8 hidden md:flex items-center text-gray-600">
           <a href="#services" className="hover:text-green-700 transition-colors">Services</a>
           <a href="#portfolio" className="hover:text-green-700 transition-colors">Portfolio</a>
-          <a href="#about" className="hover:text-green-700 transition-colors">About</a>
+          <a href="/about" className="hover:text-green-700 transition-colors">About</a>
           <a href="#feedback" className="hover:text-green-700 transition-colors">
           Feedback/Questions
         </a>
