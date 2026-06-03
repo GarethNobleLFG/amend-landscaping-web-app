@@ -263,7 +263,7 @@ const AdminDashboard = () => {
                             <div className="space-y-12">
                                 {/* Residential Sub-section */}
                                 {residentialAppointments.length > 0 && (
-                                    <div className={commercialAppointments.length > 0 ? "pt-6 border-t border-gray-200/60" : ""}>
+                                    <div>
                                         <h2 className="text-xl font-extrabold text-gray-800 mb-6 flex items-center gap-2 tracking-tight">
                                             <User className="w-5 h-5 text-teal-600" />
                                             Residential {activeTab === 'pending' ? 'Requests' : 'Appointments'}
