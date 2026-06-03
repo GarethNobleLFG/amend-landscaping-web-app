@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+
 const serviceService = require('../../src/services/serviceService');
 const serviceRepo = require('../../src/repositories/serviceRepository');
 

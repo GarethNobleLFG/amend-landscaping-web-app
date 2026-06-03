@@ -29,9 +29,9 @@ const AppointmentCard = ({ appointment, onApprove, onDeny, onCancel, isUpdating 
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={false}
+            animate={{ opacity: 1 }}
+           
             whileHover={{ y: -4 }}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all p-6 flex flex-col h-full relative overflow-hidden flex-shrink-0"
         >
