@@ -6,7 +6,7 @@ import AppointmentCard from '../../components/AppointmentCard';
 import ApproveModal from './ApproveModal';
 import DenyCancelModal from './DenyCancelModal';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Building, User, Wrench } from 'lucide-react';
+import { LogOut, Building, User, Wrench , Mail} from 'lucide-react';
 import ServicesTab from '../../components/ServicesCard';
 
 import ImageRegistryTab from '../../components/ImageRegistryTab';
@@ -14,7 +14,7 @@ import LandingImagesTab from '../../components/LandingImagesTab';
 import TestimoniesTab from '../../components/TestimoniesTab';
 import SessionExpiredModal from '../../components/SessionExpiredModal';
 import { useSessionExpired } from '../../hooks/useSessionExpired';
-
+import FeedbackTab from '../../components/FeedbackTab';
 
 const AdminDashboard = () => {
     const { appointments, fetchAppointments, isLoading, error } = useGetAppointments();
@@ -138,7 +138,7 @@ const AdminDashboard = () => {
                 )}
 
                 {/* Tabs */}
-                <div className="flex gap-6 mb-8 border-b border-gray-200">
+                <div className="flex gap-6 mb-8 border-b border-gray-200 overflow-x-auto whitespace-nowrap">
                     <button
                         onClick={() => setActiveTab('pending')}
                         className={`pb-3 px-2 transition-all font-bold text-lg flex items-center gap-2 ${activeTab === 'pending'
@@ -165,6 +165,17 @@ const AdminDashboard = () => {
                             {approvedAppointments.length}
                         </span>
                     </button>
+                     <button
+                        onClick={() => setActiveTab('feedback')}
+                        className={`pb-3 px-2 transition-all font-bold text-lg flex items-center gap-2 ${
+                            activeTab === 'feedback'
+                                ? 'border-b-2 border-green-600 text-green-700'
+                                : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                    >
+                    <Mail className="w-4 h-4" />
+                    Feedback & Inquiries
+                </button>
                     <button
                         onClick={() => setActiveTab('services')}
                         className={`pb-3 px-2 transition-all font-bold text-lg flex items-center gap-2 ${activeTab === 'services'
@@ -204,6 +215,7 @@ const AdminDashboard = () => {
                         <ImageIcon className="w-4 h-4" />
                         Image Registry
                     </button>
+                   
                 </div>
 
 
@@ -215,6 +227,8 @@ const AdminDashboard = () => {
                     <ImageRegistryTab />
                 ) : activeTab === 'testimonies' ? ( // Add this
                     <TestimoniesTab />
+                ) : activeTab === 'feedback' ? (
+                    <FeedbackTab />
                 ) : isLoading && appointments.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>

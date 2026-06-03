@@ -8,6 +8,7 @@ const serviceRoutes = require('./src/routes/serviceRoutes');
 const imageRegistryRoutes = require('./src/routes/imageRegistryRoutes');
 const landingImageRoutes = require('./src/routes/landingImageRoutes');
 const testimonyRoutes = require('./src/routes/testimonyRoutes');
+const feedbackRoutes = require('./src/routes/feedbackRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -28,6 +29,7 @@ app.use('/services', serviceRoutes);
 app.use('/images', imageRegistryRoutes);
 app.use('/landing-images', landingImageRoutes);
 app.use('/testimonies', testimonyRoutes);
+app.use('/feedback', feedbackRoutes);
 
 // Initialize database and start the server
 async function startServer() {

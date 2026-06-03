@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useGetServices } from '../../hooks/serviceHooks';
 import Hero from './Hero';
 import Testimonials from './Testimonials';
+import FeedbackForm from '../../components/FeedbackForm';
 
 function Landing() {
   const { services, fetchServices, isLoading } = useGetServices();
@@ -38,6 +39,9 @@ function Landing() {
           <a href="#services" className="hover:text-green-700 transition-colors">Services</a>
           <a href="#portfolio" className="hover:text-green-700 transition-colors">Portfolio</a>
           <a href="#about" className="hover:text-green-700 transition-colors">About</a>
+          <a href="#feedback" className="hover:text-green-700 transition-colors">
+          Leave a Feedback
+        </a>
         </nav>
       </motion.header>
 
@@ -102,6 +106,9 @@ function Landing() {
       </section>
 
       <Testimonials />
+     
+      <FeedbackForm />
+  
 
       <footer className="bg-white border-t border-gray-200 py-16 text-center">
         <h3 className="text-2xl font-extrabold text-green-700 tracking-tight mb-3">
