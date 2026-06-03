@@ -144,7 +144,7 @@ const About = () => {
                             href="/book"
                             className="inline-flex items-center px-8 py-4 rounded-2xl bg-white text-green-700 font-bold hover:scale-105 transition-transform"
                         >
-                            Schedule a Service
+                            Request a Service
                         </a>
                     </div>
                 </div>
