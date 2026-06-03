@@ -31,8 +31,9 @@ const TestimoniesTab = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* LEFT SIDE: Form */}
             <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={false}
+                animate={{ opacity: 1 }}
+
                 className="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
             >
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
