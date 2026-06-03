@@ -99,7 +99,7 @@ const AdminDashboard = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center gap-2 text-green-700">
-                            <LayoutDashboard className="w-6 h-6" />
+                            <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
                             <span className="font-bold text-xl tracking-tight">Admin Portal</span>
                         </div>
                         <button
@@ -138,10 +138,10 @@ const AdminDashboard = () => {
                 )}
 
                 {/* Tabs */}
-                <div className="flex gap-6 mb-8 border-b border-gray-200 overflow-x-auto whitespace-nowrap">
+                <div className="flex flex-wrap gap-x-4 gap-y-2 mb-8 border-b border-gray-200 pb-2">
                     <button
                         onClick={() => setActiveTab('pending')}
-                        className={`pb-3 px-2 transition-all font-bold text-lg flex items-center gap-2 ${activeTab === 'pending'
+                        className={`pb-2 px-2 flex items-center gap-1.5 text-sm md:text-base font-semibold transition-all ${activeTab === 'pending'
                             ? 'border-b-2 border-green-600 text-green-700'
                             : 'text-gray-500 hover:text-gray-700'
                             }`}
@@ -154,7 +154,7 @@ const AdminDashboard = () => {
                     </button>
                     <button
                         onClick={() => setActiveTab('approved')}
-                        className={`pb-3 px-2 transition-all font-bold text-lg flex items-center gap-2 ${activeTab === 'approved'
+                        className={`pb-2 px-2 flex items-center gap-1.5 text-sm md:text-base font-semibold transition-all ${activeTab === 'approved'
                             ? 'border-b-2 border-green-600 text-green-700'
                             : 'text-gray-500 hover:text-gray-700'
                             }`}
@@ -167,52 +167,52 @@ const AdminDashboard = () => {
                     </button>
                      <button
                         onClick={() => setActiveTab('feedback')}
-                        className={`pb-3 px-2 transition-all font-bold text-lg flex items-center gap-2 ${
+                        className={`pb-2 px-2 flex items-center gap-1.5 text-sm md:text-base font-semibold transition-all ${
                             activeTab === 'feedback'
                                 ? 'border-b-2 border-green-600 text-green-700'
                                 : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                    <Mail className="w-4 h-4" />
+                    <Mail className="w-4 h-4 flex-shrink-0" />
                     Feedback & Inquiries
                 </button>
                     <button
                         onClick={() => setActiveTab('services')}
-                        className={`pb-3 px-2 transition-all font-bold text-lg flex items-center gap-2 ${activeTab === 'services'
+                        className={`pb-2 px-2 flex items-center gap-1.5 text-sm md:text-base font-semibold transition-all ${activeTab === 'services'
                             ? 'border-b-2 border-green-600 text-green-700'
                             : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
-                        <Wrench className="w-4 h-4" />
+                        <Wrench className="w-4 h-4 flex-shrink-0" />
                         Manage Services
                     </button>
                     <button
                         onClick={() => setActiveTab('landing')}
-                        className={`pb-3 px-2 transition-all font-bold text-lg whitespace-nowrap flex items-center gap-2 ${activeTab === 'landing'
+                        className={`pb-2 px-2 flex items-center gap-1.5 text-sm md:text-base font-semibold transition-all ${activeTab === 'landing'
                             ? 'border-b-2 border-green-600 text-green-700'
                             : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
-                        <LayoutDashboard className="w-5 h-5" /> Landing Page
+                        <LayoutDashboard className="w-4 h-4 flex-shrink-0" /> Landing Page
                     </button>
                     <button
                         onClick={() => setActiveTab('testimonies')}
-                        className={`pb-3 px-2 transition-all font-bold text-lg flex items-center gap-2 ${activeTab === 'testimonies'
+                        className={`pb-2 px-2 flex items-center gap-1.5 text-sm md:text-base font-semibold transition-all ${activeTab === 'testimonies'
                             ? 'border-b-2 border-green-600 text-green-700'
                             : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
-                        <MessageSquare className="w-4 h-4" />
+                        <MessageSquare className="w-4 h-4 flex-shrink-0" />
                         Testimonies
                     </button>
                     <button
                         onClick={() => setActiveTab('registry')}
-                        className={`pb-3 px-2 transition-all font-bold text-lg flex items-center gap-2 ${activeTab === 'registry'
+                        className={`pb-2 px-2 flex items-center gap-1.5 text-sm md:text-base font-semibold transition-all ${activeTab === 'registry'
                             ? 'border-b-2 border-green-600 text-green-700'
                             : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
-                        <ImageIcon className="w-4 h-4" />
+                        <ImageIcon className="w-4 h-4 flex-shrink-0" />
                         Image Registry
                     </button>
                    
