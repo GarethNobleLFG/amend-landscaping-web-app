@@ -1,4 +1,15 @@
 services:
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - api
+
   db:
     image: postgres:15-alpine
     restart: always
@@ -46,3 +57,4 @@ services:
 
 volumes:
   pg_data:
+  prometheus_data:
