@@ -40,7 +40,7 @@ function Landing() {
           <a href="#portfolio" className="hover:text-green-700 transition-colors">Portfolio</a>
           <a href="#about" className="hover:text-green-700 transition-colors">About</a>
           <a href="#feedback" className="hover:text-green-700 transition-colors">
-          Leave a Feedback
+          Feedback/Questions
         </a>
         </nav>
       </motion.header>
