@@ -25,32 +25,9 @@ const About = () => {
             </motion.header>
 
             {/* Main Content */}
-            <div className="max-w-5xl mx-auto px-6 py-16 lg:py-20">
+            <div className="max-w-5xl mx-auto px-6 py-12 lg:py-16">
 
-                {/* Hero */}
-                <motion.div
-                    initial={{ opacity: 0, y: 25 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7 }}
-                    className="mb-12"
-                >
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 font-bold text-sm tracking-wide uppercase mb-8">
-                        <Leaf className="w-4 h-4" />
-                        Built on hard work and community trust
-                    </div>
-
-                    <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-gray-900 leading-tight">
-                        About
-                        <span className="text-green-700"> Amend Landscaping</span>
-                    </h1>
-
-                    <p className="mt-8 text-xl text-gray-600 leading-relaxed max-w-3xl">
-                        Amend Landscaping is committed to providing reliable,
-                        affordable, and professional lawn care and landscaping
-                        services to residential and commercial properties
-                        throughout Fort Wayne, Indiana.
-                    </p>
-                </motion.div>
+                
 
                 {/* Content Card */}
                 <motion.div
@@ -59,9 +36,16 @@ const About = () => {
                     transition={{ delay: 0.15 }}
                     className="bg-white rounded-[2rem] p-8 md:p-12 border border-gray-100 shadow-sm"
                 >
-                    <h2 className="text-4xl font-black text-gray-900 mb-8">
+                    <div className="mb-10">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 font-bold text-sm tracking-wide uppercase mb-6">
+                        <Leaf className="w-4 h-4" />
+                        About Amend Landscaping
+                    </div>
+
+                    <h1 className="text-5xl md:text-6xl font-black tracking-tight text-gray-900">
                         Our Story
-                    </h2>
+                    </h1>
+                </div>
 
                     <div className="space-y-6 text-lg text-gray-600 leading-relaxed">
                         <p>
