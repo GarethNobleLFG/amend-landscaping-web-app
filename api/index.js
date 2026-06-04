@@ -15,7 +15,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const collectDefaultMetrics = client.collectDefaultMetrics;
-collectDefaultMetrics({ prefix: 'amend_api_' });
+collectDefaultMetrics(); 
 
 // Define a Custom Metric for Tracking Requests
 const httpRequestDurationMicroseconds = new client.Histogram({

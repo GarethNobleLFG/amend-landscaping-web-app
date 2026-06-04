@@ -2,6 +2,8 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'amend-api'
+  - job_name: 'node'
     static_configs:
       - targets: ['api:3001'] 
+        labels:
+          application: 'amend-api'
