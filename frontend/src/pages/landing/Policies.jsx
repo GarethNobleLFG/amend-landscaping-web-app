@@ -50,7 +50,7 @@ const Policies = () => {
                 </motion.div>
 
                 {/* Policies List */}
-                <motion.div
+                <div
                     
                     className="bg-white border border-gray-100 rounded-[2rem] p-8 md:p-12 shadow-sm space-y-8"
                 >
@@ -115,7 +115,21 @@ const Policies = () => {
                         </p>
                     </div>
 
-                </motion.div>
+                </div>
+
+                {/* CTA */}
+                <div className="text-center mt-16">
+                    <h2 className="text-3xl font-black text-gray-900 mb-4">
+                         Ready to transform your property?
+                    </h2>
+
+                    <a
+                        href="/book"
+                        className="inline-flex px-8 py-4 bg-green-700 text-white font-bold rounded-2xl hover:bg-green-800 transition"
+                    >
+                        Request a Service
+                    </a>
+                </div>
 
                
             </div>
