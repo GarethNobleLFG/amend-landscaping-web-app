@@ -1,4 +1,5 @@
-import { Leaf } from 'lucide-react';
+import { Leaf  } from 'lucide-react';
+import { FaFacebook, FaInstagram } from 'react-icons/fa';
 
 const Footer = () => {
     return (
@@ -44,18 +45,22 @@ const Footer = () => {
                         <a
                             href="https://instagram.com/amendlandscapingllc"
                             target="_blank"
-                            className="block text-sm text-gray-600 hover:text-green-700 transition"
+                            rel="noreferrer"
+                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-700 transition"
                         >
-                            Instagram: @amendlandscapingllc
+                           <FaInstagram className="w-4 h-4" />
+                            @amendlandscapingllc
                         </a>
 
-                        <a
-                            href="https://facebook.com/amendlandscapingllc"
-                            target="_blank"
-                            className="block text-sm text-gray-600 hover:text-green-700 transition mt-1"
-                        >
-                            Facebook: Amend Landscaping LLC
-                        </a>
+                       <a
+                        href="https://facebook.com/amendlandscapingllc"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-700 transition mt-2"
+                    >
+                        <FaFacebook className="w-4 h-4" />
+                        Amend Landscaping LLC
+                    </a>
                     </div>
                 </div>
 
