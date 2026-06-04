@@ -151,18 +151,6 @@ const About = () => {
                     </div>
                 </motion.div>
             </div>
-
-            {/* Footer */}
-            <footer className="bg-white border-t border-gray-200 py-12 text-center">
-                <h3 className="text-2xl font-extrabold text-green-700 tracking-tight mb-3">
-                    Amend
-                    <span className="text-gray-800">Landscaping</span>
-                </h3>
-
-                <p className="text-xs text-gray-400 font-bold tracking-widest uppercase">
-                    © {new Date().getFullYear()} Amend Landscaping.
-                </p>
-            </footer>
         </div>
     );
 };

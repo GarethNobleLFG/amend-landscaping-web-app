@@ -5,6 +5,7 @@ import AdminDash from './pages/admin-dashboard/AdminDashboard';
 import AdminLogin from './pages/admin-dashboard/AdminLogin';
 import Commercial from './pages/commercial/Commercial';
 import About from './pages/landing/AboutUs';
+import Footer from './components/Footer';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <Footer />
     </Router>
   );
 }
