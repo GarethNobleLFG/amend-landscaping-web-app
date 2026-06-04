@@ -85,18 +85,6 @@ export default function Commercial() {
 
       </main>
 
-      {/* --- Exact Landing Page Replicated Footer --- */}
-      <footer className="bg-white border-t border-gray-200 py-16 text-center relative z-20">
-        <h3 className="text-2xl font-extrabold text-green-700 tracking-tight mb-3">
-          Amend<span className="text-gray-800 font-bold">Landscaping</span>
-        </h3>
-        <p className="mb-8 font-medium text-gray-600">Making neighborhoods beautiful, one yard at a time.</p>
-        <div className="w-16 h-[2px] bg-green-200 mx-auto mb-8 rounded-full"></div>
-        <p className="text-xs text-gray-400 tracking-wider uppercase font-bold">
-          &copy; {new Date().getFullYear()} Amend Landscaping. All rights reserved.
-        </p>
-      </footer>
-
     </div>
   );
 }
