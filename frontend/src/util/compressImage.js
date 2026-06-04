@@ -1,11 +1,35 @@
-export const compressImage = (file, maxWidth = 1200, quality = 0.7) => {
-  return new Promise((resolve, reject) => {
-    if (!file) {
-      return reject(new Error('No file provided'));
-    }
+import heic2any from "heic2any";
 
+export const compressImage = async (file, maxWidth = 1200, quality = 0.7) => {
+  if (!file) {
+    throw new Error('No file provided');
+  }
+
+  let finalFile = file;
+
+  const isHeic = 
+    file.name?.toLowerCase().endsWith('.heic') || 
+    file.name?.toLowerCase().endsWith('.heif') || 
+    file.type === 'image/heic' || 
+    file.type === 'image/heif';
+
+  if (isHeic) {
+    try {
+      const convertedBlob = await heic2any({
+        blob: file,
+        toType: "image/jpeg",
+        quality: 1 
+      });
+      finalFile = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+    } 
+    catch (err) {
+      console.error("HEIC conversion failed, attempting normal compression:", err);
+    }
+  }
+
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(finalFile);
     reader.onload = (event) => {
       const img = new Image();
       img.src = event.target.result;
@@ -22,7 +46,8 @@ export const compressImage = (file, maxWidth = 1200, quality = 0.7) => {
         try {
           const compressedBase64 = canvas.toDataURL('image/webp', quality);
           resolve(compressedBase64);
-        } catch (err) {
+        } 
+        catch (err) {
           reject(err);
         }
       };

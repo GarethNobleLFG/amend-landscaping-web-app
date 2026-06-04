@@ -13,14 +13,27 @@ const ImageRegistryTab = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
 
+    const [isProcessing, setIsProcessing] = useState(false);
+
     useEffect(() => { fetchImages(); }, [fetchImages]);
 
+    /* Around Line 20 */
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const compressed = await compressImage(file);
-        setSelectedFile(compressed);
-        setPreviewUrl(compressed);
+
+        setIsProcessing(true); // Start loading animation
+        try {
+            const compressed = await compressImage(file);
+            setSelectedFile(compressed);
+            setPreviewUrl(compressed);
+        } catch (error) {
+            console.error("Compression/HEIC fail:", error);
+            alert("Failed to process image. Please try a standard JPEG or PNG.");
+        }
+        finally {
+            setIsProcessing(false); // Stop loading animation
+        }
     };
 
     const handleUpload = async () => {
@@ -126,7 +139,13 @@ const ImageRegistryTab = () => {
                             <div className="space-y-6">
                                 <label className="block">
                                     <div className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-2xl transition-all ${previewUrl ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:border-green-400'}`}>
-                                        {previewUrl ? (
+                                        {isProcessing ? (
+                                            <div className="text-center py-4">
+                                                <Loader2 className="mx-auto h-12 w-12 text-green-600 animate-spin mb-2" />
+                                                <p className="text-sm text-gray-600 font-bold">Converting Image...</p>
+                                                <p className="text-xs text-gray-400">Optimizing for web (HEIC taking extra time)</p>
+                                            </div>
+                                        ) : previewUrl ? (
                                             <div className="text-center">
                                                 <img src={previewUrl} className="mx-auto h-32 w-32 object-cover rounded-xl mb-2 shadow-md" />
                                                 <p className="text-xs text-green-600 font-bold">Image Optimized!</p>
@@ -140,7 +159,7 @@ const ImageRegistryTab = () => {
                                                 <p className="text-xs text-gray-500">PNG, JPG, WebP up to 10MB</p>
                                             </div>
                                         )}
-                                        <input type="file" className="sr-only" accept="image/*" onChange={handleFileChange} />
+                                        <input type="file" className="sr-only" accept="image/*,.heic,.heif" onChange={handleFileChange} />
                                     </div>
                                 </label>
 
