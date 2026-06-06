@@ -3,6 +3,11 @@ import Landing from './pages/landing/Landing';
 import Booking from './pages/booking/Booking';
 import AdminDash from './pages/admin-dashboard/AdminDashboard';
 import AdminLogin from './pages/admin-dashboard/AdminLogin';
+import Commercial from './pages/commercial/Commercial';
+import About from './pages/landing/AboutUs';
+import Footer from './components/Footer';
+import Pricing from './pages/landing/Pricing';
+import Policies from './pages/landing/Policies';
 
 function App() {
   return (
@@ -12,8 +17,13 @@ function App() {
         <Route path="/book" element={<Booking />} />
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin-dashboard" element={<AdminDash />} />
+        <Route path="/commercial" element={<Commercial />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/policies" element={<Policies />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <Footer />
     </Router>
   );
 }

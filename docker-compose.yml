@@ -1,4 +1,28 @@
 services:
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - api
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3005:3000" 
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin 
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
   db:
     image: postgres:15-alpine
     restart: always
@@ -46,3 +70,5 @@ services:
 
 volumes:
   pg_data:
+  prometheus_data:
+  grafana_data:

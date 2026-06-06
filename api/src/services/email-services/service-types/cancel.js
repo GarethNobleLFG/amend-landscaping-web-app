@@ -2,6 +2,7 @@ const { transporter } = require('../transporter');
 const { cancellationHeader, standardFooter } = require('../../../utils/emailBranding');
 
 const sendCancellationEmail = async (appointment, customMessage = '') => {
+    const isCommercial = !!appointment.is_commercial;
     const dateToUse = appointment.scheduledDate || appointment.createdAt;
     const appointmentDate = dateToUse ? new Date(dateToUse).toLocaleDateString('en-US', {
         weekday: 'long', 
@@ -25,13 +26,13 @@ const sendCancellationEmail = async (appointment, customMessage = '') => {
                 <p style="color: #334155; font-size: 18px; margin-top: 0;">Dear ${appointment.name},</p>
                 
                 <p style="color: #475569; font-size: 16px; line-height: 1.6;">
-                    We are writing to inform you that your upcoming service appointment with Amend Landscaping has been <strong>cancelled</strong>.
+                    We are writing to inform you that your upcoming ${isCommercial ? 'commercial ' : ''}service appointment with Amend Landscaping has been <strong>cancelled</strong>.
                 </p>
                 
                 ${customMessageHtml}
 
                 <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 24px 0;">
-                    <h3 style="color: #991b1b; margin-top: 0; border-bottom: 1px solid #fecaca; padding-bottom: 10px;">Cancelled Appointment Details</h3>
+                    <h3 style="color: #991b1b; margin-top: 0; border-bottom: 1px solid #fecaca; padding-bottom: 10px;">Cancelled ${isCommercial ? 'Commercial ' : ''}Appointment Details</h3>
                     <p style="color: #7f1d1d; margin: 10px 0;"><strong>Date:</strong> ${appointmentDate}</p>
                     <p style="color: #7f1d1d; margin: 10px 0;"><strong>Address:</strong> ${appointment.address}</p>
                 </div>
@@ -53,7 +54,9 @@ const sendCancellationEmail = async (appointment, customMessage = '') => {
     const mailOptions = {
         from: `"Amend Landscaping" <${process.env.SMTP_USER}>`,
         to: appointment.email,
-        subject: 'Cancellation of Your Amend Landscaping Appointment',
+        subject: isCommercial 
+            ? 'Cancellation of Your Commercial Amend Landscaping Appointment' 
+            : 'Cancellation of Your Amend Landscaping Appointment',
         html: htmlBody
     };
 

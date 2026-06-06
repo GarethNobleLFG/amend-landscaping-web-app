@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, CheckCircle, Clock, XCircle, History } from 'lucide-react';
+import { MapPin, Phone, Mail, CheckCircle, Clock, XCircle, History, Building, User } from 'lucide-react';
 
 const AppointmentCard = ({ appointment, onApprove, onDeny, onCancel, isUpdating }) => {
     const {
         id, name, email, phoneNumber, address, city, state, zip,
-        servicesRequested, description, approved, createdAt
+        servicesRequested, description, approved, createdAt, is_commercial
     } = appointment;
 
     let services = 'None specified';
@@ -29,28 +29,46 @@ const AppointmentCard = ({ appointment, onApprove, onDeny, onCancel, isUpdating 
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            initial={false}
+            animate={{ opacity: 1 }}
+           
             whileHover={{ y: -4 }}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all p-6 flex flex-col h-full relative overflow-hidden flex-shrink-0"
         >
-            {/* Top Banner accent */}
-            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${approved ? 'from-green-500 to-green-600' : 'from-yellow-400 to-yellow-500'}`}></div>
+            {/* Top Banner accent based on Commercial status */}
+            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${
+                is_commercial 
+                    ? 'from-blue-500 to-indigo-600' 
+                    : approved 
+                        ? 'from-green-500 to-green-600' 
+                        : 'from-yellow-400 to-yellow-500'
+            }`}></div>
 
             <div className="flex-grow">
                 <div className="flex justify-between items-start mb-6">
                     <div>
                         <h3 className="text-xl font-bold text-gray-900">{name}</h3>
-                        {approved ? (
-                            <span className="flex items-center text-sm font-medium text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded-full w-max mt-2">
-                                <CheckCircle className="w-3 h-3 mr-1" /> Approved
-                            </span>
-                        ) : (
-                            <span className="flex items-center text-sm font-medium text-yellow-700 bg-yellow-50 border border-yellow-200 px-3 py-1 rounded-full w-max mt-2">
-                                <Clock className="w-3 h-3 mr-1" /> Pending Approval
-                            </span>
-                        )}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                            {approved ? (
+                                <span className="flex items-center text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full">
+                                    <CheckCircle className="w-3 h-3 mr-1" /> Approved
+                                </span>
+                            ) : (
+                                <span className="flex items-center text-xs font-semibold text-yellow-700 bg-yellow-50 border border-yellow-200 px-2.5 py-1 rounded-full">
+                                    <Clock className="w-3 h-3 mr-1" /> Pending
+                                </span>
+                            )}
+                            
+                            {is_commercial ? (
+                                <span className="flex items-center text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full">
+                                    <Building className="w-3 h-3 mr-1" /> Commercial
+                                </span>
+                            ) : (
+                                <span className="flex items-center text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-full">
+                                    <User className="w-3 h-3 mr-1" /> Residential
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
 

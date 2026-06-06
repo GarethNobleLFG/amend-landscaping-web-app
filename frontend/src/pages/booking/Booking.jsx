@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { motion as motionElement } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { Leaf, ArrowRight, ArrowLeft, Check, User, Sparkles, MapPin } from 'lucide-react';
 import { useCreateAppointment } from '../../hooks/appointmentHooks';
 import SuccessModal from './SuccessModal';
@@ -28,15 +29,23 @@ export default function Booking() {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Dynamically retrieve the commercial boolean flag from router state
+    const isCommercial = !!location.state?.isCommercial;
 
     const { createAppointment, isLoading, error } = useCreateAppointment();
 
     const handleBackClick = () => {
         if (step === 2) {
             prevStep();
-        }
-        else {
-            navigate('/');
+        } else {
+            // Intelligent back router
+            if (isCommercial) {
+                navigate('/commercial');
+            } else {
+                navigate('/');
+            }
         }
     };
 
@@ -90,9 +99,11 @@ export default function Booking() {
             return acc;
         }, {});
 
+        // Package the exact structure expected by the database models
         const payload = {
             ...formData,
             servicesRequested: servicesObj,
+            is_commercial: isCommercial, // Matches model validation
             scheduledDate: formData.scheduledDate === '' ? null : formData.scheduledDate
         };
 
@@ -100,8 +111,7 @@ export default function Booking() {
 
         if (result.success) {
             setSubmitSuccess(true);
-        }
-        else {
+        } else {
             console.error("Booking Error:", result.error);
         }
     };
@@ -116,61 +126,62 @@ export default function Booking() {
     return (
         <div className="relative min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-green-200 py-12 px-4 sm:px-6 flex flex-col items-center overflow-hidden">
 
-            {/* Top Left Back Button that sits above everything */}
+            {/* Top Left Back Button */}
             <div className="absolute top-6 left-6 z-50">
                 <button
                     onClick={handleBackClick}
                     className="flex items-center gap-2 bg-white/90 backdrop-blur-md text-gray-700 font-bold px-4 py-3 rounded-xl shadow-lg border border-gray-100 hover:bg-green-50 hover:text-green-700 transition-all hover:-translate-x-1"
                 >
                     <ArrowLeft className="w-5 h-5" />
-                    <span className="hidden sm:inline">{step === 2 ? 'Back to Services' : 'Back to Home'}</span>
+                    <span className="hidden sm:inline">
+                        {step === 2 ? (isCommercial ? 'Back to Requirements' : 'Back to Services') : (isCommercial ? 'Back to Commercial' : 'Back to Home')}
+                    </span>
                 </button>
             </div>
 
-            {/* 
-            -------------
-            Background Image Collage (Absolute Positioned behind everything)
-            -------------
-            */}
+            {/* Background Image Collage */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-
-                {/* Background blob for extra flair, pushed to the very back */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-green-100 rounded-full blur-[140px] z-0"></div>
-
-                {/* Removed the blurry white overlay completely so images are crystal clear */}
-
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-green-100/50 rounded-full blur-[140px] z-0"></div>
                 <AnimatePresence mode="popLayout">
                     {/* Left Floating Image */}
-                    <motion.img
+                    <motionElement.img
                         key={`prev-${currentIndex}`}
                         src={slideImages[prevIndex]}
                         initial={{ opacity: 0, x: '-60%', y: '10%', rotate: -15, scale: 0.8 }}
-                        animate={{ opacity: 1, x: '-15%', y: '-10%', rotate: -8, scale: 1 }}
+                        animate={{ opacity: 0.8, x: '-15%', y: '-10%', rotate: -8, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.8 }}
                         transition={{ duration: 1.2, ease: "anticipate" }}
-                        className="absolute top-[15%] left-[5%] w-[35%] max-w-[400px] h-[45%] object-cover rounded-3xl shadow-2xl border-4 border-white z-10"
+                        className="absolute top-[15%] left-[5%] w-[35%] max-w-[400px] h-[45%] object-cover rounded-3xl shadow-2xl border-4 border-white z-10 hidden lg:block"
                     />
 
                     {/* Right Floating Image */}
-                    <motion.img
+                    <motionElement.img
                         key={`next-${currentIndex}`}
                         src={slideImages[nextIndex]}
                         initial={{ opacity: 0, x: '60%', y: '-10%', rotate: 15, scale: 0.8 }}
-                        animate={{ opacity: 1, x: '15%', y: '10%', rotate: 8, scale: 1 }}
+                        animate={{ opacity: 0.8, x: '15%', y: '10%', rotate: 8, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.8 }}
                         transition={{ duration: 1.2, ease: "anticipate" }}
-                        className="absolute bottom-[10%] right-[5%] w-[35%] max-w-[400px] h-[45%] object-cover rounded-3xl shadow-2xl border-4 border-white z-10"
+                        className="absolute bottom-[10%] right-[5%] w-[35%] max-w-[400px] h-[45%] object-cover rounded-3xl shadow-2xl border-4 border-white z-10 hidden lg:block"
                     />
                 </AnimatePresence>
             </div>
 
-            {/* Header - Make sure it sits above the background z-20 */}
+            {/* Header */}
             <div className="relative z-20 max-w-3xl w-full mb-12 text-center">
-                <div className="flex items-center justify-center gap-2 text-2xl font-black text-green-800 tracking-tight mb-8">
-                    Amend <Leaf className="w-6 h-6 text-green-600 fill-green-600/20" /> Landing
+                <div className="flex items-center justify-center gap-2 text-2xl font-black text-green-800 tracking-tight mb-8 select-none">
+                    Amend <Leaf className="w-6 h-6 text-green-600 fill-green-600/20" /> {isCommercial ? 'Commercial' : 'Landscaping'}
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4 drop-shadow-sm">Book an Appointment</h1>
-                <p className="text-lg text-gray-700 font-medium drop-shadow-sm">Tell us what you need, and we'll handle the rest.</p>
+                
+                <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4 drop-shadow-sm">
+                    {isCommercial ? 'Commercial Registration' : 'Book an Appointment'}
+                </h1>
+                
+                <p className="text-lg text-gray-700 font-medium drop-shadow-sm max-w-lg mx-auto">
+                    {isCommercial 
+                        ? 'Register your property profile to get scheduled contracts, bids, and customized service standards.' 
+                        : "Tell us what your yard needs, and we'll handle the rest."}
+                </p>
 
                 {/* Progress Bar */}
                 <div className="flex items-center justify-center gap-4 mt-8 max-w-md mx-auto">
@@ -178,15 +189,18 @@ export default function Booking() {
                     <div className={`h-2 rounded-full flex-1 transition-colors duration-500 shadow-sm ${step >= 2 ? 'bg-green-500' : 'bg-white border border-gray-200'}`}></div>
                 </div>
                 <div className="flex justify-between max-w-md mx-auto mt-2 text-sm font-bold text-gray-500">
-                    <span className={step >= 1 ? 'text-green-700' : ''}>1. Services</span>
-                    <span className={step >= 2 ? 'text-green-700' : ''}>2. Details</span>
+                    <span className={step >= 1 ? 'text-green-700' : ''}>
+                        {isCommercial ? '1. Requirements' : '1. Services'}
+                    </span>
+                    <span className={step >= 2 ? 'text-green-700' : ''}>
+                        {isCommercial ? '2. Company Details' : '2. Details'}
+                    </span>
                 </div>
             </div>
 
-            {/* Multi-step Form Container - Also z-20 */}
-            <div className="relative z-20 w-full max-w-3xl bg-white/90 backdrop-blur-md rounded-[2.5rem] shadow-2xl border border-white/50 p-8 md:p-12 overflow-hidden">
+            {/* Multi-step Form Container */}
+            <div className="relative z-20 w-full max-w-3xl bg-white/95 backdrop-blur-md rounded-[2.5rem] shadow-2xl border border-white/50 p-8 md:p-12 overflow-hidden">
 
-                {/* Optional Error Message Display */}
                 {error && (
                     <div className="mb-6 p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl font-bold">
                         {error}
@@ -195,12 +209,14 @@ export default function Booking() {
 
                 <AnimatePresence mode="wait">
 
-                    {/* ----- STEP 1: LAWN STUFF / SERVICES ----- */}
+                    {/* ----- STEP 1: SERVICES OR REQUIREMENTS ----- */}
                     {step === 1 && (
-                        <motion.div key="step1" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full">
+                        <motionElement.div key="step1" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full">
                             <div className="flex items-center gap-3 mb-8">
                                 <Sparkles className="w-8 h-8 text-green-500" />
-                                <h2 className="text-3xl font-bold text-gray-900">What does your yard need?</h2>
+                                <h2 className="text-3xl font-bold text-gray-900">
+                                    {isCommercial ? 'Select desired service programs' : 'What does your yard need?'}
+                                </h2>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
@@ -224,14 +240,18 @@ export default function Booking() {
                             </div>
 
                             <div className="mb-8">
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Tell us more about the project (Optional)</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">
+                                    {isCommercial ? 'Property Details / Contract Cycles (Optional)' : 'Tell us more about the project (Optional)'}
+                                </label>
                                 <textarea
                                     name="description"
                                     value={formData.description}
                                     onChange={handleInputChange}
                                     rows="4"
                                     className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all resize-none"
-                                    placeholder="E.g., I have a large oak tree that needs structural pruning, and the front flower beds need fresh mulch."
+                                    placeholder={isCommercial 
+                                        ? "E.g., Office park with 3 green belts. Requesting bi-weekly maintenance schedules and winterizations." 
+                                        : "E.g., I have a large oak tree that needs structural pruning, and the front flower beds need fresh mulch."}
                                 ></textarea>
                             </div>
 
@@ -240,43 +260,85 @@ export default function Booking() {
                                 disabled={formData.servicesRequested.length === 0}
                                 className="mt-auto w-full flex items-center justify-center gap-2 bg-green-700 disabled:bg-gray-300 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 disabled:hover:bg-gray-300 transition-colors shadow-lg"
                             >
-                                Next: Personal Details <ArrowRight className="w-5 h-5" />
+                                Next: {isCommercial ? 'Company & Rep Details' : 'Personal Details'} <ArrowRight className="w-5 h-5" />
                             </button>
-                        </motion.div>
+                        </motionElement.div>
                     )}
 
-                    {/* ----- STEP 2: PERSONAL INFO ----- */}
+                    {/* ----- STEP 2: DETAILS ----- */}
                     {step === 2 && (
-                        <motion.form key="step2" onSubmit={handleSubmit} variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full">
+                        <motionElement.form key="step2" onSubmit={handleSubmit} variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full">
                             <div className="flex items-center gap-3 mb-8">
                                 <User className="w-8 h-8 text-green-500" />
-                                <h2 className="text-3xl font-bold text-gray-900">Your Information</h2>
+                                <h2 className="text-3xl font-bold text-gray-900">
+                                    {isCommercial ? 'Company & Rep Details' : 'Your Information'}
+                                </h2>
                             </div>
 
                             <div className="space-y-6 mb-8">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Full Name *</label>
-                                        <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" placeholder="John Doe" />
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                                            {isCommercial ? 'Company Name *' : 'Full Name *'}
+                                        </label>
+                                        <input 
+                                            required 
+                                            type="text" 
+                                            name="name" 
+                                            value={formData.name} 
+                                            onChange={handleInputChange} 
+                                            className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" 
+                                            placeholder={isCommercial ? "Amend Landscaping LLC" : "John Doe"} 
+                                        />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Phone Number *</label>
-                                        <input required type="tel" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" placeholder="(555) 123-4567" />
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                                            {isCommercial ? 'Representative / Contact Phone *' : 'Phone Number *'}
+                                        </label>
+                                        <input 
+                                            required 
+                                            type="tel" 
+                                            name="phoneNumber" 
+                                            value={formData.phoneNumber} 
+                                            onChange={handleInputChange} 
+                                            className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" 
+                                            placeholder="(555) 123-4567" 
+                                        />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Email Address *</label>
-                                    <input required type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" placeholder="john@example.com" />
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                                        {isCommercial ? 'Organization Email Address *' : 'Email Address *'}
+                                    </label>
+                                    <input 
+                                        required 
+                                        type="email" 
+                                        name="email" 
+                                        value={formData.email} 
+                                        onChange={handleInputChange} 
+                                        className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" 
+                                        placeholder={isCommercial ? "facilities@corporate.com" : "john@example.com"} 
+                                    />
                                 </div>
 
                                 <div className="pt-4 pb-2 flex items-center gap-2 text-green-700 font-bold border-b border-gray-100">
-                                    <MapPin className="w-5 h-5" /> Service Address
+                                    <MapPin className="w-5 h-5" /> {isCommercial ? 'Commercial Site Address' : 'Service Address'}
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Street Address *</label>
-                                    <input required type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" placeholder="123 Oak Street" />
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                                        {isCommercial ? 'Property Street Address *' : 'Street Address *'}
+                                    </label>
+                                    <input 
+                                        required 
+                                        type="text" 
+                                        name="address" 
+                                        value={formData.address} 
+                                        onChange={handleInputChange} 
+                                        className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" 
+                                        placeholder={isCommercial ? "100 Corporate Parkway, Suite 200" : "123 Oak Street"} 
+                                    />
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -304,10 +366,10 @@ export default function Booking() {
                                     disabled={isLoading}
                                     className="flex-1 flex items-center justify-center gap-2 bg-green-700 disabled:bg-green-400 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 transition-colors shadow-lg"
                                 >
-                                    {isLoading ? 'Sending Request...' : 'Submit Request'}
+                                    {isLoading ? 'Submitting Registration...' : (isCommercial ? 'Submit Contract Registration' : 'Submit Request')}
                                 </button>
                             </div>
-                        </motion.form>
+                        </motionElement.form>
                     )}
 
                 </AnimatePresence>
@@ -315,7 +377,7 @@ export default function Booking() {
 
             <SuccessModal
                 isOpen={submitSuccess}
-                firstName={formData.name.split(' ')[0]}
+                firstName={isCommercial ? `${formData.name}` : formData.name.split(' ')[0]}
             />
 
         </div>
