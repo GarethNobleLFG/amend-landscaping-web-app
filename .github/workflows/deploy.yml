@@ -81,4 +81,4 @@ jobs:
           service: amend-frontend-${{ env.ENV }}
           image: ${{ env.FE_IMAGE }}
           region: ${{ env.REGION }}
-          flags: --allow-unauthenticated
+          flags: --allow-unauthenticated --port=80
