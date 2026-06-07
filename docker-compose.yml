@@ -41,6 +41,9 @@ services:
     build: 
       context: ./api
       dockerfile: Dockerfile.dev
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     depends_on:
       - db
     ports:

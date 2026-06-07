@@ -1,0 +1,38 @@
+# Stage 1: Build/Install
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including dev for potential build scripts)
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Stage 2: Production
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Set environment to production
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Copy package files
+COPY package*.json ./
+
+# Install ONLY production dependencies
+RUN npm ci --only=production
+
+# Copy app source from builder
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/index.js ./index.js
+
+# Expose the API port
+EXPOSE 3000
+
+# Documentation for GCP: The entry point should be consistent
+CMD ["npm", "start"]

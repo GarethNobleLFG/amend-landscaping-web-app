@@ -1,0 +1,84 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-east5
+  REPO_NAME: amend-landscaping-repo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      # Determine Environment Variables based on branch
+      - name: Set Environment
+        run: |
+          if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+            echo "ENV=prod" >> $GITHUB_ENV
+            echo "DB_URL=${{ secrets.DATABASE_URL_PROD }}" >> $GITHUB_ENV
+          else
+            echo "ENV=dev" >> $GITHUB_ENV
+            echo "DB_URL=${{ secrets.DATABASE_URL_DEV }}" >> $GITHUB_ENV
+          fi
+
+      # -----------------------------------------------------------------
+      # API DEPLOYMENT
+      # -----------------------------------------------------------------
+      - name: Build and Push API
+        run: |
+          IMAGE_NAME=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/api:${{ env.ENV }}-${{ github.sha }}
+          docker build -t $IMAGE_NAME -f api/Dockerfile.prod ./api
+          docker push $IMAGE_NAME
+          echo "API_IMAGE=$IMAGE_NAME" >> $GITHUB_ENV
+
+      # ... inside the Deploy API to Cloud Run step ...
+      - name: Deploy API to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: amend-api-${{ env.ENV }}
+          image: ${{ env.API_IMAGE }}
+          region: ${{ env.REGION }}
+          flags: --allow-unauthenticated
+          env_vars: |
+            NODE_ENV=production
+            DATABASE_URL=${{ env.DB_URL }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            COMPANY_USER=${{ secrets.COMPANY_USER }}
+            COMPANY_PASS=${{ secrets.COMPANY_PASS }}
+            ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
+
+      - name: Build and Push Frontend
+        run: |
+          API_URL=$(gcloud run services describe amend-api-${{ env.ENV }} --region ${{ env.REGION }} --format 'value(status.url)')
+          IMAGE_NAME=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:${{ env.ENV }}-${{ github.sha }}
+          
+          docker build -t $IMAGE_NAME \
+            --build-arg VITE_API_BASE_URL=$API_URL \
+            -f frontend/Dockerfile.prod ./frontend
+          docker push $IMAGE_NAME
+          echo "FE_IMAGE=$IMAGE_NAME" >> $GITHUB_ENV
+
+      - name: Deploy Frontend to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: amend-frontend-${{ env.ENV }}
+          image: ${{ env.FE_IMAGE }}
+          region: ${{ env.REGION }}
+          flags: --allow-unauthenticated
