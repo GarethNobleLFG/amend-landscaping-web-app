@@ -1,39 +1,22 @@
 import { motion } from 'framer-motion';
-import { Leaf, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Header from '../../components/Header';
 
 export default function Commercial() {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-neutral-50 text-gray-800 font-sans selection:bg-green-200 flex flex-col justify-between">
-      
+
       {/* --- Navigation Header --- */}
-      <motion.header 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full px-6 lg:px-12 py-5 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm flex justify-between items-center sticky top-0 z-50 transition-all font-medium"
-      >
-        <div 
-          onClick={() => navigate('/')} 
-          className="flex items-center gap-2 text-2xl font-black text-green-800 tracking-tight cursor-pointer"
-        >
-          Amend <Leaf className="w-6 h-6 text-green-600 fill-green-600/20" /> <span className="text-gray-900">Landscaping</span>
-        </div>
-        <button 
-          onClick={() => navigate('/')} 
-          className="text-gray-600 hover:text-green-700 transition-colors font-bold text-sm tracking-wide uppercase px-4 py-2 hover:bg-neutral-100 rounded-lg"
-        >
-          Back To Home
-        </button>
-      </motion.header>
+      <Header showNav={false} showBackToHome={true} />
 
       {/* --- Spanning Split-Layout Service Welcome --- */}
       <main className="flex-grow w-full max-w-7xl mx-auto px-6 lg:px-12 py-12 lg:py-16 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-        
+
         {/* Left Side: Welcome Content */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
@@ -67,7 +50,7 @@ export default function Commercial() {
         </motion.div>
 
         {/* Right Side: Elegant Spanning Presentation Card */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
@@ -75,10 +58,10 @@ export default function Commercial() {
         >
           {/* Decorative Back Gradients matching Landing Page Theme */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-green-300 rounded-full blur-[100px] opacity-30 mix-blend-multiply pointer-events-none"></div>
-          
-          <img 
-            src="/sample-imgs/istockphoto-1312760160-612x612.jpg" 
-            alt="Pristine Commercial Estate Lawn Care" 
+
+          <img
+            src="/sample-imgs/istockphoto-1312760160-612x612.jpg"
+            alt="Pristine Commercial Estate Lawn Care"
             className="w-full h-full object-cover rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.12)] border-[8px] md:border-[12px] border-white z-10 relative"
           />
         </motion.div>

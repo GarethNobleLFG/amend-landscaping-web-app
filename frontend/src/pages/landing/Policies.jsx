@@ -1,29 +1,13 @@
 import { motion } from 'framer-motion';
-import { Leaf, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
+import Header from '../../components/Header';
 
 const Policies = () => {
     return (
         <div className="min-h-screen bg-neutral-50 text-gray-800">
 
             {/* Navigation */}
-            <motion.header
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="w-full px-6 lg:px-12 py-5 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm flex justify-between items-center sticky top-0 z-50 transition-all font-medium"
-            >
-                <div className="flex items-center gap-2 text-2xl font-black text-green-800 tracking-tight">
-                Amend <Leaf className="w-6 h-6 text-green-600 fill-green-600/20" /> <span className="text-gray-900">Landscaping</span>
-                </div>
-                <nav className="space-x-8 hidden md:flex items-center text-gray-600">
-                <a href="/#services" className="hover:text-green-700 transition-colors">Services</a>
-                <a href="/policies" className="hover:text-green-700 transition-colors">Policies</a>
-                <a href="/about" className="hover:text-green-700 transition-colors">About</a>
-                <a href="/pricing" className="hover:text-green-700 transition-colors">Pricing</a>
-                <a href="/#feedback" className="hover:text-green-700 transition-colors">
-                Feedback/Questions
-                </a>
-                </nav>
-            </motion.header>
+            <Header />
 
             {/* Content */}
             <div className="max-w-4xl mx-auto px-6 py-16">
@@ -51,7 +35,7 @@ const Policies = () => {
 
                 {/* Policies List */}
                 <div
-                    
+
                     className="bg-white border border-gray-100 rounded-[2rem] p-8 md:p-12 shadow-sm space-y-8"
                 >
 
@@ -120,7 +104,7 @@ const Policies = () => {
                 {/* CTA */}
                 <div className="text-center mt-16">
                     <h2 className="text-3xl font-black text-gray-900 mb-4">
-                         Ready to transform your property?
+                        Ready to transform your property?
                     </h2>
 
                     <a
@@ -131,7 +115,7 @@ const Policies = () => {
                     </a>
                 </div>
 
-               
+
             </div>
         </div>
     );

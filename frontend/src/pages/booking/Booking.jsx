@@ -4,16 +4,8 @@ import { motion as motionElement } from 'framer-motion';
 import { AnimatePresence } from 'framer-motion';
 import { Leaf, ArrowRight, ArrowLeft, Check, User, Sparkles, MapPin } from 'lucide-react';
 import { useCreateAppointment } from '../../hooks/appointmentHooks';
+import { useGetServices } from '../../hooks/serviceHooks';
 import SuccessModal from './SuccessModal';
-
-const availableServices = [
-    { id: 'mowing', label: 'Precision Mowing' },
-    { id: 'landscaping', label: 'Custom Landscaping' },
-    { id: 'tree_trimming', label: 'Arborist / Tree Trimming' },
-    { id: 'cleanup', label: 'Seasonal Yard Cleanup' },
-    { id: 'fertilization', label: 'Fertilization & Weed Control' },
-    { id: 'design', label: '3D Backyard Design' }
-];
 
 const slideImages = [
     '/sample-imgs/betsys-cropped.jpg',
@@ -35,6 +27,7 @@ export default function Booking() {
     const isCommercial = !!location.state?.isCommercial;
 
     const { createAppointment, isLoading, error } = useCreateAppointment();
+    const { services, fetchServices, isLoading: servicesLoading, error: servicesError } = useGetServices();
 
     const handleBackClick = () => {
         if (step === 2) {
@@ -48,6 +41,10 @@ export default function Booking() {
             }
         }
     };
+
+    useEffect(() => {
+        fetchServices();
+    }, [fetchServices]);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -77,13 +74,14 @@ export default function Booking() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleServiceToggle = (serviceId) => {
+    const handleServiceToggle = (serviceName) => {
         setFormData(prev => {
-            const isSelected = prev.servicesRequested.includes(serviceId);
+            const isSelected = prev.servicesRequested.includes(serviceName);
             if (isSelected) {
-                return { ...prev, servicesRequested: prev.servicesRequested.filter(id => id !== serviceId) };
-            } else {
-                return { ...prev, servicesRequested: [...prev.servicesRequested, serviceId] };
+                return { ...prev, servicesRequested: prev.servicesRequested.filter(name => name !== serviceName) };
+            } 
+            else {
+                return { ...prev, servicesRequested: [...prev.servicesRequested, serviceName] };
             }
         });
     };
@@ -219,25 +217,43 @@ export default function Booking() {
                                 </h2>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                                {availableServices.map((service) => {
-                                    const isSelected = formData.servicesRequested.includes(service.id);
-                                    return (
-                                        <div
-                                            key={service.id}
-                                            onClick={() => handleServiceToggle(service.id)}
-                                            className={`cursor-pointer p-5 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between ${isSelected ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-green-200 hover:bg-white bg-white/50'
-                                                }`}
-                                        >
-                                            <span className={`font-bold ${isSelected ? 'text-green-800' : 'text-gray-700'}`}>{service.label}</span>
-                                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300'
-                                                }`}>
-                                                {isSelected && <Check className="w-4 h-4" />}
+                            {servicesLoading ? (
+                                <div className="flex justify-center py-20">
+                                    <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+                                </div>
+                            ) : servicesError ? (
+                                <div className="mb-8 p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl font-bold text-center">
+                                    {servicesError}
+                                </div>
+                            ) : services.length === 0 ? (
+                                <div className="mb-8 p-8 bg-gray-50 border border-dashed border-gray-200 rounded-2xl text-center">
+                                    <Leaf className="w-10 h-10 text-gray-300 mx-auto mb-4 animate-pulse" />
+                                    <p className="font-bold text-gray-700">No services currently available</p>
+                                    <p className="text-sm text-gray-500 mt-1">Please try again later or contact support directly!</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                                    {services.map((service) => {
+                                        const isSelected = formData.servicesRequested.includes(service.name);
+                                        return (
+                                            <div
+                                                key={service.id}
+                                                onClick={() => handleServiceToggle(service.name)}
+                                                className={`cursor-pointer p-5 rounded-2xl border-2 transition-all duration-300 flex items-center justify-between ${isSelected ? 'border-green-500 bg-green-50' : 'border-gray-100 hover:border-green-200 hover:bg-white bg-white/50'
+                                                    }`}
+                                            >
+                                                <div className="flex flex-col text-left gap-1 pr-4">
+                                                    <span className={`font-bold leading-tight ${isSelected ? 'text-green-800' : 'text-gray-700'}`}>{service.name}</span>
+                                                </div>
+                                                <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300'
+                                                    }`}>
+                                                    {isSelected && <Check className="w-4 h-4" />}
+                                                </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
 
                             <div className="mb-8">
                                 <label className="block text-sm font-bold text-gray-700 mb-2">
@@ -257,7 +273,7 @@ export default function Booking() {
 
                             <button
                                 onClick={nextStep}
-                                disabled={formData.servicesRequested.length === 0}
+                                disabled={formData.servicesRequested.length === 0 || servicesLoading}
                                 className="mt-auto w-full flex items-center justify-center gap-2 bg-green-700 disabled:bg-gray-300 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 disabled:hover:bg-gray-300 transition-colors shadow-lg"
                             >
                                 Next: {isCommercial ? 'Company & Rep Details' : 'Personal Details'} <ArrowRight className="w-5 h-5" />

@@ -1,34 +1,17 @@
 import { motion } from 'framer-motion';
 import { Leaf, Award, Users, Target } from 'lucide-react';
+import Header from '../../components/Header';
 
 const About = () => {
     return (
         <div className="min-h-screen bg-neutral-50 text-gray-800">
-
             {/* Navigation Header */}
-            <motion.header
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="w-full px-6 lg:px-12 py-5 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm flex justify-between items-center sticky top-0 z-50 transition-all font-medium"
-            >
-                <div className="flex items-center gap-2 text-2xl font-black text-green-800 tracking-tight">
-                Amend <Leaf className="w-6 h-6 text-green-600 fill-green-600/20" /> <span className="text-gray-900">Landscaping</span>
-                </div>
-                <nav className="space-x-8 hidden md:flex items-center text-gray-600">
-                <a href="/#services" className="hover:text-green-700 transition-colors">Services</a>
-                <a href="/policies" className="hover:text-green-700 transition-colors">Policies</a>
-                <a href="/about" className="hover:text-green-700 transition-colors">About</a>
-                <a href="/pricing" className="hover:text-green-700 transition-colors">Pricing</a>
-                <a href="/#feedback" className="hover:text-green-700 transition-colors">
-                Feedback/Questions
-                </a>
-                </nav>
-            </motion.header>
+            <Header />
 
             {/* Main Content */}
             <div className="max-w-5xl mx-auto px-6 py-12 lg:py-16">
 
-                
+
 
                 {/* Content Card */}
                 <motion.div
@@ -38,15 +21,15 @@ const About = () => {
                     className="bg-white rounded-[2rem] p-8 md:p-12 border border-gray-100 shadow-sm"
                 >
                     <div className="mb-10">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 font-bold text-sm tracking-wide uppercase mb-6">
-                        <Leaf className="w-4 h-4" />
-                        About Amend Landscaping
-                    </div>
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 font-bold text-sm tracking-wide uppercase mb-6">
+                            <Leaf className="w-4 h-4" />
+                            About Amend Landscaping
+                        </div>
 
-                    <h1 className="text-5xl md:text-6xl font-black tracking-tight text-gray-900">
-                        Our Story
-                    </h1>
-                </div>
+                        <h1 className="text-5xl md:text-6xl font-black tracking-tight text-gray-900">
+                            Our Story
+                        </h1>
+                    </div>
 
                     <div className="space-y-6 text-lg text-gray-600 leading-relaxed">
                         <p>
