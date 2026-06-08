@@ -6,7 +6,7 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  REGION: us-east5
+  REGION: us-east1
   REPO_NAME: amend-landscaping-repo
 
 jobs:
