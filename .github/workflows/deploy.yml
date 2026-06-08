@@ -38,6 +38,15 @@ jobs:
             echo "DB_URL=${{ secrets.DATABASE_URL_DEV }}" >> $GITHUB_ENV
           fi
 
+      - name: Run Database Migrations
+        working-directory: ./api
+        env:
+         DATABASE_URL: ${{ env.DB_URL }}
+         NODE_ENV: production
+        run: |
+         npm install
+         npx sequelize-cli db:migrate --env production
+
       # -----------------------------------------------------------------
       # API DEPLOYMENT
       # -----------------------------------------------------------------
