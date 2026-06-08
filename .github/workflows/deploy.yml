@@ -47,6 +47,14 @@ jobs:
          npm install
          npx sequelize-cli db:migrate --env production
 
+      - name: Ensure Artifact Registry exists
+        run: |
+          gcloud artifacts repositories describe ${{ env.REPO_NAME }} --location=${{ env.REGION }} || \
+          gcloud artifacts repositories create ${{ env.REPO_NAME }} \
+            --repository-format=docker \
+            --location=${{ env.REGION }} \
+            --description="Docker repository"
+
       # -----------------------------------------------------------------
       # API DEPLOYMENT
       # -----------------------------------------------------------------
