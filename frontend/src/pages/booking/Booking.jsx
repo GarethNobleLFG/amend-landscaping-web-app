@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion as motionElement } from 'framer-motion';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Leaf, ArrowRight, ArrowLeft, Check, User, Sparkles, MapPin } from 'lucide-react';
 import { useCreateAppointment } from '../../hooks/appointmentHooks';
 import { useGetServices } from '../../hooks/serviceHooks';
@@ -25,7 +25,7 @@ export default function Booking() {
 
     useEffect(() => {
         fetchServices();
-        fetchLandingImages(); 
+        fetchLandingImages();
     }, [fetchServices, fetchLandingImages]);
 
     const slideImages = useMemo(() => {
@@ -35,7 +35,7 @@ export default function Booking() {
     }, [apiImages]);
 
     useEffect(() => {
-        if (slideImages.length <= 1) return; 
+        if (slideImages.length <= 1) return;
         const timer = setInterval(() => {
             setCurrentIndex((prevIndex) => (prevIndex + 1) % slideImages.length);
         }, 5000);
@@ -111,6 +111,13 @@ export default function Booking() {
         exit: { opacity: 0, x: -50, transition: { duration: 0.3 } }
     };
 
+    const transition = {
+        duration: 0.9,
+        ease: "anticipate"
+    };
+
+    const isEmpty = total === 0;
+
     return (
         <div className="relative min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-green-200 py-12 px-4 sm:px-6 flex flex-col items-center overflow-hidden">
 
@@ -131,23 +138,36 @@ export default function Booking() {
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-green-100/50 rounded-full blur-[140px] z-0"></div>
 
-                {total > 0 && (
-                    <div className="relative w-full h-full">
-                        {/* Left Floating Image (Just Appear) */}
-                        <img
-                            src={slideImages[prevIndex]}
-                            alt="Background Left"
-                            className="absolute top-[15%]-left-10 lg:left-[5%] w-[35%] max-w-[400px] h-[45%] object-cover rounded-3xl shadow-2xl border-4 border-white z-10 hidden lg:block -translate-x-[15%] -translate-y-[10%] -rotate-[8deg] opacity-80"
-                        />
-
-                        {/* Right Floating Image (Just Appear) */}
-                        <img
-                            src={slideImages[nextIndex]}
-                            alt="Background Right"
-                            className="absolute bottom-[10%]-right-10 lg:right-[5%] w-[35%] max-w-[400px] h-[45%] object-cover rounded-3xl shadow-2xl border-4 border-white z-10 hidden lg:block translate-x-[15%] translate-y-[10%] rotate-[8deg] opacity-80"
-                        />
-                    </div>
-                )}
+                <AnimatePresence mode="popLayout">
+                    {!isEmpty && [
+                        // Position: Left
+                        total > 1 && (
+                            <motion.img
+                                key={`prev-${currentIndex}`}
+                                src={slideImages[prevIndex]}
+                                alt="Background Left"
+                                initial={{ opacity: 0, x: '-30%', y: '10%', rotate: -15, scale: 0.8 }}
+                                animate={{ opacity: 0.8, x: '-15%', y: '-10%', rotate: -8, scale: 1 }}
+                                exit={{ opacity: 0, x: '-40%', y: '15%', scale: 0.8 }} // Drift left on exit
+                                transition={transition}
+                                className="absolute top-[15%] left-[5%] w-[35%] max-w-[400px] h-[45%] object-cover rounded-3xl shadow-2xl border-4 border-white z-0 hidden lg:block"
+                            />
+                        ),
+                        // Position: Right
+                        total > 1 && (
+                            <motion.img
+                                key={`next-${currentIndex}`}
+                                src={slideImages[nextIndex]}
+                                alt="Background Right"
+                                initial={{ opacity: 0, x: '30%', y: '-10%', rotate: 15, scale: 0.8 }}
+                                animate={{ opacity: 0.8, x: '15%', y: '10%', rotate: 8, scale: 1 }}
+                                exit={{ opacity: 0, x: '40%', y: '-15%', scale: 0.8 }} // Drift right on exit
+                                transition={transition}
+                                className="absolute bottom-[10%] right-[5%] w-[35%] max-w-[400px] h-[45%] object-cover rounded-3xl shadow-2xl border-4 border-white z-0 hidden lg:block"
+                            />
+                        )
+                    ].filter(Boolean)}
+                </AnimatePresence>
             </div>
 
             {/* Header */}
