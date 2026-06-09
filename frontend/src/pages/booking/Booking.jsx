@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion as motionElement } from 'framer-motion';
 import { AnimatePresence } from 'framer-motion';
@@ -6,14 +6,7 @@ import { Leaf, ArrowRight, ArrowLeft, Check, User, Sparkles, MapPin } from 'luci
 import { useCreateAppointment } from '../../hooks/appointmentHooks';
 import { useGetServices } from '../../hooks/serviceHooks';
 import SuccessModal from './SuccessModal';
-
-const slideImages = [
-    '/sample-imgs/betsys-cropped.jpg',
-    '/sample-imgs/istockphoto-1312760160-612x612.jpg',
-    '/sample-imgs/istockphoto-1347784849-612x612.jpg',
-    '/sample-imgs/rsz_dsc_0034.jpg',
-    '/sample-imgs/images.jpg'
-];
+import { useLandingImages } from '../../hooks/landingImageHooks';
 
 export default function Booking() {
     const [step, setStep] = useState(1);
@@ -23,38 +16,35 @@ export default function Booking() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Dynamically retrieve the commercial boolean flag from router state
     const isCommercial = !!location.state?.isCommercial;
 
     const { createAppointment, isLoading, error } = useCreateAppointment();
     const { services, fetchServices, isLoading: servicesLoading, error: servicesError } = useGetServices();
 
-    const handleBackClick = () => {
-        if (step === 2) {
-            prevStep();
-        } else {
-            // Intelligent back router
-            if (isCommercial) {
-                navigate('/commercial');
-            } else {
-                navigate('/');
-            }
-        }
-    };
+    const { images: apiImages, fetchLandingImages } = useLandingImages();
 
     useEffect(() => {
         fetchServices();
-    }, [fetchServices]);
+        fetchLandingImages(); 
+    }, [fetchServices, fetchLandingImages]);
+
+    const slideImages = useMemo(() => {
+        return apiImages
+            .filter(img => img.url)
+            .map(img => img.url);
+    }, [apiImages]);
 
     useEffect(() => {
+        if (slideImages.length <= 1) return; 
         const timer = setInterval(() => {
             setCurrentIndex((prevIndex) => (prevIndex + 1) % slideImages.length);
         }, 5000);
         return () => clearInterval(timer);
-    }, []);
+    }, [slideImages.length]);
 
-    const prevIndex = (currentIndex - 1 + slideImages.length) % slideImages.length;
-    const nextIndex = (currentIndex + 1) % slideImages.length;
+    const total = slideImages.length;
+    const prevIndex = total > 0 ? (currentIndex - 1 + total) % total : 0;
+    const nextIndex = total > 0 ? (currentIndex + 1) % total : 0;
 
     const [formData, setFormData] = useState({
         servicesRequested: [],
@@ -79,7 +69,7 @@ export default function Booking() {
             const isSelected = prev.servicesRequested.includes(serviceName);
             if (isSelected) {
                 return { ...prev, servicesRequested: prev.servicesRequested.filter(name => name !== serviceName) };
-            } 
+            }
             else {
                 return { ...prev, servicesRequested: [...prev.servicesRequested, serviceName] };
             }
@@ -127,7 +117,7 @@ export default function Booking() {
             {/* Top Left Back Button */}
             <div className="absolute top-6 left-6 z-50">
                 <button
-                    onClick={handleBackClick}
+                    onClick={() => navigate('/')}
                     className="flex items-center gap-2 bg-white/90 backdrop-blur-md text-gray-700 font-bold px-4 py-3 rounded-xl shadow-lg border border-gray-100 hover:bg-green-50 hover:text-green-700 transition-all hover:-translate-x-1"
                 >
                     <ArrowLeft className="w-5 h-5" />
@@ -140,29 +130,24 @@ export default function Booking() {
             {/* Background Image Collage */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-green-100/50 rounded-full blur-[140px] z-0"></div>
-                <AnimatePresence mode="popLayout">
-                    {/* Left Floating Image */}
-                    <motionElement.img
-                        key={`prev-${currentIndex}`}
-                        src={slideImages[prevIndex]}
-                        initial={{ opacity: 0, x: '-60%', y: '10%', rotate: -15, scale: 0.8 }}
-                        animate={{ opacity: 0.8, x: '-15%', y: '-10%', rotate: -8, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 1.2, ease: "anticipate" }}
-                        className="absolute top-[15%] left-[5%] w-[35%] max-w-[400px] h-[45%] object-cover rounded-3xl shadow-2xl border-4 border-white z-10 hidden lg:block"
-                    />
 
-                    {/* Right Floating Image */}
-                    <motionElement.img
-                        key={`next-${currentIndex}`}
-                        src={slideImages[nextIndex]}
-                        initial={{ opacity: 0, x: '60%', y: '-10%', rotate: 15, scale: 0.8 }}
-                        animate={{ opacity: 0.8, x: '15%', y: '10%', rotate: 8, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 1.2, ease: "anticipate" }}
-                        className="absolute bottom-[10%] right-[5%] w-[35%] max-w-[400px] h-[45%] object-cover rounded-3xl shadow-2xl border-4 border-white z-10 hidden lg:block"
-                    />
-                </AnimatePresence>
+                {total > 0 && (
+                    <div className="relative w-full h-full">
+                        {/* Left Floating Image (Just Appear) */}
+                        <img
+                            src={slideImages[prevIndex]}
+                            alt="Background Left"
+                            className="absolute top-[15%]-left-10 lg:left-[5%] w-[35%] max-w-[400px] h-[45%] object-cover rounded-3xl shadow-2xl border-4 border-white z-10 hidden lg:block -translate-x-[15%] -translate-y-[10%] -rotate-[8deg] opacity-80"
+                        />
+
+                        {/* Right Floating Image (Just Appear) */}
+                        <img
+                            src={slideImages[nextIndex]}
+                            alt="Background Right"
+                            className="absolute bottom-[10%]-right-10 lg:right-[5%] w-[35%] max-w-[400px] h-[45%] object-cover rounded-3xl shadow-2xl border-4 border-white z-10 hidden lg:block translate-x-[15%] translate-y-[10%] rotate-[8deg] opacity-80"
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Header */}
@@ -170,14 +155,14 @@ export default function Booking() {
                 <div className="flex items-center justify-center gap-2 text-2xl font-black text-green-800 tracking-tight mb-8 select-none">
                     Amend <Leaf className="w-6 h-6 text-green-600 fill-green-600/20" /> {isCommercial ? 'Commercial' : 'Landscaping'}
                 </div>
-                
+
                 <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4 drop-shadow-sm">
                     {isCommercial ? 'Commercial Registration' : 'Book an Appointment'}
                 </h1>
-                
+
                 <p className="text-lg text-gray-700 font-medium drop-shadow-sm max-w-lg mx-auto">
-                    {isCommercial 
-                        ? 'Register your property profile to get scheduled contracts, bids, and customized service standards.' 
+                    {isCommercial
+                        ? 'Register your property profile to get scheduled contracts, bids, and customized service standards.'
                         : "Tell us what your yard needs, and we'll handle the rest."}
                 </p>
 
@@ -265,8 +250,8 @@ export default function Booking() {
                                     onChange={handleInputChange}
                                     rows="4"
                                     className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all resize-none"
-                                    placeholder={isCommercial 
-                                        ? "E.g., Office park with 3 green belts. Requesting bi-weekly maintenance schedules and winterizations." 
+                                    placeholder={isCommercial
+                                        ? "E.g., Office park with 3 green belts. Requesting bi-weekly maintenance schedules and winterizations."
                                         : "E.g., I have a large oak tree that needs structural pruning, and the front flower beds need fresh mulch."}
                                 ></textarea>
                             </div>
@@ -297,28 +282,28 @@ export default function Booking() {
                                         <label className="block text-sm font-bold text-gray-700 mb-2">
                                             {isCommercial ? 'Company Name *' : 'Full Name *'}
                                         </label>
-                                        <input 
-                                            required 
-                                            type="text" 
-                                            name="name" 
-                                            value={formData.name} 
-                                            onChange={handleInputChange} 
-                                            className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" 
-                                            placeholder={isCommercial ? "Amend Landscaping LLC" : "John Doe"} 
+                                        <input
+                                            required
+                                            type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium"
+                                            placeholder={isCommercial ? "Amend Landscaping LLC" : "John Doe"}
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-2">
                                             {isCommercial ? 'Representative / Contact Phone *' : 'Phone Number *'}
                                         </label>
-                                        <input 
-                                            required 
-                                            type="tel" 
-                                            name="phoneNumber" 
-                                            value={formData.phoneNumber} 
-                                            onChange={handleInputChange} 
-                                            className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" 
-                                            placeholder="(555) 123-4567" 
+                                        <input
+                                            required
+                                            type="tel"
+                                            name="phoneNumber"
+                                            value={formData.phoneNumber}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium"
+                                            placeholder="(555) 123-4567"
                                         />
                                     </div>
                                 </div>
@@ -327,14 +312,14 @@ export default function Booking() {
                                     <label className="block text-sm font-bold text-gray-700 mb-2">
                                         {isCommercial ? 'Organization Email Address *' : 'Email Address *'}
                                     </label>
-                                    <input 
-                                        required 
-                                        type="email" 
-                                        name="email" 
-                                        value={formData.email} 
-                                        onChange={handleInputChange} 
-                                        className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" 
-                                        placeholder={isCommercial ? "facilities@corporate.com" : "john@example.com"} 
+                                    <input
+                                        required
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                        className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium"
+                                        placeholder={isCommercial ? "facilities@corporate.com" : "john@example.com"}
                                     />
                                 </div>
 
@@ -346,14 +331,14 @@ export default function Booking() {
                                     <label className="block text-sm font-bold text-gray-700 mb-2">
                                         {isCommercial ? 'Property Street Address *' : 'Street Address *'}
                                     </label>
-                                    <input 
-                                        required 
-                                        type="text" 
-                                        name="address" 
-                                        value={formData.address} 
-                                        onChange={handleInputChange} 
-                                        className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" 
-                                        placeholder={isCommercial ? "100 Corporate Parkway, Suite 200" : "123 Oak Street"} 
+                                    <input
+                                        required
+                                        type="text"
+                                        name="address"
+                                        value={formData.address}
+                                        onChange={handleInputChange}
+                                        className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium"
+                                        placeholder={isCommercial ? "100 Corporate Parkway, Suite 200" : "123 Oak Street"}
                                     />
                                 </div>
 
