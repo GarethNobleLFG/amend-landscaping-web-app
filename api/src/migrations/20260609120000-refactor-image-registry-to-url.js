@@ -13,7 +13,7 @@ module.exports = {
     if (!tableInfo.image_url) {
       await queryInterface.addColumn('image_registry', 'image_url', {
         type: Sequelize.TEXT,
-        allowNull: false,
+        allowNull: true,
       });
     }
 
