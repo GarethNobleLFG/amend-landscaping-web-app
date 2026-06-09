@@ -15,7 +15,7 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
 
   // Track the ID for the database and the data for the preview
   const [imageId, setImageId] = useState(service?.image_id ?? null);
-  const [imagePreview, setImagePreview] = useState(service?.image?.image_data ?? '');
+  const [imagePreview, setImagePreview] = useState(service?.imageUrl ?? '');
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
   const { createService } = useCreateService();
@@ -95,7 +95,7 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setImageId(null); setImagePreview(''); }} 
+                    onClick={() => { setImageId(null); setImagePreview(''); }}
                     className="bg-red-500 text-white p-1.5 rounded-lg hover:bg-red-600 transition shadow-sm"
                   >
                     <X className="w-4 h-4" />
@@ -201,13 +201,9 @@ const ServiceCard = ({ service, onEdit, onDelete }) => (
     exit={{ opacity: 0, scale: 0.95 }}
     className="bg-white border border-gray-100 rounded-2xl flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
   >
-    {service.image?.image_data && (
+    {service.imageUrl && (
       <div className="w-full h-36 relative overflow-hidden bg-gray-50 border-b border-gray-100">
-        <img
-          src={service.image.image_data}
-          alt={service.name}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-        />
+        <img src={service.imageUrl} alt="Service" className="..." />
       </div>
     )}
 
@@ -257,9 +253,11 @@ const ServicesTab = () => {
   const [deleteState, setDeleteState] = useState({ open: false, service: null });
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {const token = localStorage.getItem('token');
+  useEffect(() => {
+    const token = localStorage.getItem('token');
 
-  if (!token) return; fetchAllServices(); }, [fetchAllServices]);
+    if (!token) return; fetchAllServices();
+  }, [fetchAllServices]);
 
   const handleSaved = () => {
     setFormState({ open: false, service: null });

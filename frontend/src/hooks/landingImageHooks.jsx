@@ -27,12 +27,18 @@ export function useLandingImages() {
                 throw new Error('Failed to fetch landing images');
             }
             const data = await response.json();
-            setImages(data);
+            const hydratedData = data.map(img => ({
+                ...img,
+                url: img.image_id ? `${API_BASE_URL}/images/stream/${img.image_id}` : null
+            }));
+            setImages(hydratedData);
             return { success: true, data };
-        } catch (err) {
+        }
+        catch (err) {
             setError(err.message);
             return { success: false, error: err.message };
-        } finally {
+        }
+        finally {
             setIsLoading(false);
         }
     }, []);

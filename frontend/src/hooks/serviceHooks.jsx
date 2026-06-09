@@ -16,16 +16,12 @@ const getAuthHeaders = () => {
 };
 
 const handleAuthError = (navigate, showSessionExpired) => {
-    localStorage.removeItem('token');
-  
-    console.log('Session expired, show show popup');
-    if (showSessionExpired) {   
-    showSessionExpired();
-    }
+  localStorage.removeItem('token');
 
-      
-  
-  
+  console.log('Session expired, show show popup');
+  if (showSessionExpired) {
+    showSessionExpired();
+  }
 };
 
 const isAuthError = (status) => status === 401 || status === 403;
@@ -42,10 +38,16 @@ export const useGetServices = () => {
       const res = await fetch(`${API_BASE_URL}/services`);
       if (!res.ok) throw new Error('Failed to load services');
       const data = await res.json();
-      setServices(data);
-    } catch (err) {
+      const servicesWithUrls = data.map(service => ({
+        ...service,
+        imageUrl: service.image_id ? `${API_BASE_URL}/images/stream/${service.image_id}` : null
+      }));
+      setServices(servicesWithUrls);
+    }
+    catch (err) {
       setError(err.message);
-    } finally {
+    }
+    finally {
       setIsLoading(false);
     }
   }, []);
@@ -86,11 +88,11 @@ export const useGetAllServices = () => {
 export const useCreateService = () => {
   const [isLoading, setIsLoading] = useState(false); // Added loading state for consistency
 
- 
-    
+
+
   const navigate = useNavigate();
   const { showSessionExpired } = useSessionExpired();
-  const createService = async (name, description, is_available,image_id) => {
+  const createService = async (name, description, is_available, image_id) => {
     setIsLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/services`, {
@@ -117,12 +119,12 @@ export const useUpdateService = () => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-    
+
 
   const navigate = useNavigate();
   const { showSessionExpired } = useSessionExpired();
-  const updateService = async (id, name, description, is_available,image_id) => {
-  setIsLoading(true);
+  const updateService = async (id, name, description, is_available, image_id) => {
+    setIsLoading(true);
 
 
     try {

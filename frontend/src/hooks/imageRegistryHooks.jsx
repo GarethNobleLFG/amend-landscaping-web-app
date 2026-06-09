@@ -10,6 +10,8 @@ const getAuthHeaders = () => {
     };
 };
 
+export const getImageStreamUrl = (id) => `${API_BASE_URL}/images/stream/${id}`;
+
 export function useGetImages() {
     const [images, setImages] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -24,10 +26,16 @@ export function useGetImages() {
             });
             if (!response.ok) throw new Error('Failed to fetch images');
             const data = await response.json();
-            setImages(data);
-        } catch (err) {
+            const imagesWithUrls = data.map(img => ({
+                ...img,
+                url: `${API_BASE_URL}/images/stream/${img.id}` 
+            }));
+            setImages(imagesWithUrls);
+        }
+        catch (err) {
             setError(err.message);
-        } finally {
+        }
+        finally {
             setIsLoading(false);
         }
     }, []);
@@ -48,10 +56,10 @@ export function useUploadImage() {
             });
             if (!response.ok) throw new Error('Upload failed');
             return { success: true, data: await response.json() };
-        } 
+        }
         catch (err) {
             return { success: false, error: err.message };
-        } 
+        }
         finally {
             setIsLoading(false);
         }
@@ -71,11 +79,11 @@ export function useDeleteImage() {
                 headers: getAuthHeaders(),
             });
             return response.ok;
-        } 
+        }
         catch (err) {
             console.log(err);
             return false;
-        } 
+        }
         finally {
             setIsDeleting(false);
         }

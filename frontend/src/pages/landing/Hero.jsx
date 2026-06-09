@@ -15,8 +15,8 @@ export default function Hero() {
 
   const slideImages = useMemo(() => {
     return apiImages
-      .filter(img => img.image?.image_data)
-      .map(img => img.image.image_data);
+      .filter(img => img.url) 
+      .map(img => img.url);   
   }, [apiImages]);
 
   useEffect(() => {

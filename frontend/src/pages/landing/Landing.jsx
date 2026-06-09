@@ -66,8 +66,12 @@ function Landing() {
                 <motion.div key={service.id} variants={itemVariants} className="group rounded-[2rem] bg-gray-50 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 flex flex-col">
                   <div className="relative h-64 lg:h-72 overflow-hidden bg-green-100 flex items-center justify-center">
                     {/* FIXED: Using .image?.image_data to handle the object structure */}
-                    {service.image?.image_data ? (
-                      <img src={service.image.image_data} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={service.name} />
+                    {service.imageUrl ? (
+                      <img
+                        src={service.imageUrl}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        alt={service.name}
+                      />
                     ) : (
                       <Leaf className="w-12 h-12 text-green-600 opacity-20" />
                     )}

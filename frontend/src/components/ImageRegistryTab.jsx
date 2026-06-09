@@ -102,7 +102,7 @@ const ImageRegistryTab = () => {
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 className="group relative aspect-square bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100"
                             >
-                                <img src={img.image_data} alt="Registry" className="w-full h-full object-cover" />
+                                <img src={img.url} alt="Registry" className="w-full h-full object-cover" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                                     <button
                                         onClick={() => handleDelete(img.id)}

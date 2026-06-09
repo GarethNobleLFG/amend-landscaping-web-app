@@ -1,5 +1,4 @@
 const LandingImage = require('../models/landingImages');
-const ImageRegistry = require('../models/imageRegistry');
 
 const create = async (data) => {
   return await LandingImage.create(data);
@@ -7,23 +6,12 @@ const create = async (data) => {
 
 const findAll = async () => {
   return await LandingImage.findAll({
-    include: [{ 
-      model: ImageRegistry, 
-      as: 'image',
-      attributes: ['image_data'] 
-    }],
     order: [['createdAt', 'DESC']]
   });
 };
 
 const findById = async (id) => {
-  return await LandingImage.findByPk(id, {
-    include: [{ 
-      model: ImageRegistry, 
-      as: 'image',
-      attributes: ['image_data'] 
-    }]
-  });
+  return await LandingImage.findByPk(id);
 };
 
 const deleteImage = async (id) => {

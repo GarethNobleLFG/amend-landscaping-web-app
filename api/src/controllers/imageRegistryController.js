@@ -5,7 +5,7 @@ const uploadImage = async (req, res) => {
     const { image_data } = req.body;
     const result = await imageRegistryService.uploadImage(image_data);
     res.status(201).json(result.data);
-  } 
+  }
   catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -15,7 +15,7 @@ const getAllImages = async (req, res) => {
   try {
     const images = await imageRegistryService.getAllImages();
     res.status(200).json(images);
-  } 
+  }
   catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -28,7 +28,7 @@ const getImageById = async (req, res) => {
       return res.status(404).json({ error: 'Image not found' });
     }
     res.status(200).json(image);
-  } 
+  }
   catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -41,7 +41,7 @@ const deleteImage = async (req, res) => {
       return res.status(404).json({ error: 'Image not found' });
     }
     res.status(204).send();
-  } 
+  }
   catch (error) {
     res.status(500).json({ error: error.message });
   }

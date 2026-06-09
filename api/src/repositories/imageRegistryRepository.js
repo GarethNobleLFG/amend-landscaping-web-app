@@ -5,13 +5,15 @@ const create = async (imageData) => {
 };
 
 const findAll = async () => {
-  return await ImageRegistry.findAll();
+  return await ImageRegistry.findAll({
+    attributes: { exclude: ['image_data'] },
+    order: [['createdAt', 'DESC']]
+  });
 };
 
 const findById = async (id) => {
   return await ImageRegistry.findByPk(id);
 };
-
 
 const deleteImage = async (id) => {
   const image = await ImageRegistry.findByPk(id);
