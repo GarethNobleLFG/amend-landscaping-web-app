@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLandingImages } from '../../hooks/landingImageHooks';
-import Logo from '../../assets/hero.png';
 
 export default function Hero() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -97,15 +96,7 @@ export default function Hero() {
           {/* AnimatePresence must be around the EXACT elements that change (the images) */}
           <AnimatePresence mode="popLayout">
             {isEmpty ? (
-              <motion.img
-                key="logo-hero"
-                src={Logo}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={transition}
-                className="w-[85%] lg:w-[80%] h-auto object-contain z-20 drop-shadow-2xl"
-              />
+              null
             ) : (
               /* Mapping positions to the AnimatePresence direct children flow */
               [
