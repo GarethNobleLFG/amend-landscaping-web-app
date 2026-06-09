@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./src/config/database');
-const path = require('path'); 
+const path = require('path');
 
 const appointmentRoutes = require('./src/routes/appointmentRoutes');
 const userRoutes = require('./src/routes/userRoutes');
@@ -16,7 +16,7 @@ const app = express();
 const port = process.env.PORT;
 
 const collectDefaultMetrics = client.collectDefaultMetrics;
-collectDefaultMetrics(); 
+collectDefaultMetrics();
 
 // Define a Custom Metric for Tracking Requests
 const httpRequestDurationMicroseconds = new client.Histogram({
@@ -44,7 +44,11 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
+// This is static file path for local development of image storing, uploading, and retrieving.
+app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads'), {
+  maxAge: '1y',
+  immutable: true
+}));
 
 // Basic test route
 app.get('/', (req, res) => {

@@ -2,6 +2,7 @@ const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
 const ws = require('ws');
+const sharp = require('sharp');
 
 let supabase = null;
 
@@ -32,10 +33,15 @@ const uploadToStorage = async (base64String) => {
   const matches = base64String.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
   if (!matches) throw new Error('Invalid base64 string');
 
-  const contentType = matches[1];
   const buffer = Buffer.from(matches[2], 'base64');
-  const extension = contentType.split('/')[1];
-  const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`;
+
+  const optimizedBuffer = await sharp(buffer)
+    .resize(1200, null, { withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toBuffer();
+
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.webp`;
+  const optimizedContentType = 'image/webp';
 
   if (process.env.NODE_ENV !== 'production') {
     const uploadDir = path.join(__dirname, '../../public/uploads');
@@ -45,7 +51,7 @@ const uploadToStorage = async (base64String) => {
     }
 
     const localPath = path.join(uploadDir, fileName);
-    fs.writeFileSync(localPath, buffer);
+    fs.writeFileSync(localPath, optimizedBuffer);
 
     return `http://localhost:${process.env.PORT}/uploads/${fileName}`;
   }
@@ -53,7 +59,11 @@ const uploadToStorage = async (base64String) => {
   // PRODUCTION: Supabase Storage Logic
   const { error } = await supabase.storage
     .from('images')
-    .upload(`uploads/${fileName}`, buffer, { contentType, upsert: true });
+    .upload(`uploads/${fileName}`, optimizedBuffer, {
+      contentType: optimizedContentType,
+      upsert: true,
+      cacheControl: '31536000, immutable'
+    });
 
   if (error) throw error;
 
