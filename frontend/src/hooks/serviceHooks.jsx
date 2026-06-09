@@ -26,7 +26,7 @@ const handleAuthError = (navigate, showSessionExpired) => {
 
 const isAuthError = (status) => status === 401 || status === 403;
 
-export const useGetServices = () => {
+export const useGetAvailableServices = () => {
   const [services, setServices] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -40,7 +40,7 @@ export const useGetServices = () => {
       const data = await res.json();
       const servicesWithUrls = data.map(service => ({
         ...service,
-        imageUrl: service.image_id ? `${API_BASE_URL}/images/stream/${service.image_id}` : null
+        imageUrl: service.image ? service.image.image_url : null
       }));
       setServices(servicesWithUrls);
     }
@@ -74,7 +74,14 @@ export const useGetAllServices = () => {
         return;
       }
       if (!res.ok) throw new Error('Failed to load services');
-      setServices(await res.json());
+
+      // FIX: Map the nested image_url to imageUrl
+      const data = await res.json();
+      const servicesWithUrls = data.map(service => ({
+        ...service,
+        imageUrl: service.image ? service.image.image_url : null
+      }));
+      setServices(servicesWithUrls);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -87,9 +94,6 @@ export const useGetAllServices = () => {
 
 export const useCreateService = () => {
   const [isLoading, setIsLoading] = useState(false); // Added loading state for consistency
-
-
-
   const navigate = useNavigate();
   const { showSessionExpired } = useSessionExpired();
   const createService = async (name, description, is_available, image_id) => {

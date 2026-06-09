@@ -4,7 +4,7 @@ import { motion as motionElement } from 'framer-motion';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Leaf, ArrowRight, ArrowLeft, Check, User, Sparkles, MapPin } from 'lucide-react';
 import { useCreateAppointment } from '../../hooks/appointmentHooks';
-import { useGetServices } from '../../hooks/serviceHooks';
+import { useGetAvailableServices } from '../../hooks/serviceHooks';
 import SuccessModal from './SuccessModal';
 import { useLandingImages } from '../../hooks/landingImageHooks';
 
@@ -19,7 +19,7 @@ export default function Booking() {
     const isCommercial = !!location.state?.isCommercial;
 
     const { createAppointment, isLoading, error } = useCreateAppointment();
-    const { services, fetchServices, isLoading: servicesLoading, error: servicesError } = useGetServices();
+    const { services, fetchServices, isLoading: servicesLoading, error: servicesError } = useGetAvailableServices();
 
     const { images: apiImages, fetchLandingImages } = useLandingImages();
 

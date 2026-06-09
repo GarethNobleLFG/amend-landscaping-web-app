@@ -1,14 +1,14 @@
 import { motion } from 'framer-motion';
 import { Leaf, ArrowRight } from 'lucide-react';
 import { useEffect } from 'react';
-import { useGetServices } from '../../hooks/serviceHooks';
+import { useGetAvailableServices } from '../../hooks/serviceHooks';
 import Hero from './Hero';
 import Testimonials from './Testimonials';
 import FeedbackForm from '../../components/FeedbackForm';
 import Header from '../../components/Header';
 
 function Landing() {
-  const { services, fetchServices, isLoading } = useGetServices();
+  const { services, fetchServices, isLoading } = useGetAvailableServices();
 
   useEffect(() => {
     fetchServices();

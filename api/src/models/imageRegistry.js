@@ -8,13 +8,13 @@ const ImageRegistry = sequelize.define('ImageRegistry', {
     primaryKey: true,
     allowNull: false,
   },
-  image_data: {
+  image_url: {
     type: DataTypes.TEXT,
     allowNull: false,
   }
 }, {
   tableName: 'image_registry',
-  timestamps: true,
+  timestamps: true, 
 });
 
 module.exports = ImageRegistry;

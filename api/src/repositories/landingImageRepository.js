@@ -1,4 +1,5 @@
 const LandingImage = require('../models/landingImages');
+const ImageRegistry = require('../models/imageRegistry'); 
 
 const create = async (data) => {
   return await LandingImage.create(data);
@@ -6,6 +7,11 @@ const create = async (data) => {
 
 const findAll = async () => {
   return await LandingImage.findAll({
+    include: [{
+      model: ImageRegistry,
+      as: 'image',
+      attributes: ['image_url'] 
+    }],
     order: [['createdAt', 'DESC']]
   });
 };

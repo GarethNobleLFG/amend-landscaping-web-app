@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const sequelize = require('./src/config/database'); 
+const sequelize = require('./src/config/database');
+const path = require('path'); 
 
 const appointmentRoutes = require('./src/routes/appointmentRoutes');
 const userRoutes = require('./src/routes/userRoutes');
@@ -12,7 +13,7 @@ const feedbackRoutes = require('./src/routes/feedbackRoutes');
 const client = require('prom-client');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 const collectDefaultMetrics = client.collectDefaultMetrics;
 collectDefaultMetrics(); 
@@ -42,6 +43,8 @@ app.use((req, res, next) => {
   });
   next();
 });
+
+app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
 // Basic test route
 app.get('/', (req, res) => {

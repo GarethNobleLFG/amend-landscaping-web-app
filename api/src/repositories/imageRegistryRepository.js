@@ -1,12 +1,11 @@
 const ImageRegistry = require('../models/imageRegistry');
 
-const create = async (imageData) => {
-  return await ImageRegistry.create({ image_data: imageData });
+const create = async (url) => {
+  return await ImageRegistry.create({ image_url: url }); 
 };
 
 const findAll = async () => {
   return await ImageRegistry.findAll({
-    attributes: { exclude: ['image_data'] },
     order: [['createdAt', 'DESC']]
   });
 };

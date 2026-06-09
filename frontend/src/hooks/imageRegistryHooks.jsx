@@ -10,8 +10,6 @@ const getAuthHeaders = () => {
     };
 };
 
-export const getImageStreamUrl = (id) => `${API_BASE_URL}/images/stream/${id}`;
-
 export function useGetImages() {
     const [images, setImages] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +26,7 @@ export function useGetImages() {
             const data = await response.json();
             const imagesWithUrls = data.map(img => ({
                 ...img,
-                url: `${API_BASE_URL}/images/stream/${img.id}` 
+                url: img.image_url 
             }));
             setImages(imagesWithUrls);
         }

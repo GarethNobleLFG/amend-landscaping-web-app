@@ -5,6 +5,7 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
+      - ./api/public/uploads:/app/public/uploads
     ports:
       - "9090:9090"
     depends_on:
@@ -47,12 +48,14 @@ services:
     depends_on:
       - db
     ports:
-      - "${PORT:-3001}:${PORT:-3001}"
+      - "${PORT}:${PORT}"
     env_file:
       - .env 
     volumes:
       - ./api:/app 
       - /app/node_modules
+    environment:
+      - HOST=0.0.0.0
     command: npm run dev
 
   frontend:

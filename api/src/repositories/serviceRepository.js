@@ -1,4 +1,5 @@
 const Service = require('../models/services');
+const ImageRegistry = require('../models/imageRegistry');
 
 const create = async (serviceData) => {
   return await Service.create(serviceData);
@@ -6,7 +7,12 @@ const create = async (serviceData) => {
 
 const findAll = async () => {
   return await Service.findAll({
-    order: [['name', 'ASC']]
+    include: [{
+      model: ImageRegistry,
+      as: 'image',
+      attributes: ['image_url']
+    }],
+    order: [['id', 'DESC']]
   });
 };
 
@@ -18,7 +24,13 @@ const findAvailable = async () => {
 };
 
 const findById = async (id) => {
-  return await Service.findByPk(id);
+  return await Service.findByPk(id, {
+    include: [{
+      model: ImageRegistry,
+      as: 'image',
+      attributes: ['image_url']
+    }]
+  });
 };
 
 const update = async (id, updateData) => {

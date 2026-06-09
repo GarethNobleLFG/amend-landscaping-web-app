@@ -29,7 +29,7 @@ export function useLandingImages() {
             const data = await response.json();
             const hydratedData = data.map(img => ({
                 ...img,
-                url: img.image_id ? `${API_BASE_URL}/images/stream/${img.image_id}` : null
+                url: img.image ? img.image.image_url : null 
             }));
             setImages(hydratedData);
             return { success: true, data };

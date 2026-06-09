@@ -1,10 +1,10 @@
 const imageRegistryRepo = require('../repositories/imageRegistryRepository');
+const { uploadToStorage } = require('./storageService'); 
 
-const uploadImage = async (imageData) => {
-  if (!imageData) {
-    throw new Error('Image data is required');
-  }
-  const image = await imageRegistryRepo.create(imageData);
+const uploadImage = async (base64Data) => {
+  const publicUrl = await uploadToStorage(base64Data);
+
+  const image = await imageRegistryRepo.create(publicUrl);
   return { success: true, data: image };
 };
 
