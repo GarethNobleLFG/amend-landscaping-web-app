@@ -1,7 +1,9 @@
 const imageRegistryService = require('../../src/services/imageRegistryService');
 const imageRegistryRepo = require('../../src/repositories/imageRegistryRepository');
+const { uploadToStorage } = require('../../src/services/storageService');
 
 jest.mock('../../src/repositories/imageRegistryRepository');
+jest.mock('../../src/services/storageService'); 
 
 describe('Image Registry Service', () => {
     beforeEach(() => {
@@ -9,14 +11,20 @@ describe('Image Registry Service', () => {
     });
 
     it('should upload image data to the registry', async () => {
-        const mockImage = { id: 'uuid-1', image_data: 'base64-data' };
+        // 1. Mock valid Base64 and Return URL
+        const mockBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+        const mockUrl = 'http://localhost:3001/uploads/test.png';
+        const mockImage = { id: 'uuid-1', image_url: mockUrl };
+
+        uploadToStorage.mockResolvedValue(mockUrl);
         imageRegistryRepo.create.mockResolvedValue(mockImage);
 
-        const result = await imageRegistryService.uploadImage('base64-data');
+        // 2. Call the service
+        const result = await imageRegistryService.uploadImage(mockBase64);
 
-        // Repository expects the raw string
-        expect(imageRegistryRepo.create).toHaveBeenCalledWith('base64-data');
-        // Service returns wrapped result
+        // 3. Assertions
+        expect(uploadToStorage).toHaveBeenCalledWith(mockBase64);
+        expect(imageRegistryRepo.create).toHaveBeenCalledWith(mockUrl);
         expect(result).toEqual({ success: true, data: mockImage });
     });
 
