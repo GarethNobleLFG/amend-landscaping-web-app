@@ -1,6 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
+const ws = require('ws');
 
 let supabase = null;
 
@@ -8,11 +9,23 @@ if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
   try {
     supabase = createClient(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        auth: {
+          persistSession: false 
+        },
+        realtime: {
+          transport: ws 
+        }
+      }
     );
-  } catch {
-    console.warn('[StorageService] Supabase client failed to initialize, falling back to local storage.');
+  } 
+  catch (error) {
+    console.warn('[StorageService] Supabase initialization failed:', error.message);
   }
+} 
+else {
+  console.log('[StorageService] No credentials found, using local storage fallback.');
 }
 
 const uploadToStorage = async (base64String) => {
@@ -24,7 +37,7 @@ const uploadToStorage = async (base64String) => {
   const extension = contentType.split('/')[1];
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`;
 
-  if (!supabase || process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production') {
     const uploadDir = path.join(__dirname, '../../public/uploads');
 
     if (!fs.existsSync(uploadDir)) {
