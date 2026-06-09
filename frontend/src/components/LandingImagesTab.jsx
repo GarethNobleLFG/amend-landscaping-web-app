@@ -69,7 +69,7 @@ const LandingImagesTab = () => {
                                 className="group relative aspect-[4/5] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100"
                             >
                                 <img 
-                                    src={img.image?.image_data} 
+                                    src={img.url} 
                                     alt="Landing" 
                                     className="w-full h-full object-cover" 
                                 />

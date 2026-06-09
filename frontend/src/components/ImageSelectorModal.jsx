@@ -53,13 +53,13 @@ const ImageSelectorModal = ({ isOpen, onClose, onSelect }) => {
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => {
-                                        onSelect(img.id, img.image_data);
+                                        onSelect(img.id, img.url);
                                         onClose();
                                     }}
                                     className="group relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border-2 border-transparent hover:border-green-500 transition-all focus:outline-none focus:ring-2 focus:ring-green-400"
                                 >
                                     <img 
-                                        src={img.image_data} 
+                                        src={img.url} 
                                         alt="Registry Selection" 
                                         className="w-full h-full object-cover" 
                                     />
