@@ -19,6 +19,11 @@ const findAll = async () => {
 const findAvailable = async () => {
   return await Service.findAll({
     where: { is_available: true },
+    include: [{
+      model: ImageRegistry,
+      as: 'image',
+      attributes: ['image_url']
+    }],
     order: [['name', 'ASC']]
   });
 };
