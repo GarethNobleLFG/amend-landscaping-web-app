@@ -54,12 +54,16 @@ const Testimonials = () => {
 
       <div className="relative w-full flex items-center">
         <motion.div
-          animate={{ x: ["0%", "-50%"] }}
-          transition={{ ease: "linear", duration: Math.max(testimonies.length * 8, 20), repeat: Infinity }}
-          className="flex w-max gap-6 px-6"
+          animate={{ x: ["0%", "-25%"] }}
+          transition={{ 
+            ease: "linear", 
+            duration: Math.max(testimonies.length * 10, 30), 
+            repeat: Infinity 
+          }}
+          className="flex w-max gap-6 pr-6"
         >
-          {/* Duplicate array for infinite scroll effect */}
-          {[...testimonies, ...testimonies].map((testimonial, idx) => (
+          {/* Quadruple array for seamless infinite scroll effect and buffer on wide screens */}
+          {[...testimonies, ...testimonies, ...testimonies, ...testimonies].map((testimonial, idx) => (
             <div
               key={`${testimonial.id}-${idx}`}
               className="w-[350px] md:w-[420px] bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex-shrink-0"
