@@ -122,10 +122,10 @@ export default function Booking() {
         <div className="relative min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-green-200 py-12 px-4 sm:px-6 flex flex-col items-center overflow-hidden">
 
             {/* Top Left Back Button */}
-            <div className="absolute top-6 left-6 z-50">
+            <div className="absolute top-3 left-3 sm:top-6 sm:left-6 z-50">
                 <button
                     onClick={() => navigate('/')}
-                    className="flex items-center gap-2 bg-white/90 backdrop-blur-md text-gray-700 font-bold px-4 py-3 rounded-xl shadow-lg border border-gray-100 hover:bg-green-50 hover:text-green-700 transition-all hover:-translate-x-1"
+                    className="flex items-center gap-2 bg-white/90 backdrop-blur-md text-gray-700 font-bold px-3 py-2 sm:px-4 sm:py-3 rounded-xl shadow-lg border border-gray-100 hover:bg-green-50 hover:text-green-700 transition-all hover:-translate-x-1"
                 >
                     <ArrowLeft className="w-5 h-5" />
                     <span className="hidden sm:inline">
