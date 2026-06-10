@@ -1,4 +1,3 @@
-import { Leaf } from 'lucide-react';
 import { FaFacebook, FaInstagram } from 'react-icons/fa';
 
 const Footer = () => {
@@ -11,13 +10,13 @@ const Footer = () => {
 
                     {/* Brand */}
                     <div>
-                        <h3 className="text-2xl font-extrabold text-green-700 tracking-tight flex items-center justify-center md:justify-start gap-2">
+                        <h3 className="text-xl md:text-2xl font-extrabold text-green-700 tracking-tight flex items-center justify-center md:justify-start gap-2">
                             <img
                                 src="/logo.png"
                                 alt="Amend Landscaping Logo"
-                                className="h-14 md:h-16 w-auto object-contain -mt-1"
+                                className="h-12 md:h-16 w-auto object-contain -mt-1"
                             />
-                            Amend <Leaf className="w-5 h-5 text-green-600" />
+                            Amend
                             <span className="text-gray-800">Landscaping LLC</span>
                         </h3>
 
