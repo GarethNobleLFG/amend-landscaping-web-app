@@ -51,7 +51,7 @@ const Footer = () => {
                             href="https://instagram.com/amendlandscapingllc"
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-700 transition"
+                            className="flex items-center justify-center md:justify-start gap-2 text-sm text-gray-600 hover:text-green-700 transition"
                         >
                             <FaInstagram className="w-4 h-4" />
                             @amendlandscapingllc
@@ -61,7 +61,7 @@ const Footer = () => {
                             href="https://facebook.com/amendlandscapingllc"
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-700 transition mt-2"
+                            className="flex items-center justify-center md:justify-start gap-2 text-sm text-gray-600 hover:text-green-700 transition mt-2"
                         >
                             <FaFacebook className="w-4 h-4" />
                             Amend Landscaping LLC
