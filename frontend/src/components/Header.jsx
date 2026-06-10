@@ -15,6 +15,16 @@ const Header = ({ showNav = true, showBackToHome = false }) => {
         { name: 'Feedback/Questions', href: isHome ? '#feedback' : '/#feedback' },
     ];
 
+    const handleLogoClick = () => {
+        if (isHome) {
+            // If already home, scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            // Otherwise, navigate home
+            navigate('/');
+        }
+    };
+
     return (
         <motion.header
             initial={{ opacity: 0, y: -20 }}
@@ -23,9 +33,14 @@ const Header = ({ showNav = true, showBackToHome = false }) => {
             className="w-full px-6 lg:px-12 py-5 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm flex justify-between items-center sticky top-0 z-50 transition-all font-medium"
         >
             <div
-                onClick={() => navigate('/')}
+                onClick={handleLogoClick}
                 className="flex items-center gap-2 text-2xl font-black text-green-800 tracking-tight cursor-pointer"
             >
+                <img
+                    src="/logo.png"
+                    alt="Amend Landscaping Logo"
+                    className="h-14 md:h-16 w-auto object-contain -mt-1"
+                />
                 Amend <Leaf className="w-6 h-6 text-green-600 fill-green-600/20" /> <span className="text-gray-900">Landscaping</span>
             </div>
 

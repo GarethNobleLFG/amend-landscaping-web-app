@@ -1,4 +1,4 @@
-import { Leaf  } from 'lucide-react';
+import { Leaf } from 'lucide-react';
 import { FaFacebook, FaInstagram } from 'react-icons/fa';
 
 const Footer = () => {
@@ -12,6 +12,11 @@ const Footer = () => {
                     {/* Brand */}
                     <div>
                         <h3 className="text-2xl font-extrabold text-green-700 tracking-tight flex items-center justify-center md:justify-start gap-2">
+                            <img
+                                src="/logo.png"
+                                alt="Amend Landscaping Logo"
+                                className="h-14 md:h-16 w-auto object-contain -mt-1"
+                            />
                             Amend <Leaf className="w-5 h-5 text-green-600" />
                             <span className="text-gray-800">Landscaping LLC</span>
                         </h3>
@@ -48,19 +53,19 @@ const Footer = () => {
                             rel="noreferrer"
                             className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-700 transition"
                         >
-                           <FaInstagram className="w-4 h-4" />
+                            <FaInstagram className="w-4 h-4" />
                             @amendlandscapingllc
                         </a>
 
-                       <a
-                        href="https://facebook.com/amendlandscapingllc"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-700 transition mt-2"
-                    >
-                        <FaFacebook className="w-4 h-4" />
-                        Amend Landscaping LLC
-                    </a>
+                        <a
+                            href="https://facebook.com/amendlandscapingllc"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-green-700 transition mt-2"
+                        >
+                            <FaFacebook className="w-4 h-4" />
+                            Amend Landscaping LLC
+                        </a>
                     </div>
                 </div>
 
@@ -79,7 +84,7 @@ const Footer = () => {
                     </a>
 
                     <a href="/commercial" className="hover:text-green-700 transition">
-                        Commercial Property Registration 
+                        Commercial Property Registration
                     </a>
                 </div>
 
