@@ -1,6 +1,7 @@
 const appointmentService = require('../../src/services/appointmentService');
 const appointmentRepo = require('../../src/repositories/appointmentRepository');
 const contactService = require('../../src/services/contactService');
+const { Contact } = require('../../src/models/contacts');
 
 jest.mock('../../src/repositories/appointmentRepository');
 
@@ -61,6 +62,33 @@ describe('Appointment Business Logic (Service)', () => {
             expect(sendAdminNotificationEmail).not.toHaveBeenCalled();
             expect(sendConfirmationEmail).not.toHaveBeenCalled();
             expect(result).toBeNull();
+        });
+    });
+
+    describe('Handling New Appointments with existing contact', () => {
+        it('should return the appointment correctly even if the associated contact is a duplicate', async () => {
+            const dataToCreate = { name: 'John Doe', email: 'john@example.com', phoneNumber: '555-5555' };
+            const existingContact = { id: 1, ...dataToCreate };
+
+            // 1. Mock the responses
+            appointmentRepo.create.mockResolvedValue({ id: 10, ...dataToCreate });
+            contactService.createContact.mockResolvedValue(existingContact);
+
+            // 2. Run the service
+            const result = await appointmentService.createAppointment(dataToCreate);
+
+            // 3. Confirm the logic flow worked
+            expect(result.id).toBe(10);
+            expect(contactService.createContact).toHaveBeenCalledWith({
+                name: 'John Doe',
+                email: 'john@example.com',
+                phoneNumber: '555-5555'
+            });
+
+            // This is the "Verification": We confirm it still sends emails 
+            // even if the contact was already in our system.
+            expect(sendAdminNotificationEmail).toHaveBeenCalled();
+            expect(sendConfirmationEmail).toHaveBeenCalled();
         });
     });
 
