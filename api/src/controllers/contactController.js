@@ -4,7 +4,7 @@ const create = async (req, res) => {
     try {
         const contact = await contactService.createContact(req.body);
         res.status(201).json(contact);
-    } catch (error) {
+    } catch {
         res.status(500).json({ error: 'Failed to create contact' });
     }
 };
@@ -13,7 +13,7 @@ const getAll = async (req, res) => {
     try {
         const contacts = await contactService.getContacts();
         res.json(contacts);
-    } catch (error) {
+    } catch {
         res.status(500).json({ error: 'Failed to fetch contacts' });
     }
 };
@@ -33,7 +33,7 @@ const deleteContact = async (req, res) => {
     try {
         await contactService.deleteContact(req.params.id);
         res.status(204).send();
-    } catch (error) {
+    } catch {
         res.status(500).json({ error: 'Deletion failed' });
     }
 };
