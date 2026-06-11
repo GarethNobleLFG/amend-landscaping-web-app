@@ -63,19 +63,23 @@ export default function Booking() {
         const { name, value } = e.target;
 
         if (name === 'phoneNumber') {
-            const digits = value.replace(/\D/g, '');
+            const digits = value.replace(/\D/g, ''); // Extract all digits
             let formatted = '';
 
             if (digits.length > 0) {
+                // 1st digit: Country Code (e.g., +1)
                 formatted = '+' + digits.substring(0, 1);
 
                 if (digits.length > 1) {
+                    // Next 3: Area Code
                     formatted += ' (' + digits.substring(1, 4);
                 }
                 if (digits.length > 4) {
+                    // Next 3: Prefix
                     formatted += ') ' + digits.substring(4, 7);
                 }
                 if (digits.length > 7) {
+                    // Last 4: Line Number (Slices up to the 11th digit)
                     formatted += '-' + digits.substring(7, 11);
                 }
             }
@@ -349,10 +353,10 @@ export default function Booking() {
                                             name="phoneNumber"
                                             value={formData.phoneNumber}
                                             onChange={handleInputChange}
-                                            pattern="\(\d{3}\) \d{3}-\d{4}"
-                                            maxLength="14"
+                                            pattern="\+\d \(\d{3}\) \d{3}-\d{4}"
+                                            maxLength="17" 
                                             className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium"
-                                            placeholder="(555) 123-4567"
+                                            placeholder="+1 (555) 123-4567"
                                         />
                                     </div>
                                 </div>
