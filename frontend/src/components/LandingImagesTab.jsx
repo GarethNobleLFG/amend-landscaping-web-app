@@ -34,7 +34,7 @@ const LandingImagesTab = () => {
             <div className="flex justify-between items-center">
                 <div>
                     <h2 className="text-2xl font-bold flex items-center gap-2">
-                        <ImageIcon className="text-green-600" /> Landing Page Assets
+                        <ImageIcon className="text-green-600" /> Landing/Commercial Page Assets
                     </h2>
                     <p className="text-gray-500 text-sm">Manage the images displayed on the homepage hero section.</p>
                 </div>

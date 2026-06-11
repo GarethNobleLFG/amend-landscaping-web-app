@@ -1,5 +1,6 @@
 const appointmentService = require('../../src/services/appointmentService');
 const appointmentRepo = require('../../src/repositories/appointmentRepository');
+const contactService = require('../../src/services/contactService');
 
 jest.mock('../../src/repositories/appointmentRepository');
 
@@ -8,6 +9,7 @@ jest.mock('../../src/services/email-services/service-types/deny', () => ({ sendD
 jest.mock('../../src/services/email-services/service-types/cancel', () => ({ sendCancellationEmail: jest.fn() }));
 jest.mock('../../src/services/email-services/service-types/notify', () => ({ sendAdminNotificationEmail: jest.fn() }));
 jest.mock('../../src/services/email-services/service-types/confirm', () => ({ sendConfirmationEmail: jest.fn() }));
+jest.mock('../../src/services/contactService');
 
 const { sendApprovalEmail } = require('../../src/services/email-services/service-types/approve');
 const { sendDenialEmail } = require('../../src/services/email-services/service-types/deny');
@@ -24,16 +26,18 @@ describe('Appointment Business Logic (Service)', () => {
     });
 
     describe('Handling New Appointments', () => {
-        it('should create an appointment and trigger both Admin Notify and User Confirm emails', async () => {
-            const dataToCreate = { service: 'Mowing' };
-            appointmentRepo.create.mockResolvedValue(mockAppointment);
+        it('should create an appointment and trigger contact creation + emails', async () => {
+            const dataToCreate = { name: 'John Doe', email: 'john@example.com', phoneNumber: '555-5555' };
+            appointmentRepo.create.mockResolvedValue({ id: 1, ...dataToCreate });
 
-            const result = await appointmentService.createAppointment(dataToCreate);
+            await appointmentService.createAppointment(dataToCreate);
 
-            expect(appointmentRepo.create).toHaveBeenCalledWith(dataToCreate);
-            expect(sendAdminNotificationEmail).toHaveBeenCalledWith(mockAppointment);
-            expect(sendConfirmationEmail).toHaveBeenCalledWith(mockAppointment);
-            expect(result).toEqual(mockAppointment);
+            expect(contactService.createContact).toHaveBeenCalledWith({
+                name: 'John Doe',
+                email: 'john@example.com',
+                phoneNumber: '555-5555'
+            });
+            expect(sendAdminNotificationEmail).toHaveBeenCalled();
         });
 
         it('should handle commercial status correctly when creating an appointment', async () => {

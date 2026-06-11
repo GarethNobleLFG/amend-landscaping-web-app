@@ -1,4 +1,5 @@
 const appointmentRepo = require('../repositories/appointmentRepository');
+const contactService = require('./contactService');
 const { sendApprovalEmail } = require('./email-services/service-types/approve');
 const { sendDenialEmail } = require('./email-services/service-types/deny');
 const { sendCancellationEmail } = require('./email-services/service-types/cancel');
@@ -7,12 +8,18 @@ const { sendConfirmationEmail } = require('./email-services/service-types/confir
 
 const createAppointment = async (appointmentData) => {
     const newAppointment = await appointmentRepo.create(appointmentData);
-    
+
     if (newAppointment) {
+        await contactService.createContact({
+            name: newAppointment.name,
+            email: newAppointment.email,
+            phoneNumber: newAppointment.phoneNumber
+        });
+
         await sendAdminNotificationEmail(newAppointment);
-        await sendConfirmationEmail(newAppointment)
+        await sendConfirmationEmail(newAppointment);
     }
-    
+
     return newAppointment;
 };
 
@@ -57,11 +64,11 @@ const cancelAppointment = async (id, message) => {
 
 const approveAppointment = async (id, message) => {
     const updatedAppointment = await appointmentRepo.update(id, { approved: true });
-    
+
     if (updatedAppointment) {
         await sendApprovalEmail(updatedAppointment, message);
     }
-    
+
     return updatedAppointment;
 };
 

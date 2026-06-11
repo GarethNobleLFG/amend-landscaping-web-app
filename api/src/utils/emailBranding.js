@@ -1,21 +1,26 @@
-/**
- * Amend Landscaping - Email Branding Templates
- * Uses exact inline CSS mirroring Tailwind classes for flawless email client support.
- */
+const path = require('path');
 
-// Mirrors the frontend Nav Logo: text-2xl font-black text-green-800 tracking-tight
 const logoBlock = `
 <div style="text-align: center; margin-bottom: 12px; line-height: 1;">
+    <div style="margin-bottom: 8px;">
+        <img src="cid:companylogo" alt="Amend Landscaping" style="width: 80px; height: auto; display: inline-block;" />
+    </div>
     <span style="color: #166534; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 24px; font-weight: 900; letter-spacing: -0.025em; vertical-align: middle;">
         Amend
     </span>
-    <!-- Adjusted leaf alignment with precise vertical-align for email client support -->
-    <span style="color: #16a34a; font-size: 22px; vertical-align: -0.1em; margin: 0 2px; display: inline-block;">🌿</span>
     <span style="color: #111827; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 24px; font-weight: 900; letter-spacing: -0.025em; vertical-align: middle;">
         Landscaping
     </span>
 </div>
 `;
+
+const brandAttachments = [
+    {
+        filename: 'logo.png',
+        path: path.join(process.cwd(), 'public', 'logo.png'),
+        cid: 'companylogo' // This must match the src="cid:companylogo" above
+    }
+];
 
 // Helper component for making the headers highly consistent
 const generateHeader = (subtitle, borderColor, subtitleColor, bgColor) => `
@@ -28,21 +33,21 @@ const generateHeader = (subtitle, borderColor, subtitleColor, bgColor) => `
 `;
 
 const bookingHeader = generateHeader(
-    'Service Request Received', 
+    'Service Request Received',
     '#16a34a', // border (green-600)
     '#15803d', // subtitle (green-700)
     '#fafafa'  // bg (neutral-50)
 );
 
 const approvalHeader = generateHeader(
-    'Appointment Approved ✓',     
+    'Appointment Approved ✓',
     '#16a34a', // border (green-600)
     '#15803d', // subtitle (green-700)
     '#f0fdf4'  // bg (green-50)
 );
 
 const cancellationHeader = generateHeader(
-    'Appointment Update', 
+    'Appointment Update',
     '#dc2626', // border (red-600)
     '#b91c1c', // subtitle (red-700)
     '#fef2f2'  // bg (red-50)
@@ -57,7 +62,8 @@ const standardFooter = `
 
     <p style="color: #6b7280; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; margin: 0 0 16px 0; font-size: 14px; line-height: 1.5; font-weight: 500;">
         Need assistance or have questions? <br>
-        Contact us at <a href="mailto:amendlandscaping@gmail.com" style="color: #16a34a; text-decoration: none; font-weight: 700;">amendlandscaping@gmail.com</a><br>
+        Call us at <a href="tel:2607156959" style="color: #16a34a; text-decoration: none; font-weight: 700;">(260) 715-6959</a><br>
+        Email <a href="mailto:amendlandscaping@gmail.com" style="color: #16a34a; text-decoration: none; font-weight: 700;">amendlandscaping@gmail.com</a><br>
         Visit us online at <a href="https://amendlandscapingllc.com/" style="color: #16a34a; text-decoration: none; font-weight: 700;">amendlandscapingllc.com</a>
     </p>
     <p style="color: #9ca3af; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; margin: 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
@@ -70,5 +76,6 @@ module.exports = {
     bookingHeader,
     approvalHeader,
     cancellationHeader,
-    standardFooter
+    standardFooter,
+    brandAttachments
 };

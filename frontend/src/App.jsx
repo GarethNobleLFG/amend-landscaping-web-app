@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Landing from './pages/landing/Landing';
 import Booking from './pages/booking/Booking';
 import AdminDash from './pages/admin-dashboard/AdminDashboard';
@@ -9,9 +9,12 @@ import Footer from './components/Footer';
 import Pricing from './pages/landing/Pricing';
 import Policies from './pages/landing/Policies';
 
-function App() {
+const AppContent = () => {
+  const location = useLocation();
+  const isAdminPage = location.pathname.startsWith('/admin');
+
   return (
-    <Router>
+    <>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/book" element={<Booking />} />
@@ -22,8 +25,16 @@ function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/policies" element={<Policies />} />
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      <Footer />
+      </Routes>      
+      {!isAdminPage && <Footer />}
+    </>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }

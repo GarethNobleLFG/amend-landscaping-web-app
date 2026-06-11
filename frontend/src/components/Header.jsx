@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Leaf, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const Header = ({ showNav = true, showBackToHome = false }) => {
@@ -44,7 +44,6 @@ const Header = ({ showNav = true, showBackToHome = false }) => {
                 />
                 {/* Text hidden on mobile, visible on medium screens and up */}
                 <span className="hidden md:inline">Amend</span> 
-                <Leaf className="w-6 h-6 text-green-600 fill-green-600/20 hidden md:inline" /> 
                 <span className="text-gray-900 hidden md:inline">Landscaping</span>
             </div>
 

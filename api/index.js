@@ -10,6 +10,7 @@ const imageRegistryRoutes = require('./src/routes/imageRegistryRoutes');
 const landingImageRoutes = require('./src/routes/landingImageRoutes');
 const testimonyRoutes = require('./src/routes/testimonyRoutes');
 const feedbackRoutes = require('./src/routes/feedbackRoutes');
+const contactRoutes = require('./src/routes/contactRoutes');
 const client = require('prom-client');
 
 const app = express();
@@ -45,6 +46,7 @@ app.use((req, res, next) => {
 });
 
 // This is static file path for local development of image storing, uploading, and retrieving.
+app.use(express.static(path.join(process.cwd(), 'public')));
 app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads'), {
   maxAge: '1y',
   immutable: true
@@ -61,6 +63,7 @@ app.use('/images', imageRegistryRoutes);
 app.use('/landing-images', landingImageRoutes);
 app.use('/testimonies', testimonyRoutes);
 app.use('/feedback', feedbackRoutes);
+app.use('/contacts', contactRoutes);
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', client.register.contentType);
   res.end(await client.register.metrics());

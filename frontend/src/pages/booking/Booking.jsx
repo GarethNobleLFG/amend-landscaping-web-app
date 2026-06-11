@@ -173,7 +173,7 @@ export default function Booking() {
             {/* Header */}
             <div className="relative z-20 max-w-3xl w-full mb-12 text-center">
                 <div className="flex items-center justify-center gap-2 text-2xl font-black text-green-800 tracking-tight mb-8 select-none">
-                    Amend <Leaf className="w-6 h-6 text-green-600 fill-green-600/20" /> {isCommercial ? 'Commercial' : 'Landscaping'}
+                    Amend {isCommercial ? 'Landscaping Commercial' : 'Landscaping'}
                 </div>
 
                 <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4 drop-shadow-sm">

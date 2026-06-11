@@ -1,147 +1,244 @@
+import { useState, useEffect } from 'react'; // Added useEffect
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, CheckCircle, Clock, XCircle, History, Building, User } from 'lucide-react';
+import { MapPin, Phone, Mail, CheckCircle, Clock, XCircle, History, Building, User, Edit2, Save, X, Loader2 } from 'lucide-react'; // Added Loader2
+import { useGetAvailableServices } from '../hooks/serviceHooks'; // Added hook import
 
-const AppointmentCard = ({ appointment, onApprove, onDeny, onCancel, isUpdating }) => {
-    const {
-        id, name, email, phoneNumber, address, city, state, zip,
-        servicesRequested, description, approved, createdAt, is_commercial
-    } = appointment;
+const AppointmentCard = ({ appointment, onApprove, onDeny, onCancel, onUpdate, onUpdateSuccess }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [formData, setFormData] = useState({ ...appointment });
 
-    let services = 'None specified';
-    if (servicesRequested) {
-        services = Object.entries(servicesRequested)
-            .filter(([isRequested]) => isRequested)
-            .map(([serviceName]) => serviceName.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()))
-            .join(', ');
-    }
+    const { services: allSystemServices, fetchServices, isLoading: servicesLoading } = useGetAvailableServices();
 
-    const formattedSubmissionTime = createdAt
-        ? new Date(createdAt).toLocaleString('en-US', {
-            timeZone: 'America/New_York',
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-        })
-        : 'Unknown';
+    useEffect(() => {
+        if (isEditing) fetchServices();
+    }, [isEditing, fetchServices]);
+
+    // This replaces the useEffect and fixes the cascading render error
+    const handleStartEditing = () => {
+        setFormData({ ...appointment });
+        setIsEditing(true);
+    };
+
+    const handleSave = async () => {
+        const result = await onUpdate(appointment.id, formData);
+        if (result.success) {
+            setIsEditing(false);
+            if (onUpdateSuccess) onUpdateSuccess();
+        } else {
+            alert("Failed to save: " + (result.error || "Unknown error"));
+        }
+    };
+
+    const handleServiceToggle = (serviceName) => {
+        const key = serviceName.toLowerCase().replace(/\s+/g, '_');
+        setFormData(prev => ({
+            ...prev,
+            servicesRequested: {
+                ...prev.servicesRequested,
+                [key]: !prev.servicesRequested?.[key]
+            }
+        }));
+    };
+
+    const formatKey = (key) => key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    const servicesDisplay = Object.entries(appointment.servicesRequested || {})
+        .filter(([, isRequested]) => isRequested === true || isRequested === "true")
+        .map(([name]) => formatKey(name))
+        .join(', ') || 'None specified';
+
+    const formattedSubmissionTime = new Date(appointment.createdAt).toLocaleString('en-US', {
+        timeZone: 'America/New_York',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
 
     return (
         <motion.div
             initial={false}
             animate={{ opacity: 1 }}
-           
-            whileHover={{ y: -4 }}
-            className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all p-6 flex flex-col h-full relative overflow-hidden flex-shrink-0"
+            whileHover={!isEditing ? { y: -4 } : {}}
+            className={`bg-white rounded-2xl shadow-sm border transition-all p-6 flex flex-col h-full relative overflow-hidden ${isEditing ? 'border-green-400 ring-2 ring-green-100 scale-[1.02] z-30' : 'border-gray-100 hover:shadow-lg'
+                }`}
         >
-            {/* Top Banner accent based on Commercial status */}
-            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${
-                is_commercial 
-                    ? 'from-blue-500 to-indigo-600' 
-                    : approved 
-                        ? 'from-green-500 to-green-600' 
-                        : 'from-yellow-400 to-yellow-500'
-            }`}></div>
+            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${appointment.is_commercial ? 'from-blue-500 to-indigo-600' : appointment.approved ? 'from-green-500 to-green-600' : 'from-yellow-400 to-yellow-500'
+                }`}></div>
 
             <div className="flex-grow">
-                <div className="flex justify-between items-start mb-6">
-                    <div>
-                        <h3 className="text-xl font-bold text-gray-900">{name}</h3>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            {approved ? (
-                                <span className="flex items-center text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full">
-                                    <CheckCircle className="w-3 h-3 mr-1" /> Approved
-                                </span>
+                <div className="flex justify-between items-start mb-4">
+                    <div className="flex-grow text-left">
+                        {isEditing ? (
+                            <input
+                                className="text-xl font-bold text-gray-900 border-b-2 border-green-200 outline-none w-full bg-green-50/30 px-1"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            />
+                        ) : (
+                            <h3 className="text-xl font-bold text-gray-900">{appointment.name}</h3>
+                        )}
+                    </div>
+                    {!isEditing && (
+                        <button
+                            onClick={handleStartEditing}
+                            className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors ml-2"
+                        >
+                            <Edit2 className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
+
+                {/* Badges/Toggles */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                    <span className={`flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border ${appointment.approved ? 'text-green-700 bg-green-50 border-green-200' : 'text-yellow-700 bg-yellow-50 border-yellow-200'
+                        }`}>
+                        {appointment.approved ? <CheckCircle className="w-3 h-3 mr-1" /> : <Clock className="w-3 h-3 mr-1" />}
+                        {appointment.approved ? 'Approved' : 'Pending'}
+                    </span>
+                    <button
+                        disabled={!isEditing}
+                        onClick={() => setFormData({ ...formData, is_commercial: !formData.is_commercial })}
+                        className={`flex items-center text-xs font-bold px-2.5 py-1 rounded-full border transition-all ${formData.is_commercial ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-teal-700 bg-teal-50 border-teal-200'
+                            } ${isEditing ? 'cursor-pointer hover:brightness-95' : 'cursor-default'}`}
+                    >
+                        {formData.is_commercial ? <Building className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
+                        {formData.is_commercial ? 'Commercial' : 'Residential'}
+                    </button>
+                </div>
+
+                {/* Contact & Location Info */}
+                <div className="space-y-3 mb-6 text-left">
+                    <div className="flex items-center text-gray-600 text-sm font-medium">
+                        <Phone className="w-4 h-4 mr-3 text-green-600 shrink-0" />
+                        {isEditing ? (
+                            <input
+                                className="border-b border-gray-200 outline-none w-full bg-gray-50/50"
+                                value={formData.phoneNumber}
+                                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                            />
+                        ) : appointment.phoneNumber}
+                    </div>
+                    <div className="flex items-center text-gray-600 text-sm font-medium">
+                        <Mail className="w-4 h-4 mr-3 text-green-600 shrink-0" />
+                        {isEditing ? (
+                            <input
+                                className="border-b border-gray-200 outline-none w-full bg-gray-50/50"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            />
+                        ) : appointment.email}
+                    </div>
+                    <div className="flex items-start text-gray-600 text-sm font-medium">
+                        <MapPin className="w-4 h-4 mr-3 text-green-600 mt-1 shrink-0" />
+                        <div className="w-full space-y-1">
+                            {isEditing ? (
+                                <div className="space-y-1">
+                                    <input placeholder="Street" className="border-b border-gray-200 outline-none w-full bg-gray-50/50" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
+                                    <div className="flex gap-2">
+                                        <input placeholder="City" className="border-b border-gray-200 outline-none w-1/2 bg-gray-50/50 text-xs" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} />
+                                        <input placeholder="ST" className="border-b border-gray-200 outline-none w-1/4 bg-gray-50/50 text-xs" value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })} />
+                                        <input placeholder="Zip" className="border-b border-gray-200 outline-none w-1/4 bg-gray-50/50 text-xs" value={formData.zip} onChange={(e) => setFormData({ ...formData, zip: e.target.value })} />
+                                    </div>
+                                </div>
                             ) : (
-                                <span className="flex items-center text-xs font-semibold text-yellow-700 bg-yellow-50 border border-yellow-200 px-2.5 py-1 rounded-full">
-                                    <Clock className="w-3 h-3 mr-1" /> Pending
-                                </span>
-                            )}
-                            
-                            {is_commercial ? (
-                                <span className="flex items-center text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full">
-                                    <Building className="w-3 h-3 mr-1" /> Commercial
-                                </span>
-                            ) : (
-                                <span className="flex items-center text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-full">
-                                    <User className="w-3 h-3 mr-1" /> Residential
-                                </span>
+                                <span>{appointment.address}, <br />{appointment.city}, {appointment.state} {appointment.zip}</span>
                             )}
                         </div>
                     </div>
                 </div>
 
-                <div className="space-y-3 mb-6">
-                    <div className="flex items-center text-gray-600 text-sm font-medium">
-                        <Phone className="w-4 h-4 mr-3 text-green-600" />
-                        {phoneNumber}
-                    </div>
-                    <div className="flex items-center text-gray-600 text-sm font-medium">
-                        <Mail className="w-4 h-4 mr-3 text-green-600" />
-                        {email}
-                    </div>
-                    <div className="flex items-start text-gray-600 text-sm font-medium">
-                        <MapPin className="w-4 h-4 mr-3 text-green-600 mt-0.5 shrink-0" />
-                        <span>{address}, <br />{city}, {state} {zip}</span>
-                    </div>
+                {/* Services Section */}
+                <div className="pt-4 border-t border-gray-100 text-left">
+                    <p className="text-sm text-gray-500 mb-2 font-semibold uppercase tracking-wider">Requested Services</p>
+                    {isEditing ? (
+                        <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            {servicesLoading ? (
+                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <Loader2 className="w-3 h-3 animate-spin" /> Loading system services...
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-y-2">
+                                    {allSystemServices.map(service => {
+                                        const key = service.name.toLowerCase().replace(/\s+/g, '_');
+                                        const isChecked = !!formData.servicesRequested?.[key];
+                                        return (
+                                            <label
+                                                key={service.id}
+                                                className={`flex items-center gap-2 cursor-pointer p-1.5 rounded-lg transition-colors ${isChecked ? 'bg-green-100/50 shadow-sm' : 'hover:bg-gray-100'}`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => handleServiceToggle(service.name)}
+                                                    className="accent-green-700 w-4 h-4"
+                                                />
+                                                <span className={`text-xs font-semibold ${isChecked ? 'text-green-900' : 'text-gray-600'}`}>
+                                                    {service.name}
+                                                </span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <p className="text-gray-800 font-medium">{servicesDisplay}</p>
+                    )}
                 </div>
 
-                <div className="pt-4 border-t border-gray-100">
-                    <p className="text-sm text-gray-500 mb-1 font-semibold uppercase tracking-wider">Requested Services</p>
-                    <p className="text-gray-800 font-medium">{services}</p>
-                </div>
-
-                {description && (
-                    <div className="mt-4 bg-gray-50 rounded-xl p-4 border border-gray-100">
-                        <p className="text-sm text-gray-600 italic">"{description}"</p>
+                {/* Notes/Description */}
+                {(appointment.description || isEditing) && (
+                    <div className="mt-4 bg-gray-50 rounded-xl p-4 border border-gray-100 text-left">
+                        {isEditing ? (
+                            <textarea
+                                className="w-full bg-transparent outline-none text-sm text-gray-600 italic border-b border-green-200 min-h-[60px]"
+                                value={formData.description || ''}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                placeholder="Additional notes..."
+                            />
+                        ) : (
+                            <p className="text-sm text-gray-600 italic">"{appointment.description}"</p>
+                        )}
                     </div>
                 )}
             </div>
 
-            {/* Button Render Logic varies based on Approval State */}
+            {/* Footer / Action Buttons */}
             <div className="mt-6 pt-4 border-t border-gray-100">
-                {createdAt && (
-                    <div className="flex items-center justify-center text-gray-500 text-xs font-medium mb-4">
-                        <History className="w-3.5 h-3.5 mr-1.5" />
-                        Submitted: {formattedSubmissionTime} ET
-                    </div>
-                )}
-                {!approved ? (
-                    <div className="flex flex-row gap-3">
-                        <button
-                            onClick={() => onDeny(id)}
-                            disabled={isUpdating}
-                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold transition-all shadow-sm ${isUpdating
-                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                    : 'bg-white border-2 border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200 active:scale-[0.98]'
-                                }`}
-                        >
-                            <XCircle className="w-5 h-5" /> Deny
-                        </button>
-
-                        <button
-                            onClick={() => onApprove(id)}
-                            disabled={isUpdating}
-                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold transition-all shadow-sm ${isUpdating
-                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                    : 'bg-green-700 hover:bg-green-600 text-white hover:shadow-md active:scale-[0.98]'
-                                }`}
-                        >
-                            <CheckCircle className="w-5 h-5" /> Approve
-                        </button>
-                    </div>
+                {!isEditing ? (
+                    <>
+                        <div className="flex items-center justify-center text-gray-500 text-xs font-medium mb-4">
+                            <History className="w-3.5 h-3.5 mr-1.5" /> Submitted: {formattedSubmissionTime} ET
+                        </div>
+                        <div className="flex flex-row gap-3">
+                            {!appointment.approved ? (
+                                <>
+                                    <button onClick={() => onDeny(appointment.id)} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold border-2 border-red-100 text-red-600 hover:bg-red-50 transition-all active:scale-[0.98]">
+                                        <XCircle className="w-5 h-5" /> Deny
+                                    </button>
+                                    <button onClick={() => onApprove(appointment.id)} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold bg-green-700 hover:bg-green-600 text-white shadow-sm active:scale-[0.98]">
+                                        <CheckCircle className="w-5 h-5" /> Approve
+                                    </button>
+                                </>
+                            ) : (
+                                <button onClick={() => onCancel(appointment.id)} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold border-2 border-red-100 text-red-600 hover:bg-red-50 transition-all active:scale-[0.98]">
+                                    <XCircle className="w-5 h-5" /> Cancel Appointment
+                                </button>
+                            )}
+                        </div>
+                    </>
                 ) : (
-                    <button
-                        onClick={() => onCancel(id)}
-                        disabled={isUpdating}
-                        className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold transition-all shadow-sm ${isUpdating
-                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                : 'bg-white border-2 border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200 active:scale-[0.98]'
-                            }`}
-                    >
-                        <XCircle className="w-5 h-5" /> Cancel Appointment
-                    </button>
+                    <div className="flex gap-3">
+                        <button onClick={() => { setIsEditing(false); setFormData({ ...appointment }); }} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold border-2 border-gray-200 text-gray-600 hover:bg-gray-50">
+                            <X className="w-5 h-5" /> Discard
+                        </button>
+                        <button onClick={handleSave} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold bg-green-700 text-white hover:bg-green-600 shadow-sm">
+                            <Save className="w-5 h-5" /> Save
+                        </button>
+                    </div>
                 )}
             </div>
         </motion.div>

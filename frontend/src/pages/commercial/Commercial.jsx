@@ -1,13 +1,49 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useLandingImages } from '../../hooks/landingImageHooks';
 import Header from '../../components/Header';
 
 export default function Commercial() {
   const navigate = useNavigate();
 
+  // --- Animation Workflow Logic: Identical to Hero.jsx ---
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const { images: apiImages, fetchLandingImages } = useLandingImages();
+
+  useEffect(() => {
+    fetchLandingImages();
+  }, [fetchLandingImages]);
+
+  const slideImages = useMemo(() => {
+    return apiImages
+      .filter(img => img.url) 
+      .map(img => img.url);   
+  }, [apiImages]);
+
+  useEffect(() => {
+    if (slideImages.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => prev + 1);
+    }, 4500); 
+    return () => clearInterval(timer);
+  }, [slideImages.length]);
+
+  const total = slideImages.length;
+  const currentIdx = total > 0 ? currentIndex % total : 0;
+  const nextIdx = total > 0 ? (currentIndex + 1) % total : 0;
+  const prevIdx = total > 0 ? (currentIndex - 1 + total) % total : 0;
+
+  const isEmpty = total === 0;
+
+  const transition = {
+    duration: 0.9,
+    ease: "anticipate"
+  };
+
   return (
-    <div className="min-h-screen bg-neutral-50 text-gray-800 font-sans selection:bg-green-200 flex flex-col justify-between">
+    <div className="min-h-screen bg-neutral-50 text-gray-800 font-sans selection:bg-green-200 flex flex-col justify-between overflow-x-hidden">
 
       {/* --- Navigation Header --- */}
       <Header showNav={false} showBackToHome={true} />
@@ -49,25 +85,59 @@ export default function Commercial() {
           </motion.button>
         </motion.div>
 
-        {/* Right Side: Elegant Spanning Presentation Card */}
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="lg:col-span-5 relative w-full h-[380px] md:h-[450px]"
-        >
-          {/* Decorative Back Gradients matching Landing Page Theme */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-green-300 rounded-full blur-[100px] opacity-30 mix-blend-multiply pointer-events-none"></div>
+        {/* Right Side: Dynamic Presentation Collage */}
+        <div className="lg:col-span-5 relative w-full h-[450px] lg:h-[550px] flex items-center justify-center">
+            {/* Background Decorative Gradient Blur */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-green-300 rounded-full blur-[100px] opacity-25 mix-blend-multiply pointer-events-none"></div>
 
-          <img
-            src="/sample-imgs/istockphoto-1312760160-612x612.jpg"
-            alt="Pristine Commercial Estate Lawn Care"
-            className="w-full h-full object-cover rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.12)] border-[8px] md:border-[12px] border-white z-10 relative"
-          />
-        </motion.div>
-
+            <div className="relative w-full h-full perspective-[1000px]">
+                <AnimatePresence mode="popLayout">
+                    {isEmpty ? (
+                        <div className="w-full h-full bg-gray-200 rounded-[2.5rem] animate-pulse flex items-center justify-center">
+                            <span className="text-gray-400 font-bold">Connecting to Registry...</span>
+                        </div>
+                    ) : (
+                        [
+                            // Next Image (Bottom Right Layer)
+                            total > 1 && (
+                                <motion.img
+                                    key={`next-${currentIndex}`}
+                                    src={slideImages[nextIdx]}
+                                    initial={{ opacity: 0, x: '20%', y: '10%', rotate: 10, scale: 0.8 }}
+                                    animate={{ opacity: 0.5, x: '10%', y: '15%', rotate: 5, scale: 0.9 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={transition}
+                                    className="absolute bottom-0 right-0 w-[65%] h-[50%] object-cover rounded-[2rem] shadow-xl border-[6px] border-white z-0 grayscale-[20%]"
+                                />
+                            ),
+                            // Previous Image (Top Left Layer)
+                            total > 1 && (
+                                <motion.img
+                                    key={`prev-${currentIndex}`}
+                                    src={slideImages[prevIdx]}
+                                    initial={{ opacity: 0, x: '-20%', y: '-10%', rotate: -10, scale: 0.8 }}
+                                    animate={{ opacity: 0.5, x: '-10%', y: '-15%', rotate: -5, scale: 0.9 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={transition}
+                                    className="absolute top-0 left-0 w-[65%] h-[50%] object-cover rounded-[2rem] shadow-xl border-[6px] border-white z-10 grayscale-[20%]"
+                                />
+                            ),
+                            // Current Primary Image (Center Layer)
+                            <motion.img
+                                key={`curr-${currentIndex}`}
+                                src={slideImages[currentIdx]}
+                                initial={{ opacity: 0, scale: 0.9, rotate: 5 }}
+                                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, rotate: -5 }}
+                                transition={transition}
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[75%] object-cover rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-[10px] border-white z-20"
+                            />
+                        ].filter(Boolean)
+                    )}
+                </AnimatePresence>
+            </div>
+        </div>
       </main>
-
     </div>
   );
 }

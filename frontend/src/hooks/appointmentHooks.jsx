@@ -18,9 +18,9 @@ const getAuthHeaders = () => {
 const handleAuthError = (navigate, showSessionExpired) => {
     localStorage.removeItem('token');
     if (showSessionExpired) {
-    showSessionExpired();
+        showSessionExpired();
     }
-    
+
 };
 
 const isAuthError = (status) => status === 401 || status === 403;
@@ -178,6 +178,47 @@ export function useApproveAppointment() {
     };
 
     return { approveAppointment, isLoading, error };
+}
+
+export function useUpdateAppointment() {
+    const navigate = useNavigate();
+    const { showSessionExpired } = useSessionExpired();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const updateAppointment = async (id, updateData) => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`${API_BASE_URL}/appointments/${id}`, {
+                method: 'PUT',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(updateData)
+            });
+
+            if (isAuthError(response.status)) {
+                handleAuthError(navigate, showSessionExpired);
+                return { success: false, error: 'Session expired' };
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || errorData.message || 'Failed to update appointment');
+            }
+
+            const data = await response.json();
+            return { success: true, data };
+        }
+        catch (err) {
+            setError(err.message);
+            return { success: false, error: err.message };
+        }
+        finally {
+            setIsLoading(false);
+        }
+    };
+
+    return { updateAppointment, isLoading, error };
 }
 
 export function useDenyAppointment() {

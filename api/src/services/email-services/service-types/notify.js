@@ -1,5 +1,5 @@
 const { transporter } = require('../transporter');
-const { bookingHeader, standardFooter } = require('../../../utils/emailBranding');
+const { bookingHeader, standardFooter, brandAttachments } = require('../../../utils/emailBranding');
 
 const sendAdminNotificationEmail = async (appointment) => {
     const isCommercial = !!appointment.is_commercial;
@@ -38,14 +38,14 @@ const sendAdminNotificationEmail = async (appointment) => {
                     <h3 style="color: #0f172a; margin-top: 0; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px;">Customer Details</h3>
                     <p style="color: #475569; margin: 10px 0;"><strong>Name:</strong> ${appointment.name}</p>
                     <p style="color: #475569; margin: 10px 0;"><strong>Email:</strong> <a href="mailto:${appointment.email}" style="color: #16a34a; text-decoration: none;">${appointment.email}</a></p>
-                    ${appointment.phone ? `<p style="color: #475569; margin: 10px 0;"><strong>Phone:</strong> ${appointment.phone}</p>` : ''}
+                    <p style="color: #475569; margin: 10px 0;"><strong>Phone:</strong> ${appointment.phoneNumber}</p>
                     
                     <h3 style="color: #0f172a; margin-top: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px;">Request Details</h3>
                     <p style="color: #475569; margin: 10px 0;"><strong>Property Type:</strong> ${isCommercial ? 'COMMERCIAL PROPERTY 🏢' : 'Residential Property 🏠'}</p>
                     <p style="color: #475569; margin: 10px 0;"><strong>Requested Date:</strong> ${appointmentDate}</p>
-                    <p style="color: #475569; margin: 10px 0;"><strong>Address:</strong> ${appointment.address}</p>
+                    <p style="color: #475569; margin: 10px 0;"><strong>Address:</strong> ${appointment.address}, ${appointment.city}, ${appointment.state} ${appointment.zip}</p>
                     <p style="color: #475569; margin: 10px 0;"><strong>Services Requested:</strong> ${servicesList}</p>
-                    ${appointment.notes ? `<p style="color: #475569; margin: 10px 0;"><strong>Additional Notes:</strong> ${appointment.notes}</p>` : ''}
+                    ${appointment.description ? `<p style="color: #475569; margin: 10px 0;"><strong>Additional Notes:</strong> ${appointment.description}</p>` : ''}
                 </div>
                 
                 <p style="color: #475569; font-size: 16px; line-height: 1.6;">
@@ -67,18 +67,19 @@ const sendAdminNotificationEmail = async (appointment) => {
     const mailOptions = {
         from: `"Amend Landscaping Website"`,
         to: ownerEmail,
-        replyTo: appointment.email, 
-        subject: isCommercial 
-            ? `⚠️ NEW COMMERCIAL REQUEST: ${appointment.name}` 
+        replyTo: appointment.email,
+        subject: isCommercial
+            ? `⚠️ NEW COMMERCIAL REQUEST: ${appointment.name}`
             : `New Service Request: ${appointment.name}`,
-        html: htmlBody
+        html: htmlBody,
+        attachments: brandAttachments
     };
 
     try {
         const info = await transporter.sendMail(mailOptions);
         console.log(`Admin notification email sent successfully to ${ownerEmail}: ${info.messageId}`);
         return true;
-    } 
+    }
     catch (error) {
         console.error('Error sending admin notification email:', error);
         return false;
