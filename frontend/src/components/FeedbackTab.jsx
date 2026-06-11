@@ -91,7 +91,7 @@ function FeedbackTab() {
                                     </td>
 
                                     <td className="px-6 py-4 max-w-xl">
-                                        <div className="line-clamp-3">
+                                        <div className="whitespace-pre-wrap break-words text-gray-700">
                                             {item.message}
                                         </div>
                                     </td>
