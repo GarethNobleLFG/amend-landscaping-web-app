@@ -10,6 +10,15 @@ const findAll = async () => {
     });
 };
 
+const updateReadStatus = async (id, isRead) => {
+    const feedback = await Feedback.findByPk(id);
+    if (!feedback) return null;
+
+    feedback.is_read = isRead;
+    await feedback.save();
+    return feedback;
+};
+
 const deleteFeedback = async (id) => {
     const feedback = await Feedback.findByPk(id);
 
@@ -24,5 +33,6 @@ const deleteFeedback = async (id) => {
 module.exports = {
     create,
     findAll,
-    deleteFeedback
+    deleteFeedback,
+    updateReadStatus
 };

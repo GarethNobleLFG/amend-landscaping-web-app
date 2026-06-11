@@ -19,7 +19,7 @@ describe('Feedback Controller Logic', () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
-        jest.spyOn(console, 'error').mockImplementation(() => {});
+        jest.spyOn(console, 'error').mockImplementation(() => { });
 
         app = express();
         app.use(express.json());
@@ -94,6 +94,39 @@ describe('Feedback Controller Logic', () => {
 
             expect(res.status).toBe(500);
             expect(res.body.error).toBe('Failed to fetch feedback');
+        });
+    });
+
+    describe('Marking Feedback as Read', () => {
+        it('should return 200 and updated feedback when successful', async () => {
+            feedbackService.markAsRead.mockResolvedValue({ ...mockFeedback, is_read: true });
+
+            const res = await request(app)
+                .patch(`/feedback/${mockFeedback.id}/read`);
+
+            expect(feedbackService.markAsRead).toHaveBeenCalledWith(mockFeedback.id);
+            expect(res.status).toBe(200);
+            expect(res.body.is_read).toBe(true);
+        });
+
+        it('should return 404 if feedback entry is not found', async () => {
+            feedbackService.markAsRead.mockResolvedValue(null);
+
+            const res = await request(app)
+                .patch('/feedback/non-existent-id/read');
+
+            expect(res.status).toBe(404);
+            expect(res.body.error).toBe('Feedback not found');
+        });
+
+        it('should return 500 if the service throws an error', async () => {
+            feedbackService.markAsRead.mockRejectedValue(new Error('Database error'));
+
+            const res = await request(app)
+                .patch(`/feedback/${mockFeedback.id}/read`);
+
+            expect(res.status).toBe(500);
+            expect(res.body.error).toBe('Failed to update feedback status');
         });
     });
 

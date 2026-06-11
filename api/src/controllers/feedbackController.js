@@ -26,6 +26,22 @@ const getAll = async (req, res) => {
     }
 };
 
+const markAsRead = async (req, res) => {
+    try {
+        const feedback = await feedbackService.markAsRead(req.params.id);
+
+        if (!feedback) {
+            return res.status(404).json({ error: 'Feedback not found' });
+        }
+
+        res.status(200).json(feedback);
+    }
+    catch (error) {
+        console.error('Error marking feedback as read:', error);
+        res.status(500).json({ error: 'Failed to update feedback status' });
+    }
+};
+
 // DELETE /feedback/:id
 const deleteFeedback = async (req, res) => {
     try {
@@ -46,5 +62,6 @@ const deleteFeedback = async (req, res) => {
 module.exports = {
     create,
     getAll,
-    deleteFeedback
+    deleteFeedback,
+    markAsRead
 };

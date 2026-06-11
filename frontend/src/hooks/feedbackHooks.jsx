@@ -136,6 +136,47 @@ export function useGetFeedback() {
     };
 }
 
+export function useMarkFeedbackAsRead() {
+    const navigate = useNavigate();
+    const { showSessionExpired } = useSessionExpired();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const markAsRead = async (id) => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/feedback/${id}/read`, {
+                method: 'PATCH',
+                headers: getAuthHeaders()
+            });
+
+            if (isAuthError(response.status)) {
+                handleAuthError(navigate, showSessionExpired);
+                return { success: false, error: 'Session expired' };
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to update feedback');
+            }
+
+            const data = await response.json();
+            return { success: true, data };
+        }
+        catch (err) {
+            setError(err.message);
+            return { success: false, error: err.message };
+        }
+        finally {
+            setIsLoading(false);
+        }
+    };
+
+    return { markAsRead, isLoading, error };
+}
+
 export function useDeleteFeedback() {
     const navigate = useNavigate();
     const { showSessionExpired } = useSessionExpired();

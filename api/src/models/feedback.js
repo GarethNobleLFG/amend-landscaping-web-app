@@ -14,6 +14,11 @@ const Feedback = sequelize.define('Feedback', {
     message: {
         type: DataTypes.TEXT,
         allowNull: false
+    },
+    is_read: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
     }
 }, {
     tableName: 'feedback',

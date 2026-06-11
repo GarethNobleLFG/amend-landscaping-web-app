@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ClipboardList, LayoutDashboard, ImageIcon, MessageSquare } from 'lucide-react';
 import { useGetAppointments, useApproveAppointment, useDenyAppointment, useCancelAppointment, useUpdateAppointment } from '../../hooks/appointmentHooks';
+import { useGetFeedback } from '../../hooks/feedbackHooks';
 import AppointmentCard from '../../components/AppointmentCard';
 import ApproveModal from './ApproveModal';
 import DenyCancelModal from './DenyCancelModal';
@@ -24,11 +25,18 @@ const AdminDashboard = () => {
     const { cancelAppointment } = useCancelAppointment();
     const { isSessionExpiredOpen, closeSessionExpired } = useSessionExpired();
     const { updateAppointment } = useUpdateAppointment();
+    const { feedback, fetchFeedback: fetchAllFeedback } = useGetFeedback();
 
     useEffect(() => {
         // Reset any stale session-expired state on mount
         closeSessionExpired();
     });
+
+    useEffect(() => {
+        fetchAllFeedback();
+    }, [fetchAllFeedback]);
+
+    const unreadFeedbackCount = feedback.filter(f => !f.is_read).length;
 
     const [processingId, setProcessingId] = useState(null);
     const [activeTab, setActiveTab] = useState('pending');
@@ -187,12 +195,23 @@ const AdminDashboard = () => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 title={tab.label}
-                                className={`p-2 rounded-lg flex items-center gap-2 transition-all ${activeTab === tab.id
+                                className={`p-2 rounded-lg flex items-center gap-2 transition-all relative ${activeTab === tab.id // Added 'relative'
                                     ? 'bg-green-50 text-green-700 shadow-sm'
                                     : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                                     }`}
                             >
                                 <tab.icon className="w-5 h-5" />
+
+                                {/* The Red Badge (only for feedback tab and when count > 0) */}
+                                {tab.id === 'feedback' && unreadFeedbackCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] items-center justify-center text-white font-black">
+                                            {unreadFeedbackCount}
+                                        </span>
+                                    </span>
+                                )}
+
                                 <span className="hidden xl:inline text-sm font-semibold">{tab.label}</span>
                             </button>
                         ))}
@@ -201,15 +220,15 @@ const AdminDashboard = () => {
 
                 {activeTab === 'services' ? (
                     <ServicesTab />
-                ) : activeTab === 'landing' ? ( 
+                ) : activeTab === 'landing' ? (
                     <LandingImagesTab />
                 ) : activeTab === 'registry' ? (
                     <ImageRegistryTab />
-                ) : activeTab === 'testimonies' ? ( 
+                ) : activeTab === 'testimonies' ? (
                     <TestimoniesTab />
                 ) : activeTab === 'feedback' ? (
-                    <FeedbackTab />
-                ) : activeTab === 'contacts' ? ( 
+                    <FeedbackTab onRefresh={fetchAllFeedback} />
+                ) : activeTab === 'contacts' ? (
                     <ContactsTab />
                 ) : isLoading && appointments.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20">

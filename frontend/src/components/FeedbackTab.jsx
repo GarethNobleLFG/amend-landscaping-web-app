@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Trash2, Mail, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trash2, Mail, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
 import {
     useGetFeedback,
-    useDeleteFeedback
+    useDeleteFeedback,
+    useMarkFeedbackAsRead
 } from '../hooks/feedbackHooks';
 
-function FeedbackTab() {
+function FeedbackTab({ onRefresh }) { 
     const {
         feedback,
         fetchFeedback,
@@ -16,6 +17,8 @@ function FeedbackTab() {
         deleteFeedback,
         isLoading: deleting
     } = useDeleteFeedback();
+
+    const { markAsRead } = useMarkFeedbackAsRead();
 
     useEffect(() => {
         fetchFeedback();
@@ -32,8 +35,20 @@ function FeedbackTab() {
 
         if (result.success) {
             fetchFeedback();
-        } else {
+            if (onRefresh) onRefresh();
+        }
+        else {
             alert(result.error || 'Failed to delete feedback');
+        }
+    };
+
+    const handleMarkAsRead = async (id, isRead) => {
+        if (isRead) return;
+
+        const result = await markAsRead(id);
+        if (result.success) {
+            fetchFeedback();
+            if (onRefresh) onRefresh();
         }
     };
 
@@ -108,33 +123,60 @@ function FeedbackTab() {
                         {feedback.map((item) => (
                             <tr
                                 key={item.id}
-                                className="border-t border-gray-100"
+                                // Clicking the row marks it as read (if not already)
+                                onClick={() => handleMarkAsRead(item.id, item.is_read)}
+                                className={`border-t border-gray-100 transition-colors cursor-pointer ${item.is_read
+                                    ? 'bg-gray-50/50 hover:bg-gray-100/50' // Muted background for read
+                                    : 'bg-white hover:bg-green-50/30'      // Clean white for unread
+                                    }`}
                             >
-                                <td className="px-6 py-4 font-medium text-gray-900">
-                                    {item.email}
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center gap-3">
+                                        {/* The Glowing Dot */}
+                                        {!item.is_read && (
+                                            <div className="relative flex h-3 w-3">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                            </div>
+                                        )}
+                                        <span className={`font-medium ${item.is_read ? 'text-gray-500' : 'text-gray-900'}`}>
+                                            {item.email}
+                                        </span>
+                                    </div>
                                 </td>
 
-                                <td className="px-6 py-4">
+                                <td className={`px-6 py-4 ${item.is_read ? 'opacity-60' : 'opacity-100'}`}>
                                     <ExpandableMessage message={item.message} />
                                 </td>
 
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    {new Date(
-                                        item.createdAt
-                                    ).toLocaleString()}
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {new Date(item.createdAt).toLocaleString()}
                                 </td>
 
                                 <td className="px-6 py-4 text-center">
-                                    <button
-                                        onClick={() =>
-                                            handleDelete(item.id)
-                                        }
-                                        disabled={deleting}
-                                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                        Delete
-                                    </button>
+                                    <div className="flex items-center justify-center gap-2">
+                                        {/* Optional Status Icon */}
+                                        {item.is_read ? (
+                                            <span className="text-gray-400 flex items-center gap-1 text-xs font-bold uppercase tracking-tighter">
+                                                <CheckCircle2 className="w-4 h-4" /> Read
+                                            </span>
+                                        ) : (
+                                            <span className="text-green-600 flex items-center gap-1 text-xs font-bold uppercase tracking-tighter">
+                                                New
+                                            </span>
+                                        )}
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Prevents marking as read when deleting
+                                                handleDelete(item.id);
+                                            }}
+                                            disabled={deleting}
+                                            className="ml-2 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

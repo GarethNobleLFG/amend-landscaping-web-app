@@ -8,6 +8,10 @@ const getAllFeedback = async () => {
     return await feedbackRepo.findAll();
 };
 
+const markAsRead = async (id) => {
+    return await feedbackRepo.updateReadStatus(id, true);
+};
+
 const deleteFeedback = async (id) => {
     return await feedbackRepo.deleteFeedback(id);
 };
@@ -15,5 +19,6 @@ const deleteFeedback = async (id) => {
 module.exports = {
     createFeedback,
     getAllFeedback,
-    deleteFeedback
+    deleteFeedback,
+    markAsRead
 };

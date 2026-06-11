@@ -10,6 +10,8 @@ router.post('/', feedbackController.create);
 // Admin endpoints
 router.get('/', authenticateToken, requireAdmin, feedbackController.getAll);
 
+router.patch('/:id/read', authenticateToken, requireAdmin, feedbackController.markAsRead);
+
 router.delete('/:id', authenticateToken, requireAdmin, feedbackController.deleteFeedback);
 
 module.exports = router;
