@@ -61,7 +61,34 @@ export default function Booking() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+
+        if (name === 'phoneNumber') {
+            const digits = value.replace(/\D/g, '');
+            let formatted = '';
+
+            if (digits.length > 0) {
+                formatted = '+' + digits.substring(0, 1);
+
+                if (digits.length > 1) {
+                    formatted += ' (' + digits.substring(1, 4);
+                }
+                if (digits.length > 4) {
+                    formatted += ') ' + digits.substring(4, 7);
+                }
+                if (digits.length > 7) {
+                    formatted += '-' + digits.substring(7, 11);
+                }
+            }
+
+            setFormData(prev => ({ ...prev, [name]: formatted }));
+        }
+        else if (name === 'state') {
+            const letters = value.replace(/[^a-zA-Z]/g, '').toUpperCase().substring(0, 2);
+            setFormData(prev => ({ ...prev, [name]: letters }));
+        }
+        else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleServiceToggle = (serviceName) => {
@@ -322,6 +349,8 @@ export default function Booking() {
                                             name="phoneNumber"
                                             value={formData.phoneNumber}
                                             onChange={handleInputChange}
+                                            pattern="\(\d{3}\) \d{3}-\d{4}"
+                                            maxLength="14"
                                             className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium"
                                             placeholder="(555) 123-4567"
                                         />
@@ -369,7 +398,17 @@ export default function Booking() {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-2">State *</label>
-                                        <input required type="text" name="state" value={formData.state} onChange={handleInputChange} className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" placeholder="IL" />
+                                        <input
+                                            required
+                                            type="text"
+                                            name="state"
+                                            value={formData.state}
+                                            onChange={handleInputChange}
+                                            pattern="[A-Z]{2}"
+                                            maxLength="2"
+                                            className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium"
+                                            placeholder="IL"
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-2">Zip Code *</label>
