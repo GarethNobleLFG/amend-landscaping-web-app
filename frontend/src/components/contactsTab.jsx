@@ -129,7 +129,7 @@ const ContactsTab = () => {
                                     <p className="text-gray-500 font-medium">
                                         {searchTerm
                                             ? `No results found for "${searchTerm}"`
-                                            : "Start typing to search your client directory..."}
+                                            : "No contacts... yet!"}
                                     </p>
                                 </td>
                             </tr>
