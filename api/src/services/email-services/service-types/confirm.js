@@ -1,5 +1,5 @@
 const { transporter } = require('../transporter');
-const { bookingHeader, standardFooter, brandAttachments } = require('../../../utils/emailBranding');
+const { bookingHeader, standardFooter } = require('../../../utils/emailBranding');
 
 const sendConfirmationEmail = async (appointment) => {
     const isCommercial = !!appointment.is_commercial;
@@ -69,7 +69,6 @@ const sendConfirmationEmail = async (appointment) => {
             ? 'We received your commercial service request!' 
             : 'We received your service request!',
         html: htmlBody,
-        attachments: brandAttachments
     };
 
     try {

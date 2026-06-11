@@ -1,9 +1,7 @@
-const path = require('path');
-
 const logoBlock = `
 <div style="text-align: center; margin-bottom: 12px; line-height: 1;">
     <div style="margin-bottom: 8px;">
-        <img src="cid:companylogo" alt="Amend Landscaping" style="width: 80px; height: auto; display: inline-block;" />
+        <img src="https://qreivldoesiymawwzhvn.supabase.co/storage/v1/object/public/LOGO/logo.png" alt="Amend Landscaping" style="width: 80px; height: auto; display: inline-block;" />
     </div>
     <span style="color: #166534; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 24px; font-weight: 900; letter-spacing: -0.025em; vertical-align: middle;">
         Amend
@@ -13,14 +11,6 @@ const logoBlock = `
     </span>
 </div>
 `;
-
-const brandAttachments = [
-    {
-        filename: 'logo.png',
-        path: path.join(process.cwd(), 'public', 'logo.png'),
-        cid: 'companylogo' // This must match the src="cid:companylogo" above
-    }
-];
 
 // Helper component for making the headers highly consistent
 const generateHeader = (subtitle, borderColor, subtitleColor, bgColor) => `
@@ -77,5 +67,4 @@ module.exports = {
     approvalHeader,
     cancellationHeader,
     standardFooter,
-    brandAttachments
 };

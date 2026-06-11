@@ -1,5 +1,5 @@
 const { transporter } = require('../transporter');
-const { cancellationHeader, standardFooter, brandAttachments } = require('../../../utils/emailBranding');
+const { cancellationHeader, standardFooter } = require('../../../utils/emailBranding');
 
 const sendCancellationEmail = async (appointment, customMessage = '') => {
     const isCommercial = !!appointment.is_commercial;
@@ -58,7 +58,6 @@ const sendCancellationEmail = async (appointment, customMessage = '') => {
             ? 'Cancellation of Your Commercial Amend Landscaping Appointment' 
             : 'Cancellation of Your Amend Landscaping Appointment',
         html: htmlBody,
-        attachments: brandAttachments
     };
 
     try {

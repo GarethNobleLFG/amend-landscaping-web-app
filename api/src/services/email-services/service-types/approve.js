@@ -1,5 +1,5 @@
 const { transporter } = require('../transporter');
-const { approvalHeader, standardFooter, brandAttachments } = require('../../../utils/emailBranding');
+const { approvalHeader, standardFooter } = require('../../../utils/emailBranding');
 
 const sendApprovalEmail = async (appointment, customMessage = '') => {
     const isCommercial = !!appointment.is_commercial;
@@ -73,7 +73,6 @@ const sendApprovalEmail = async (appointment, customMessage = '') => {
             ? 'Your Commercial Amend Landscaping Service is Approved!' 
             : 'Your Amend Landscaping Appointment is Approved!',
         html: htmlBody,
-        attachments: brandAttachments
     };
 
     try {
