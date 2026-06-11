@@ -74,7 +74,7 @@ const AppointmentCard = ({ appointment, onApprove, onDeny, onCancel, onUpdate, o
             initial={false}
             animate={{ opacity: 1 }}
             whileHover={!isEditing ? { y: -4 } : {}}
-            onMouseEnter={handleMouseEnter}
+            onClick={handleMouseEnter}
             className={`bg-white rounded-2xl shadow-sm border transition-all p-6 flex flex-col h-full relative overflow-hidden ${isEditing ? 'border-green-400 ring-2 ring-green-100 scale-[1.02] z-30' : 'border-gray-100 hover:shadow-lg'
                 }`}
         >
