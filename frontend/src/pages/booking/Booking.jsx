@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion as motionElement } from 'framer-motion';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Leaf, ArrowRight, ArrowLeft, Check, User, Sparkles, MapPin } from 'lucide-react';
+import { Leaf, ArrowRight, ArrowLeft, Check, User, Sparkles, MapPin, Loader2 } from 'lucide-react';
 import { useCreateAppointment } from '../../hooks/appointmentHooks';
 import { useGetAvailableServices } from '../../hooks/serviceHooks';
 import SuccessModal from './SuccessModal';
@@ -354,7 +354,7 @@ export default function Booking() {
                                             value={formData.phoneNumber}
                                             onChange={handleInputChange}
                                             pattern="\+\d \(\d{3}\) \d{3}-\d{4}"
-                                            maxLength="17" 
+                                            maxLength="17"
                                             className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium"
                                             placeholder="+1 (555) 123-4567"
                                         />
@@ -428,9 +428,19 @@ export default function Booking() {
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="flex-1 flex items-center justify-center gap-2 bg-green-700 disabled:bg-green-400 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 transition-colors shadow-lg"
+                                    className="flex-1 flex items-center justify-center gap-3 bg-green-700 disabled:bg-green-400 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 transition-all shadow-lg active:scale-[0.98]"
                                 >
-                                    {isLoading ? 'Submitting Registration...' : (isCommercial ? 'Submit Contract Registration' : 'Submit Request')}
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="w-6 h-6 animate-spin" />
+                                            <span>Submitting... Please Wait</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {isCommercial ? 'Submit Contract Registration' : 'Submit Request'}
+                                            <ArrowRight className="w-5 h-5" />
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </motionElement.form>
