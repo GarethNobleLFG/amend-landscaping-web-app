@@ -135,6 +135,14 @@ describe('Appointment Business Logic (Service)', () => {
         });
     });
 
+    describe('markAsSeen', () => {
+        it('should successfully mark appointment as seen', async () => {
+            appointmentRepo.updateSeenStatus.mockResolvedValue({ id: '123', is_seen: true });
+            const result = await appointmentService.markAsSeen('123');
+            expect(result.is_seen).toBe(true);
+        });
+    });
+
     describe('Removing Appointments', () => {
         it('should fetch, delete, and send denial email with custom message', async () => {
             const customMessage = 'Too busy right now.';

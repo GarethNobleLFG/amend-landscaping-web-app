@@ -1,11 +1,23 @@
-import { useState, useEffect } from 'react'; // Added useEffect
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Mail, CheckCircle, Clock, XCircle, History, Building, User, Edit2, Save, X, Loader2 } from 'lucide-react'; // Added Loader2
-import { useGetAvailableServices } from '../hooks/serviceHooks'; // Added hook import
+import { useGetAvailableServices } from '../hooks/serviceHooks';
+import { useMarkAppointmentAsSeen } from '../hooks/appointmentHooks';
 
 const AppointmentCard = ({ appointment, onApprove, onDeny, onCancel, onUpdate, onUpdateSuccess }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({ ...appointment });
+
+    const { markAsSeen } = useMarkAppointmentAsSeen();
+
+    const handleMouseEnter = async () => {
+        if (!appointment.is_seen) {
+            const result = await markAsSeen(appointment.id);
+            if (result.success && onUpdateSuccess) {
+                onUpdateSuccess();
+            }
+        }
+    };
 
     const { services: allSystemServices, fetchServices, isLoading: servicesLoading } = useGetAvailableServices();
 
@@ -62,9 +74,18 @@ const AppointmentCard = ({ appointment, onApprove, onDeny, onCancel, onUpdate, o
             initial={false}
             animate={{ opacity: 1 }}
             whileHover={!isEditing ? { y: -4 } : {}}
+            onMouseEnter={handleMouseEnter}
             className={`bg-white rounded-2xl shadow-sm border transition-all p-6 flex flex-col h-full relative overflow-hidden ${isEditing ? 'border-green-400 ring-2 ring-green-100 scale-[1.02] z-30' : 'border-gray-100 hover:shadow-lg'
                 }`}
         >
+            {/* Optional: Add a "New" Pulse indicator inside the card */}
+            {!appointment.is_seen && (
+                <span className="absolute top-4 right-4 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
+            )}
+
             <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${appointment.is_commercial ? 'from-blue-500 to-indigo-600' : appointment.approved ? 'from-green-500 to-green-600' : 'from-yellow-400 to-yellow-500'
                 }`}></div>
 

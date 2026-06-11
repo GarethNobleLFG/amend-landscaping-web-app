@@ -58,6 +58,22 @@ const update = async (req, res) => {
     }
 };
 
+const markAsSeen = async (req, res) => {
+    try {
+        const appointment = await appointmentService.markAsSeen(req.params.id);
+
+        if (!appointment) {
+            return res.status(404).json({ error: 'Appointment not found' });
+        }
+
+        res.status(200).json(appointment);
+    }
+    catch (error) {
+        console.error('Error marking appointment as seen:', error);
+        res.status(500).json({ error: 'Failed to update appointment status' });
+    }
+};
+
 // PATCH /appointments/:id/deny
 const deny = async (req, res) => {
     try {
@@ -118,6 +134,7 @@ module.exports = {
     getAll,
     getById,
     update,
+    markAsSeen,
     deny,
     cancel,
     approve

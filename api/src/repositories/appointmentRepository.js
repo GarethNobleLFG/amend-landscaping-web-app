@@ -1,4 +1,4 @@
-const Appointment = require('../models/appointments'); 
+const Appointment = require('../models/appointments');
 
 const create = async (appointmentData) => {
   return await Appointment.create(appointmentData);
@@ -6,7 +6,7 @@ const create = async (appointmentData) => {
 
 const findAll = async () => {
   return await Appointment.findAll({
-    order: [['createdAt', 'DESC']] 
+    order: [['createdAt', 'DESC']]
   });
 };
 
@@ -16,23 +16,30 @@ const findById = async (id) => {
 
 const update = async (id, updateData) => {
   const appointment = await Appointment.findByPk(id);
-  
+
   if (!appointment) {
-    return null; 
+    return null;
   }
 
   return await appointment.update(updateData);
 };
 
+const updateSeenStatus = async (id, isSeen) => {
+  const appointment = await Appointment.findByPk(id);
+  if (!appointment) return null;
+
+  return await appointment.update({ is_seen: isSeen });
+};
+
 const deleteAppointment = async (id) => {
   const appointment = await Appointment.findByPk(id);
-  
+
   if (!appointment) {
     return false;
   }
 
   await appointment.destroy();
-  return true; 
+  return true;
 };
 
 module.exports = {
@@ -40,5 +47,6 @@ module.exports = {
   findAll,
   findById,
   update,
-  deleteAppointment 
+  updateSeenStatus,
+  deleteAppointment
 };

@@ -221,6 +221,47 @@ export function useUpdateAppointment() {
     return { updateAppointment, isLoading, error };
 }
 
+export function useMarkAppointmentAsSeen() {
+    const navigate = useNavigate();
+    const { showSessionExpired } = useSessionExpired();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const markAsSeen = async (id) => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/appointments/${id}/seen`, {
+                method: 'PATCH',
+                headers: getAuthHeaders()
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                handleAuthError(navigate, showSessionExpired);
+                return { success: false, error: 'Session expired' };
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to update appointment');
+            }
+
+            const data = await response.json();
+            return { success: true, data };
+        }
+        catch (err) {
+            setError(err.message);
+            return { success: false, error: err.message };
+        }
+        finally {
+            setIsLoading(false);
+        }
+    };
+
+    return { markAsSeen, isLoading, error };
+}
+
 export function useDenyAppointment() {
     const navigate = useNavigate();
     const { showSessionExpired } = useSessionExpired();

@@ -36,6 +36,10 @@ const updateAppointment = async (id, updateData) => {
     return await appointmentRepo.update(id, updateData);
 };
 
+const markAsSeen = async (id) => {
+    return await appointmentRepo.updateSeenStatus(id, true);
+};
+
 const denyAppointment = async (id, message) => {
     const appointment = await appointmentRepo.findById(id);
     if (!appointment) return false;
@@ -77,6 +81,7 @@ module.exports = {
     getAllAppointments,
     getAppointmentById,
     updateAppointment,
+    markAsSeen,
     denyAppointment,
     cancelAppointment,
     approveAppointment

@@ -204,6 +204,14 @@ describe('Appointment Controller Logic', () => {
         });
     });
 
+    describe('PATCH /appointments/:id/seen', () => {
+        it('should return 200 when successful', async () => {
+            appointmentService.markAsSeen.mockResolvedValue({ id: '123', is_seen: true });
+            const res = await request(app).patch('/appointments/123/seen');
+            expect(res.status).toBe(200);
+        });
+    });
+
     describe('Denying an Appointment', () => {
         it('should return 200 and pass custom message when an appointment is successfully denied', async () => {
             appointmentService.denyAppointment.mockResolvedValue(true);
