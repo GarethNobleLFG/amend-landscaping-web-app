@@ -1,7 +1,6 @@
 const appointmentService = require('../../src/services/appointmentService');
 const appointmentRepo = require('../../src/repositories/appointmentRepository');
 const contactService = require('../../src/services/contactService');
-const { Contact } = require('../../src/models/contacts');
 
 jest.mock('../../src/repositories/appointmentRepository');
 
