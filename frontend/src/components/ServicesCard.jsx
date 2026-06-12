@@ -51,73 +51,76 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
           initial={{ opacity: 0, scale: 0.95, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 12 }}
-          className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          className="bg-white rounded-[2rem] shadow-2xl p-7 sm:p-9 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         >
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-1">
-              {service ? 'Edit Service' : 'Add New Service'}
-            </h2>
-            <p className="text-sm text-gray-500">
-              {service ? 'Update the details for this service.' : 'Enter details for the new service.'}
-            </p>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            {/* --- Left Column: Name & Rank --- */}
-            <div className="space-y-4">
+            {/* --- Left Column: Header & Primary Fields --- */}
+            <div className="space-y-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Service Name
-                </label>
-                <input
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
-                  placeholder="e.g. Lawn Mowing"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
+                <h2 className="text-2xl font-bold text-gray-900 mb-1.5">
+                  {service ? 'Edit Service' : 'Add New Service'}
+                </h2>
+                <p className="text-sm text-gray-500 leading-snug">
+                  {service ? 'Update the details for this service below.' : 'Fill in the details to create your new service.'}
+                </p>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Listing Rank (Priority)
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
-                  placeholder="0"
-                  value={listingRank}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (/^\d*$/.test(value)) {
-                      setListingRank(value === '' ? 0 : parseInt(value, 10));
-                    }
-                  }}
-                />
-                <p className="text-[10px] text-gray-400 mt-1.5 ml-1">Lower numbers appear first on the site.</p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Service Name
+                  </label>
+                  <input
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+                    placeholder="e.g. Lawn Mowing"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Listing Rank (Priority)
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+                    placeholder="0"
+                    value={listingRank}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*$/.test(value)) {
+                        setListingRank(value === '' ? 0 : parseInt(value, 10));
+                      }
+                    }}
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1.5 ml-1">Lower numbers appear first on the site.</p>
+                </div>
               </div>
             </div>
 
-            {/* --- Right Column: Banner Image --- */}
-            <div>
+            {/* --- Right Column: Large Banner Image --- */}
+            <div className="flex flex-col h-full">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Banner Image
               </label>
               {imagePreview ? (
-                <div className="relative rounded-xl overflow-hidden border border-gray-100 group aspect-video md:aspect-auto md:h-[148px]">
+                <div className="relative flex-1 rounded-2xl overflow-hidden border border-gray-100 group min-h-[200px] md:h-full">
                   <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                     <button
                       type="button"
                       onClick={() => setIsSelectorOpen(true)}
-                      className="bg-white text-gray-900 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-100 transition shadow-sm"
+                      className="bg-white text-gray-900 px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 transition shadow-sm"
                     >
                       Change Image
                     </button>
                     <button
                       type="button"
                       onClick={() => { setImageId(null); setImagePreview(''); }}
-                      className="bg-red-500 text-white p-1.5 rounded-lg hover:bg-red-600 transition shadow-sm"
+                      className="bg-red-500 text-white p-2 rounded-xl hover:bg-red-600 transition shadow-sm"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -127,10 +130,10 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
                 <button
                   type="button"
                   onClick={() => setIsSelectorOpen(true)}
-                  className="w-full flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-6 h-[148px] cursor-pointer hover:border-green-400 hover:bg-green-50/20 transition"
+                  className="flex-1 w-full flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl p-6 min-h-[200px] cursor-pointer hover:border-green-400 hover:bg-green-50/20 transition group"
                 >
-                  <ImageIcon className="w-6 h-6 text-gray-400 mb-1" />
-                  <span className="text-xs font-semibold text-gray-600">Select Banner Image</span>
+                  <ImageIcon className="w-8 h-8 text-gray-300 mb-2 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-semibold text-gray-600">Select Banner</span>
                 </button>
               )}
             </div>
@@ -149,7 +152,7 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
               />
             </div>
 
-            {/* --- Full Width: Availability Toggle (Right of text) --- */}
+            {/* --- Full Width: Availability Toggle --- */}
             <div className="md:col-span-2 flex items-center gap-3 py-4 border-t border-gray-100 mt-2">
               <span className="text-sm font-semibold text-gray-700">Available</span>
               <button
@@ -161,17 +164,18 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
             </div>
           </div>
 
-          <div className="flex gap-3 mt-8">
+          {/* --- Action Buttons (Compact & Symmetrical) --- */}
+          <div className="flex flex-col sm:flex-row gap-3 mt-2">
             <button
               onClick={onClose}
-              className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+              className="order-2 sm:order-1 flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={saving || !name.trim()}
-              className="flex-2 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition"
+              className="order-1 sm:order-2 flex-1 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition shadow-md"
             >
               {saving ? 'Saving…' : service ? 'Save Changes' : 'Create Service'}
             </button>
@@ -189,7 +193,7 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
       />
     </>
   );
-};
+}
 
 // ── Delete Confirm Modal ──────────────────────────────────────────────────────
 const DeleteModal = ({ isOpen, onClose, onConfirm, isDeleting }) => {
