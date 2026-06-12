@@ -134,7 +134,7 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
 
             {/* --- Full Width: Description --- */}
             <div className="md:col-span-2">
-              <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+              <label className="block ml-1 text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
                 Description
               </label>
               <textarea
