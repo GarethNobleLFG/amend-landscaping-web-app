@@ -66,27 +66,31 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
                 </p>
               </div>
 
-              <div className="space-y-3 mt-13">
+              <div className="space-y-3">
+                {/* Service Name Input */}
                 <div>
-                  <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">
                     Service Name
                   </label>
                   <input
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+                    // Removed shadow-sm and kept the larger padding/rounded corners
+                    className="w-full bg-gray-50/50 border border-gray-200 rounded-2xl px-5 py-4 text-base font-medium text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-400 transition-all"
                     placeholder="e.g. Lawn Mowing"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
                 </div>
 
+                {/* Listing Rank Input */}
                 <div>
-                  <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                    Listing Rank
+                  <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">
+                    Listing Rank (Priority)
                   </label>
                   <input
                     type="text"
                     inputMode="numeric"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+                    // Applied the same flat bulky style here
+                    className="w-full bg-gray-50/50 border border-gray-200 rounded-2xl px-5 py-4 text-base font-medium text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-400 transition-all"
                     placeholder="0"
                     value={listingRank}
                     onChange={(e) => {
@@ -95,6 +99,11 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
                       }
                     }}
                   />
+                  <div className="flex flex-col mt-1 mb-2 ml-1">
+                    <p className="text-[10px] text-gray-400">
+                      Lower numbers appear first on the site (e.g., 0, 1, 2)
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
