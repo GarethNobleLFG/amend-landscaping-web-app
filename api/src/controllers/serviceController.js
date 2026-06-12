@@ -2,10 +2,11 @@ const serviceService = require('../services/serviceService');
 
 const createService = async (req, res) => {
   try {
-    const { name, description, is_available = true, image_id } = req.body;
-    const service = await serviceService.createService(name, description, is_available, image_id);
+    const { name, description, is_available = true, image_id, listing_rank } = req.body;
+    const service = await serviceService.createService(name, description, is_available, image_id, listing_rank);
     res.status(201).json(service);
-  } catch (error) {
+  }
+  catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
@@ -40,8 +41,8 @@ const getServiceById = async (req, res) => {
 
 const updateService = async (req, res) => {
   try {
-    const { name, description, is_available, image_id } = req.body;
-    const service = await serviceService.updateService(req.params.id, name, description, is_available, image_id);
+    const { name, description, is_available, image_id, listing_rank } = req.body;
+    const service = await serviceService.updateService(req.params.id, name, description, is_available, image_id, listing_rank);
     if (!service) return res.status(404).json({ error: 'Service not found' });
     res.status(200).json(service);
   } catch (error) {

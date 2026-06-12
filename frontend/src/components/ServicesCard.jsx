@@ -12,6 +12,7 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
   const [name, setName] = useState(service?.name ?? '');
   const [description, setDescription] = useState(service?.description ?? '');
   const [isAvailable, setIsAvailable] = useState(service?.is_available ?? true);
+  const [listingRank, setListingRank] = useState(service?.listing_rank ?? 0);
 
   // Track the ID for the database and the data for the preview
   const [imageId, setImageId] = useState(service?.image_id ?? null);
@@ -29,8 +30,8 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
 
     // We send imageId (the UUID) to the backend
     const result = service
-      ? await updateService(service.id, name.trim(), description.trim(), isAvailable, imageId)
-      : await createService(name.trim(), description.trim(), isAvailable, imageId);
+      ? await updateService(service.id, name.trim(), description.trim(), isAvailable, imageId, listingRank)
+      : await createService(name.trim(), description.trim(), isAvailable, imageId, listingRank);
 
     setSaving(false);
     if (result.success) onSaved();
@@ -113,6 +114,25 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
                 <span className="text-[10px] text-gray-400 mt-0.5">Browse from Image Registry</span>
               </button>
             )}
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Listing Rank (Lower shows first)
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400"
+              placeholder="0"
+              value={listingRank}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (/^\d*$/.test(value)) {
+                  setListingRank(value === '' ? 0 : parseInt(value, 10));
+                }
+              }}
+            />
           </div>
 
           <div className="flex items-center justify-between py-3 border-t border-gray-100">
@@ -215,7 +235,9 @@ const ServiceCard = ({ service, onEdit, onDelete }) => (
             <p className="text-xs text-gray-500 mt-1 leading-snug">{service.description}</p>
           )}
         </div>
-        <span className="text-xs text-gray-400 font-medium select-none">#{service.id}</span>
+        <span className="text-xs text-gray-400 font-medium select-none">
+          Rank: {service.listing_rank}
+        </span>
       </div>
 
       <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full w-fit ${service.is_available

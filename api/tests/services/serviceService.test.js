@@ -17,6 +17,7 @@ describe('Service Business Logic (Service Layer)', () => {
             description: 'Professional lawn care',
             is_available: true,
             image_id: '123e4567-e89b-12d3-a456-426614174000',
+            listing_rank: 0
         };
     });
 
@@ -33,7 +34,8 @@ describe('Service Business Logic (Service Layer)', () => {
                 name: 'Lawn Mowing',
                 description: 'Professional lawn care',
                 is_available: true,
-                image_id: '123e4567-e89b-12d3-a456-426614174000'
+                image_id: '123e4567-e89b-12d3-a456-426614174000',
+                listing_rank: 0 
             });
         });
 
@@ -49,7 +51,7 @@ describe('Service Business Logic (Service Layer)', () => {
 
         it('should apply default value for is_available if not provided', async () => {
             await serviceService.createService('Lawn Mowing', 'Desc');
-            
+
             expect(serviceRepo.create).toHaveBeenCalledWith(expect.objectContaining({
                 is_available: true
             }));
@@ -87,28 +89,32 @@ describe('Service Business Logic (Service Layer)', () => {
     });
 
     describe('updateService', () => {
-        it('should successfully update a service', async () => {
-            const updateData = { ...mockService, name: 'Lawn Care Pro' };
-            serviceRepo.update.mockResolvedValue(updateData);
+        it('should successfully update a service including listing_rank', async () => {
+            const updatedService = { ...mockService, name: 'Lawn Care Pro', listing_rank: 10 };
+            serviceRepo.update.mockResolvedValue(updatedService);
 
-            const result = await serviceService.updateService(1, 'Lawn Care Pro', 'Desc', true, 'uuid');
+            const result = await serviceService.updateService(1, 'Lawn Care Pro', 'Desc', true, 'uuid', 10);
 
-            expect(result.name).toBe('Lawn Care Pro');
-            expect(serviceRepo.update).toHaveBeenCalledWith(1, expect.any(Object));
+            expect(result.listing_rank).toBe(10);
+            expect(serviceRepo.update).toHaveBeenCalledWith(1, expect.objectContaining({
+                name: 'Lawn Care Pro',
+                listing_rank: 10
+            }));
         });
 
-        it('should sanitize empty string image_id to null during update', async () => {
-            await serviceService.updateService(1, 'Name', 'Desc', true, '');
+        it('should sanitize empty string image_id to null while maintaining rank', async () => {
+            await serviceService.updateService(1, 'Name', 'Desc', true, '', 5);
 
             expect(serviceRepo.update).toHaveBeenCalledWith(1, expect.objectContaining({
-                image_id: null
+                image_id: null,
+                listing_rank: 5
             }));
         });
 
         it('should return null if service to update is not found', async () => {
             serviceRepo.update.mockResolvedValue(null);
 
-            const result = await serviceService.updateService(999, 'Name', 'Desc', true, null);
+            const result = await serviceService.updateService(999, 'Name', 'Desc', true, 'uuid', 1);
 
             expect(result).toBeNull();
         });

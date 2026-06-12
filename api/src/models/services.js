@@ -29,14 +29,19 @@ const Service = sequelize.define('Service', {
       key: 'id'
     }
   },
+  listing_rank: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  },
 }, {
   tableName: 'services',
   timestamps: false,
 });
 
-Service.belongsTo(ImageRegistry, { 
+Service.belongsTo(ImageRegistry, {
   foreignKey: 'image_id',
-  as: 'image' 
+  as: 'image'
 });
 
 module.exports = Service;

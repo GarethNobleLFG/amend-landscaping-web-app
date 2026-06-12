@@ -30,6 +30,7 @@ describe('Service Controller', () => {
             description: 'Lawn mowing and edging service',
             is_available: true,
             image_id: 'uuid-123',
+            listing_rank: 0,
             createdAt: new Date(),
             updatedAt: new Date()
         };
@@ -68,15 +69,22 @@ describe('Service Controller', () => {
 
             const res = await request(app)
                 .post('/services')
-                .send({ 
-                    name: 'Lawn Mowing', 
-                    description: 'Lawn mowing and edging service', 
-                    is_available: true, 
-                    image_id: 'uuid-123' 
+                .send({
+                    name: 'Lawn Mowing',
+                    description: 'Lawn mowing and edging service',
+                    is_available: true,
+                    image_id: 'uuid-123',
+                    listing_rank: 5 // Add this
                 });
 
             expect(res.status).toBe(201);
-            expect(res.body.image_id).toBe('uuid-123');
+            expect(serviceService.createService).toHaveBeenCalledWith(
+                'Lawn Mowing',
+                'Lawn mowing and edging service',
+                true,
+                'uuid-123',
+                5 // Verify it was passed
+            );
         });
 
         it('should return 400 if service creation throws an error', async () => {
@@ -88,6 +96,45 @@ describe('Service Controller', () => {
 
             expect(res.status).toBe(400);
             expect(res.body.error).toBe('Validation failed');
+        });
+    });
+
+    describe('PUT /services/:id', () => {
+        it('should return 200 and the updated service including lisitng_rank', async () => {
+            const updatedService = { ...mockService, listing_rank: 10 };
+            serviceService.updateService.mockResolvedValue(updatedService);
+
+            const res = await request(app)
+                .put('/services/1')
+                .send({
+                    name: 'Lawn Mowing',
+                    description: 'Updated desc',
+                    is_available: true,
+                    image_id: 'uuid-123',
+                    listing_rank: 10
+                });
+
+            expect(res.status).toBe(200);
+            expect(res.body.listing_rank).toBe(10);
+            expect(serviceService.updateService).toHaveBeenCalledWith(
+                '1',
+                'Lawn Mowing',
+                'Updated desc',
+                true,
+                'uuid-123',
+                10
+            );
+        });
+
+        it('should return 404 if the service to update is not found', async () => {
+            serviceService.updateService.mockResolvedValue(null);
+
+            const res = await request(app)
+                .put('/services/999')
+                .send({ name: 'Fail' });
+
+            expect(res.status).toBe(404);
+            expect(res.body.error).toBe('Service not found');
         });
     });
 

@@ -12,7 +12,7 @@ const findAll = async () => {
       as: 'image',
       attributes: ['image_url']
     }],
-    order: [['id', 'DESC']]
+    order: [['listing_rank', 'ASC'], ['id', 'DESC']]
   });
 };
 
@@ -24,7 +24,7 @@ const findAvailable = async () => {
       as: 'image',
       attributes: ['image_url']
     }],
-    order: [['name', 'ASC']]
+    order: [['listing_rank', 'ASC'], ['name', 'ASC']]
   });
 };
 

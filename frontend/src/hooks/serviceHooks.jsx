@@ -93,16 +93,16 @@ export const useGetAllServices = () => {
 };
 
 export const useCreateService = () => {
-  const [isLoading, setIsLoading] = useState(false); // Added loading state for consistency
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { showSessionExpired } = useSessionExpired();
-  const createService = async (name, description, is_available, image_id) => {
+  const createService = async (name, description, is_available, image_id, listing_rank) => {
     setIsLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/services`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ name, description, is_available, image_id }),
+        body: JSON.stringify({ name, description, is_available, image_id, listing_rank }),
       });
       if (isAuthError(res.status)) {
         handleAuthError(navigate, showSessionExpired);
@@ -120,22 +120,17 @@ export const useCreateService = () => {
 };
 
 export const useUpdateService = () => {
-
   const [isLoading, setIsLoading] = useState(false);
-
-
-
   const navigate = useNavigate();
   const { showSessionExpired } = useSessionExpired();
-  const updateService = async (id, name, description, is_available, image_id) => {
+  const updateService = async (id, name, description, is_available, image_id, listing_rank) => {
     setIsLoading(true);
-
 
     try {
       const res = await fetch(`${API_BASE_URL}/services/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ name, description, is_available, image_id }),
+        body: JSON.stringify({ name, description, is_available, image_id, listing_rank }),
       });
       if (isAuthError(res.status)) {
         handleAuthError(navigate, showSessionExpired);
