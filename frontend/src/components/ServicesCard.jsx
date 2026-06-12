@@ -22,6 +22,12 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
   const { createService } = useCreateService();
   const { updateService } = useUpdateService();
 
+  useEffect(() => {
+    if (isOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'unset';
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
@@ -45,7 +51,7 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
           initial={{ opacity: 0, scale: 0.95, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 12 }}
-          className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-md"
+          className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-md max-h-[90vh] overflow-y-auto"
         >
           <h2 className="text-xl font-bold text-gray-900 mb-1">
             {service ? 'Edit Service' : 'Add New Service'}
@@ -179,32 +185,42 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
 
 // ── Delete Confirm Modal ──────────────────────────────────────────────────────
 const DeleteModal = ({ isOpen, onClose, onConfirm, isDeleting }) => {
+
+  useEffect(() => {
+    if (isOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'unset';
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-6 backdrop-blur-sm">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-2xl p-7 w-full max-sm text-center"
+        className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm text-center"
       >
-        <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Trash2 className="w-6 h-6 text-red-500" />
+        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5">
+          <Trash2 className="w-8 h-8 text-red-500" />
         </div>
-        <h2 className="text-lg font-bold text-gray-900 mb-2">Delete Service?</h2>
-        <p className="text-sm text-gray-500 mb-6">This action cannot be undone.</p>
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
-          >
-            Keep It
-          </button>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Delete Service?</h2>
+        <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+          This action cannot be undone. Are you sure you want to remove this service?
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={onConfirm}
             disabled={isDeleting}
-            className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition"
+            className="flex-1 py-3 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-xl text-sm font-bold transition order-1 sm:order-2"
           >
             {isDeleting ? 'Deleting…' : 'Yes, Delete'}
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition order-2 sm:order-1"
+          >
+            Cancel
           </button>
         </div>
       </motion.div>
