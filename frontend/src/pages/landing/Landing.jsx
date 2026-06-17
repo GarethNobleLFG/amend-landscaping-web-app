@@ -154,9 +154,6 @@ function Landing() {
                         ) : (
                           <Leaf className="w-12 h-12 text-green-600 opacity-20" />
                         )}
-                        <div className="absolute top-4 right-4 bg-white/95 backdrop-blur p-3.5 rounded-2xl text-green-600 shadow-sm">
-                          <Leaf className="w-6 h-6" />
-                        </div>
                       </div>
                       <div className="p-8 flex flex-col grow">
                         <h4 className="text-2xl font-bold mb-4 text-gray-900">{service.name}</h4>
