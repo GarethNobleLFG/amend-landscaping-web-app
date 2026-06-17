@@ -57,6 +57,10 @@ const Appointment = sequelize.define('Appointment', {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false
+    },
+    referral_info: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     tableName: 'appointments',

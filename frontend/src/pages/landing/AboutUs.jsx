@@ -1,11 +1,18 @@
 import { motion } from 'framer-motion';
 import { Leaf, Award, Users, Target } from 'lucide-react';
 import Header from '../../components/Header';
+import { Helmet } from 'react-helmet-async';
 
 const About = () => {
     return (
         <div className="min-h-screen bg-neutral-50 text-gray-800">
-            {/* Navigation Header */}
+
+            <Helmet>
+                <title>Our Story | Amend Landscaping LLC - Fort Wayne Local</title>
+                <meta name="description" content="Founded in 2024 by Raydin Garrett, Amend Landscaping provides reliable and affordable lawn care to the Fort Wayne community." />
+            </Helmet>
+
+            {/* Navigation Header */}s
             <Header />
 
             {/* Main Content */}

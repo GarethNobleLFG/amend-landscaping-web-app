@@ -6,6 +6,22 @@ const Pricing = () => {
     return (
         <div className="min-h-screen bg-neutral-50 text-gray-800">
 
+            <Helmet>
+                <title>Service Pricing | Amend Landscaping Fort Wayne</title>
+                <meta name="description" content="Affordable landscaping and mowing rates in Fort Wayne. Professional service starting at $40. See our transparent pricing for cleanups and mulch installation." />
+
+                <script type="application/ld+json">
+                    {JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "PriceSpecification",
+                        "name": "Lawn Mowing & Maintenance",
+                        "price": "40.00",
+                        "priceCurrency": "USD",
+                        "description": "Starting rate for residential mowing in Fort Wayne"
+                    })}
+                </script>
+            </Helmet>
+
             {/* Navigation (same style as landing/about if you want consistency) */}
             <Header />
 

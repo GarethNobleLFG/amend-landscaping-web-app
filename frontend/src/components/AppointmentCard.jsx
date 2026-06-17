@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, CheckCircle, Clock, XCircle, History, Building, User, Edit2, Save, X, Loader2 } from 'lucide-react'; // Added Loader2
+import {
+    MapPin, Phone, Mail, CheckCircle, Clock, XCircle, History,
+    Building, User, Edit2, Save, X, Loader2, Search
+} from 'lucide-react';
 import { useGetAvailableServices } from '../hooks/serviceHooks';
 import { useMarkAppointmentAsSeen } from '../hooks/appointmentHooks';
 
@@ -168,6 +171,23 @@ const AppointmentCard = ({ appointment, onApprove, onDeny, onCancel, onUpdate, o
                                 <span>{appointment.address}, <br />{appointment.city}, {appointment.state} {appointment.zip}</span>
                             )}
                         </div>
+                    </div>
+
+                    {/* Referral Info Section */}
+                    <div className="flex items-center text-gray-600 text-sm font-medium pt-1">
+                        <Search className="w-4 h-4 mr-3 text-green-600 shrink-0" />
+                        {isEditing ? (
+                            <input
+                                placeholder="How did they hear about us?"
+                                className="border-b border-gray-200 outline-none w-full bg-gray-50/50"
+                                value={formData.referral_info || ''}
+                                onChange={(e) => setFormData({ ...formData, referral_info: e.target.value })}
+                            />
+                        ) : (
+                            <span className="italic text-gray-500">
+                                {appointment.referral_info ? `${appointment.referral_info}` : 'No referral info'}
+                            </span>
+                        )}
                     </div>
                 </div>
 

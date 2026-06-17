@@ -12,7 +12,8 @@ const Footer = () => {
                     <div>
                         <h3 className="text-xl md:text-2xl font-extrabold text-green-700 tracking-tight flex items-center justify-center md:justify-start gap-2">
                             <img
-                                src="/logo.png"
+                                src="/logo.webp"
+                                loading="lazy"
                                 alt="Amend Landscaping Logo"
                                 className="h-12 md:h-16 w-auto object-contain -mt-1"
                             />
@@ -34,6 +35,10 @@ const Footer = () => {
                         <h4 className="font-bold text-gray-900 mb-3">Contact</h4>
 
                         <p className="text-sm text-gray-600">
+                            📍 6128 Stellhorn Rd, Fort Wayne, IN 46815
+                        </p>
+
+                        <p className="text-sm text-gray-600 mt-1">
                             📞 (260) 715-6959
                         </p>
 

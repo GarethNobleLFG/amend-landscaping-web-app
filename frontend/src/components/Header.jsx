@@ -38,12 +38,13 @@ const Header = ({ showNav = true, showBackToHome = false }) => {
                 className="flex items-center gap-2 text-2xl font-black text-green-800 tracking-tight cursor-pointer"
             >
                 <img
-                    src="/logo.png"
+                    src="/logo.webp"
+                    loading="lazy" 
                     alt="Amend Landscaping Logo"
-                    className="h-14 md:h-16 w-auto object-contain -mt-1"
+                    className="h-12 md:h-16 w-auto object-contain -mt-1"
                 />
                 {/* Text hidden on mobile, visible on medium screens and up */}
-                <span className="hidden md:inline">Amend</span> 
+                <span className="hidden md:inline">Amend</span>
                 <span className="text-gray-900 hidden md:inline">Landscaping</span>
             </div>
 

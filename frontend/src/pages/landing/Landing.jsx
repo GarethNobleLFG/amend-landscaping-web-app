@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { Leaf, ArrowRight } from 'lucide-react';
 import { useEffect } from 'react';
 import { useGetAvailableServices } from '../../hooks/serviceHooks';
@@ -6,6 +6,7 @@ import Hero from './Hero';
 import Testimonials from './Testimonials';
 import FeedbackForm from '../../components/FeedbackForm';
 import Header from '../../components/Header';
+import { Helmet } from 'react-helmet-async';
 
 function Landing() {
   const { services, fetchServices, isLoading } = useGetAvailableServices();
@@ -26,6 +27,71 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-neutral-50 text-gray-800 font-sans selection:bg-green-200">
+
+      <Helmet>
+        <title>Landscaping & Lawn Care Services in Fort Wayne | Amend Landscaping LLC</title>
+        <meta name="description" content="Looking for professional landscaping in Fort Wayne? Amend Landscaping LLC provides expert lawn care, seasonal cleanups, and outdoor design for residential and commercial properties." />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Landscaping & Lawn Care Services in Fort Wayne | Amend Landscaping LLC" />
+        <meta property="og:description" content="Expert lawn care, hardscaping, and outdoor design for Fort Wayne properties." />
+        <meta property="og:image" content="https://amendlandscapingllc.com/logo.webp" />
+        <meta property="og:url" content="https://amendlandscapingllc.com" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <link rel="canonical" href="https://amendlandscapingllc.com" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LandscapingService",
+            "name": "Amend Landscaping LLC",
+            "image": "https://amendlandscapingllc.com/logo.webp",
+            "@id": "https://amendlandscapingllc.com",
+            "url": "https://amendlandscapingllc.com",
+            "telephone": "+12607156959",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "6128 Stellhorn Rd",
+              "addressLocality": "Fort Wayne",
+              "addressRegion": "IN",
+              "postalCode": "46815",
+              "addressCountry": "US"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 41.1217,
+              "longitude": -85.0617
+            },
+            "openingHoursSpecification": {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday"
+              ],
+              "opens": "04:00",
+              "closes": "18:00"
+            },
+            "sameAs": [
+              "https://facebook.com/amendlandscapingllc",
+              "https://instagram.com/amendlandscapingllc"
+            ],
+            "areaServed": [
+              { "@type": "City", "name": "Fort Wayne" },
+              { "@type": "City", "name": "New Haven" },
+              { "@type": "City", "name": "Huntertown" },
+              { "@type": "City", "name": "Leo-Cedarville" }
+            ],
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "5",
+              "reviewCount": "3"
+            }
+          })}
+        </script>
+      </Helmet>
+
       {/* Navigation Header */}
       <Header />
 
@@ -36,7 +102,7 @@ function Landing() {
         <div className="w-full max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-20 lg:mb-24">
             <h2 className="text-green-700 font-extrabold tracking-[0.2em] uppercase text-sm mb-4">What We Do</h2>
-            <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-tight">
+            <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-tight whitespace-nowrap">
               Expert care for your <br /> outdoor spaces.
             </h3>
             <p className="text-xl text-gray-600 font-medium">
@@ -44,52 +110,68 @@ function Landing() {
             </p>
           </div>
 
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "0px 0px -50px 0px" }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 w-full"
-          >
-            {isLoading ? (
-              <div className="col-span-full flex justify-center py-20">
-                <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
-              </div>
-            ) : services.length === 0 ? (
-              <div className="col-span-full text-center py-20 bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl p-12">
-                <Leaf className="w-10 h-10 text-gray-300 mx-auto mb-4" />
-                <h4 className="text-xl font-bold text-gray-900 mb-2">Service Catalog Coming Soon</h4>
-                <p className="text-gray-500 max-w-md mx-auto">We're updating our seasonal offerings. Check back shortly!</p>
-              </div>
-            ) : (
-              services.map((service) => (
-                <motion.div key={service.id} variants={itemVariants} className="group rounded-[2rem] bg-gray-50 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 flex flex-col">
-                  <div className="relative h-64 lg:h-72 overflow-hidden bg-green-100 flex items-center justify-center">
-                    {/* FIXED: Using .image?.image_data to handle the object structure */}
-                    {service.imageUrl ? (
-                      <img
-                        src={service.imageUrl}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                        alt={service.name}
-                      />
-                    ) : (
-                      <Leaf className="w-12 h-12 text-green-600 opacity-20" />
-                    )}
-                    <div className="absolute top-4 right-4 bg-white/95 backdrop-blur p-3.5 rounded-2xl text-green-600 shadow-sm">
-                      <Leaf className="w-6 h-6" />
-                    </div>
-                  </div>
-                  <div className="p-8 flex flex-col flex-grow">
-                    <h4 className="text-2xl font-bold mb-4 text-gray-900">{service.name}</h4>
-                    <p className="text-gray-600 text-lg leading-relaxed mb-8 flex-grow">{service.description}</p>
-                    <a href="/book" className="inline-flex items-center text-green-700 font-bold transition-all hover:gap-3">
-                      Book Now <ArrowRight className="w-5 h-5 ml-2" />
-                    </a>
-                  </div>
+          <div className="min-h-[400px] relative">
+            <AnimatePresence mode="wait">
+              {isLoading ? (
+                <motion.div
+                  key="loader"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex justify-center py-20 w-full"
+                >
+                  <div className="w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
                 </motion.div>
-              ))
-            )}
-          </motion.div>
+              ) : services.length === 0 ? (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="col-span-full text-center py-20 bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl p-12"
+                >
+                  <Leaf className="w-10 h-10 text-gray-300 mx-auto mb-4" />
+                  <h4 className="text-xl font-bold text-gray-900 mb-2">Service Catalog Coming Soon</h4>
+                  <p className="text-gray-500 max-w-md mx-auto">We're updating our seasonal offerings. Check back shortly!</p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="grid"
+                  variants={containerVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.1 }}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 w-full"
+                >
+                  {services.map((service) => (
+                    <motion.div key={service.id} variants={itemVariants} className="group rounded-4xl bg-gray-50 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 flex flex-col">
+                      <div className="relative h-64 lg:h-72 overflow-hidden bg-green-100 flex items-center justify-center">
+                        {service.imageUrl ? (
+                          <img
+                            src={service.imageUrl}
+                            loading="lazy"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            alt={`${service.name} service - Amend Landscaping Fort Wayne`}
+                          />
+                        ) : (
+                          <Leaf className="w-12 h-12 text-green-600 opacity-20" />
+                        )}
+                        <div className="absolute top-4 right-4 bg-white/95 backdrop-blur p-3.5 rounded-2xl text-green-600 shadow-sm">
+                          <Leaf className="w-6 h-6" />
+                        </div>
+                      </div>
+                      <div className="p-8 flex flex-col grow">
+                        <h4 className="text-2xl font-bold mb-4 text-gray-900">{service.name}</h4>
+                        <p className="text-gray-600 text-lg leading-relaxed mb-8 grow">{service.description}</p>
+                        <a href="/book" className="inline-flex items-center text-green-700 font-bold transition-all hover:gap-3">
+                          Book Now <ArrowRight className="w-5 h-5 ml-2" />
+                        </a>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </section>
 

@@ -7,6 +7,7 @@ import { useCreateAppointment } from '../../hooks/appointmentHooks';
 import { useGetAvailableServices } from '../../hooks/serviceHooks';
 import SuccessModal from './SuccessModal';
 import { useLandingImages } from '../../hooks/landingImageHooks';
+import { Helmet } from 'react-helmet-async';
 
 export default function Booking() {
     const [step, setStep] = useState(1);
@@ -56,7 +57,10 @@ export default function Booking() {
         address: '',
         city: '',
         state: '',
-        zip: ''
+        zip: '',
+        referralSelection: '',
+        referralCustom: '',
+        referral_info: ''
     });
 
     const handleInputChange = (e) => {
@@ -118,9 +122,22 @@ export default function Booking() {
             return acc;
         }, {});
 
+        let finalReferral = formData.referralSelection;
+
+        const needsCustom = [
+            'Customer referred by Friend/Neighbor',
+            'Customer found through'
+        ].includes(formData.referralSelection);
+
+        if (needsCustom) {
+            const details = formData.referralCustom?.trim() || '(User left blank)';
+            finalReferral = `${formData.referralSelection}: ${details}`;
+        }
+
         // Package the exact structure expected by the database models
         const payload = {
             ...formData,
+            referral_info: finalReferral,
             servicesRequested: servicesObj,
             is_commercial: isCommercial, // Matches model validation
             scheduledDate: formData.scheduledDate === '' ? null : formData.scheduledDate
@@ -151,6 +168,11 @@ export default function Booking() {
 
     return (
         <div className="relative min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-green-200 py-12 px-4 sm:px-6 flex flex-col items-center overflow-hidden">
+
+            <Helmet>
+                <title>Book an Appointment | Professional Lawn Care Fort Wayne</title>
+                <meta name="description" content="Schedule your landscaping quote or lawn maintenance service online. Amend Landscaping offers easy booking for Fort Wayne residents." />
+            </Helmet>
 
             {/* Top Left Back Button */}
             <div className="absolute top-3 left-3 sm:top-6 sm:left-6 z-50">
@@ -419,6 +441,72 @@ export default function Booking() {
                                         <input required type="text" name="zip" value={formData.zip} onChange={handleInputChange} className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium" placeholder="62701" />
                                     </div>
                                 </div>
+
+                                {/* Inside Step 2 form, above the Submit button */}
+                                <div className="pt-4">
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                                        How did you hear about us? (Optional)
+                                    </label>
+                                    <select
+                                        name="referralSelection"
+                                        value={formData.referralSelection}
+                                        onChange={handleInputChange}
+                                        className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium appearance-none"
+                                    >
+                                        <option value="">Select an option</option>
+                                        <option value="Customer found through Google Search">Google Search</option>
+                                        <option value="Customer found through Facebook">Facebook</option>
+                                        <option value="Customer found through Instagram">Instagram</option>
+                                        <option value="Customer referred by Friend/Neighbor">Referral from Friend/Neighbor</option>
+                                        <option value="Customer found through seeing flyer/sign">Saw our truck or a sign</option>
+                                        <option value="Customer found through">Other</option>
+                                    </select>
+                                </div>
+
+                                <AnimatePresence>
+                                    {/* Option 1: Referral from Friend */}
+                                    {formData.referralSelection === 'Customer referred by Friend/Neighbor' && (
+                                        <motion.div
+                                            key="friend-input"
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="mt-4"
+                                        >
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Who referred you?</label>
+                                            <input
+                                                type="text"
+                                                name="referralCustom"
+                                                value={formData.referralCustom || ''}
+                                                onChange={handleInputChange}
+                                                className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium"
+                                                placeholder="Name of friend or neighbor..."
+                                            />
+                                        </motion.div>
+                                    )}
+
+                                    {/* Option 2: Other Source */}
+                                    {formData.referralSelection === 'Customer found through' && (
+                                        <motion.div
+                                            key="other-input"
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="mt-4"
+                                        >
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Where did you hear about us?</label>
+                                            <input
+                                                type="text"
+                                                name="referralCustom"
+                                                value={formData.referralCustom || ''}
+                                                onChange={handleInputChange}
+                                                className="w-full bg-white/80 border border-gray-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all font-medium"
+                                                placeholder="e.g. Nextdoor, Flyer downstairs, etc."
+                                            />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
                             </div>
 
                             <div className="flex gap-4 mt-auto">

@@ -28,9 +28,8 @@ const AdminDashboard = () => {
     const { feedback, fetchFeedback: fetchAllFeedback } = useGetFeedback();
 
     useEffect(() => {
-        // Reset any stale session-expired state on mount
         closeSessionExpired();
-    });
+    }, [closeSessionExpired]); 
 
     useEffect(() => {
         fetchAllFeedback();

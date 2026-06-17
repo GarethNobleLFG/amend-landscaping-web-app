@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Exclude admin pages from search results
+Disallow: /admin/
+Disallow: /admin-dashboard/
+
+Sitemap: https://amendlandscapingllc.com/sitemap.xml

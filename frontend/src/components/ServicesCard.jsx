@@ -114,16 +114,25 @@ const ServiceFormModal = ({ isOpen, service, onClose, onSaved }) => {
                 Banner Image
               </label>
               {imagePreview ? (
-                // Update height to h-[220px] here
-                <div className="relative rounded-2xl overflow-hidden border border-gray-100 group h-[250px] w-full shadow-inner">
-                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                  {/* ... overlay content ... */}
+                <div
+                  onClick={() => setIsSelectorOpen(true)} 
+                  className="relative rounded-2xl overflow-hidden border border-gray-100 group h-[250px] w-full shadow-inner cursor-pointer"
+                >
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                    <div className="bg-white/90 p-3 rounded-full shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                      <Pencil className="w-6 h-6 text-green-700" />
+                    </div>
+                    <span className="absolute bottom-4 text-white text-[11px] font-bold uppercase tracking-widest">
+                      Change Image
+                    </span>
+                  </div>
                 </div>
               ) : (
                 <button
                   type="button"
                   onClick={() => setIsSelectorOpen(true)}
-                  // Update height to h-[220px] here
                   className="w-full flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl h-[250px] hover:border-green-400 hover:bg-green-50/20 transition group"
                 >
                   <ImageIcon className="w-6 h-6 text-gray-300 mb-2 group-hover:scale-110 transition-transform" />
