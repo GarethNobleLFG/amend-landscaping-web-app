@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Leaf, Scissors, Sparkles, Trash2 } from 'lucide-react';
 import Header from '../../components/Header';
+import { Helmet } from 'react-helmet-async';
 
 const Pricing = () => {
     return (

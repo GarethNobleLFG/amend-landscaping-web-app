@@ -1,4 +1,4 @@
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Leaf, ArrowRight } from 'lucide-react';
 import { useEffect } from 'react';
 import { useGetAvailableServices } from '../../hooks/serviceHooks';
