@@ -41,12 +41,14 @@ function Landing() {
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "LandscapingService",
+            "@type": "LocalBusiness", 
+            "@id": "https://amendlandscapingllc.com",
             "name": "Amend Landscaping LLC",
             "image": "https://amendlandscapingllc.com/logo.webp",
-            "@id": "https://amendlandscapingllc.com",
             "url": "https://amendlandscapingllc.com",
             "telephone": "+12607156959",
+            "priceRange": "$$", 
+            "serviceType": "Landscaping and Lawn Care", 
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "6128 Stellhorn Rd",
@@ -63,12 +65,7 @@ function Landing() {
             "openingHoursSpecification": {
               "@type": "OpeningHoursSpecification",
               "dayOfWeek": [
-                "Monday",
-                "Tuesday",
-                "Wednesday",
-                "Thursday",
-                "Friday",
-                "Saturday"
+                "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
               ],
               "opens": "04:00",
               "closes": "18:00"
@@ -86,6 +83,8 @@ function Landing() {
             "aggregateRating": {
               "@type": "AggregateRating",
               "ratingValue": "5",
+              "bestRating": "5", 
+              "worstRating": "1", 
               "reviewCount": "3"
             }
           })}
