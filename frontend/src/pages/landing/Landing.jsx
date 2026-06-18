@@ -41,14 +41,14 @@ function Landing() {
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "LocalBusiness", 
+            "@type": "LocalBusiness",
             "@id": "https://amendlandscapingllc.com",
             "name": "Amend Landscaping LLC",
             "image": "https://amendlandscapingllc.com/logo.webp",
             "url": "https://amendlandscapingllc.com",
             "telephone": "+12607156959",
-            "priceRange": "$$", 
-            "serviceType": "Landscaping and Lawn Care", 
+            "priceRange": "$$",
+            "serviceType": "Landscaping and Lawn Care",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "6128 Stellhorn Rd",
@@ -83,8 +83,8 @@ function Landing() {
             "aggregateRating": {
               "@type": "AggregateRating",
               "ratingValue": "5",
-              "bestRating": "5", 
-              "worstRating": "1", 
+              "bestRating": "5",
+              "worstRating": "1",
               "reviewCount": "3"
             }
           })}
@@ -101,8 +101,8 @@ function Landing() {
         <div className="w-full max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-20 lg:mb-24">
             <h2 className="text-green-700 font-extrabold tracking-[0.2em] uppercase text-sm mb-4">What We Do</h2>
-            <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-tight whitespace-nowrap">
-              Expert care for your <br /> outdoor spaces.
+            <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-tight">
+              Expert care for your <br className="hidden md:block" /> outdoor spaces.
             </h3>
             <p className="text-xl text-gray-600 font-medium">
               Tailored property maintenance designed to let you enjoy a stunning yard without the heavy lifting.
