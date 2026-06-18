@@ -29,7 +29,7 @@ function Landing() {
     <div className="min-h-screen bg-neutral-50 text-gray-800 font-sans selection:bg-green-200">
 
       <Helmet>
-        <title>Landscaping & Lawn Care Services in Fort Wayne | Amend Landscaping LLC</title>
+        <title>Landscaping, Lawn Care Services, and Mowing in Fort Wayne | Amend Landscaping LLC</title>
         <meta name="description" content="Looking for professional landscaping in Fort Wayne? Amend Landscaping LLC provides expert lawn care, seasonal cleanups, and outdoor design for residential and commercial properties." />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Landscaping & Lawn Care Services in Fort Wayne | Amend Landscaping LLC" />
