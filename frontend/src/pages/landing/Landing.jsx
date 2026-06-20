@@ -104,8 +104,11 @@ function Landing() {
             <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-tight">
               Expert care for your <br className="hidden md:block" /> outdoor spaces.
             </h3>
-            <p className="text-xl text-gray-600 font-medium">
-              Tailored property maintenance designed to let you enjoy a stunning yard without the heavy lifting.
+            {/* SEO descriptive paragraph */}
+            <p className="text-gray-600 text-lg leading-relaxed font-medium">
+              Amend Landscaping provides expert <span className="text-green-800 font-semibold">landscaping, lawn care, and snow removal in Fort Wayne</span>.
+              Our comprehensive services include <span className="text-green-800 font-semibold">weekly mowing, mulch installation, hedge trimming, weed/overgrowth removal, junk removal, and seasonal cleanups</span>.
+              Trust our experienced team for reliable residential and commercial maintenance across Indiana.
             </p>
           </div>
 
@@ -138,8 +141,12 @@ function Landing() {
                   variants={containerVariants}
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{ once: true, amount: 0.1 }}
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 w-full"
+                  viewport={{
+                    once: true,
+                    amount: 0.1,
+                    margin: "275px"
+                  }}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 w-full -mt-7"
                 >
                   {services.map((service) => (
                     <motion.div key={service.id} variants={itemVariants} className="group rounded-4xl bg-gray-50 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 flex flex-col">
