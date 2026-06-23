@@ -14,8 +14,8 @@ export default function Hero() {
 
   const slideImages = useMemo(() => {
     return apiImages
-      .filter(img => img.url) 
-      .map(img => img.url);   
+      .filter(img => img.url)
+      .map(img => img.url);
   }, [apiImages]);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-green-50/50 to-green-100/30 text-gray-900 min-h-[85vh] flex flex-col lg:flex-row items-center w-full">
+    <section className="-mt-4 relative overflow-hidden bg-gradient-to-br from-green-50/50 to-green-100/30 text-gray-900 min-h-[85vh] flex flex-col lg:flex-row items-center w-full">
       {/* --- Left Side: Text Content --- */}
       <motion.div
         initial={{ opacity: 0, x: -30 }}
@@ -47,8 +47,20 @@ export default function Hero() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="relative z-20 w-full lg:w-1/2 px-8 lg:pl-16 lg:pr-12 pt-12 pb-12 lg:pt-16 lg:pb-24 lg:-mt-4 flex flex-col items-center lg:items-start text-center lg:text-left"
       >
-        <div className="inline-block bg-white text-green-800 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest mb-6 shadow-sm border border-green-200">
-          Premium Lawn Care
+        {/* New Customer Count Badge */}
+        <div className="-mt-2 flex items-center gap-3 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-green-100 mb-5 self-center lg:self-start">
+          <div className="relative flex -space-x-2">
+            <img
+              src="/crew-photo.jpeg"
+              alt="Our Crew"
+              className="w-13 h-13 rounded-full border-2 border-white object-cover shadow-sm"
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-green-800 font-bold text-xs uppercase tracking-widest whitespace-nowrap">
+              Proudly Served 78+ Fort Wayne Properties
+            </span>
+          </div>
         </div>
 
         <h1 className="text-5xl lg:text-7xl font-extrabold mb-5 leading-tight tracking-tight text-gray-900 drop-shadow-sm">
