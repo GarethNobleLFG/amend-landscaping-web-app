@@ -58,7 +58,7 @@ export default function Hero() {
           </div>
           <div className="flex flex-col">
             <span className="text-green-800 font-bold text-xs uppercase tracking-widest whitespace-nowrap">
-              Proudly Served 78+ Fort Wayne Properties
+              Proudly Serviced 78+ Fort Wayne Properties
             </span>
           </div>
         </div>
