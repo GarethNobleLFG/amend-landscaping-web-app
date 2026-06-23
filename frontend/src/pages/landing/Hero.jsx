@@ -39,7 +39,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="-mt-4 relative overflow-hidden bg-gradient-to-br from-green-50/50 to-green-100/30 text-gray-900 min-h-[85vh] flex flex-col lg:flex-row items-center w-full">
+    <section className="-mt-5 relative overflow-hidden bg-gradient-to-br from-green-50/50 to-green-100/30 text-gray-900 min-h-[85vh] flex flex-col lg:flex-row items-center w-full">
       {/* --- Left Side: Text Content --- */}
       <motion.div
         initial={{ opacity: 0, x: -30 }}
@@ -48,16 +48,16 @@ export default function Hero() {
         className="relative z-20 w-full lg:w-1/2 px-8 lg:pl-16 lg:pr-12 pt-12 pb-12 lg:pt-16 lg:pb-24 lg:-mt-4 flex flex-col items-center lg:items-start text-center lg:text-left"
       >
         {/* New Customer Count Badge */}
-        <div className="-mt-2 flex items-center gap-3 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-green-100 mb-5 self-center lg:self-start">
-          <div className="relative flex -space-x-2">
+        <div className="-mt-2 flex items-center gap-2 sm:gap-3 bg-white/80 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-sm border border-green-100 mb-5 self-center lg:self-start overflow-hidden max-w-[95vw]">
+          <div className="flex-shrink-0">
             <img
               src="/crew-photo.jpeg"
               alt="Our Crew"
-              className="w-13 h-13 rounded-full border-2 border-white object-cover shadow-sm"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white object-cover shadow-sm"
             />
           </div>
-          <div className="flex flex-col">
-            <span className="text-green-800 font-bold text-xs uppercase tracking-widest whitespace-nowrap">
+          <div className="flex items-center min-w-0">
+            <span className="text-green-800 font-bold text-[10px] sm:text-xs uppercase tracking-normal sm:tracking-widest whitespace-nowrap">
               Proudly Serviced 78+ Fort Wayne Properties
             </span>
           </div>
@@ -101,7 +101,7 @@ export default function Hero() {
       </motion.div>
 
       {/* --- Right Side: Dynamic Collage --- */}
-      <div className="relative z-10 w-full h-[600px] lg:h-auto lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:w-1/2 flex justify-center items-center mt-8 lg:mt-0">
+      <div className="relative z-10 w-full h-[600px] lg:h-auto lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:w-1/2 flex justify-center items-center -mt-14 lg:mt-0">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-green-300 rounded-full blur-[140px] opacity-40 mix-blend-multiply"></div>
 
         <div className="relative w-full h-full pointer-events-none perspective-[1000px] flex items-center justify-center">
