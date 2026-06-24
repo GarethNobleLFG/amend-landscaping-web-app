@@ -86,7 +86,7 @@ export default function Hero() {
             whileTap={{ scale: 0.95 }}
             className="bg-green-700 text-white px-10 py-4 rounded-xl font-bold text-xl hover:bg-green-600 transition-all w-full sm:w-[290px] text-center shadow-lg"
           >
-            Book an Appointment
+            Get a Quote
           </motion.button>
 
           <motion.button
@@ -95,7 +95,7 @@ export default function Hero() {
             whileTap={{ scale: 0.98 }}
             className="bg-white border-2 border-gray-100 hover:border-gray-200 text-green-850 hover:text-green-700 px-6 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all w-full sm:w-[290px] text-center"
           >
-            Commercial Property Service
+            Get a Commercial Proposal
           </motion.button>
         </div>
       </motion.div>

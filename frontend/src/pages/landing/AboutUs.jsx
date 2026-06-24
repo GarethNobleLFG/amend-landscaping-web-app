@@ -12,7 +12,7 @@ const About = () => {
                 <meta name="description" content="Founded in 2024 by Raydin Garrett, Amend Landscaping provides reliable and affordable lawn care to the Fort Wayne community." />
             </Helmet>
 
-            {/* Navigation Header */}s
+            {/* Navigation Header */}
             <Header />
 
             {/* Main Content */}
