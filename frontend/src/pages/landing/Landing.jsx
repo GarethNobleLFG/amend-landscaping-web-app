@@ -37,8 +37,12 @@ function Landing() {
         <meta property="og:title" content="Landscaping & Lawn Care Services in Fort Wayne | Amend Landscaping LLC" />
         <meta property="og:description" content="Expert lawn care, hardscaping, and outdoor design for Fort Wayne properties." />
         <meta property="og:image" content="https://amendlandscapingllc.com/logo.webp" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/webp" />
         <meta property="og:url" content="https://amendlandscapingllc.com" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://amendlandscapingllc.com/logo.webp" />
         <link rel="canonical" href="https://amendlandscapingllc.com" />
         <script type="application/ld+json">
           {JSON.stringify({
