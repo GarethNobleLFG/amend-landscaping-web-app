@@ -109,7 +109,6 @@ function Landing() {
             <h3 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-tight">
               Expert care for your <br className="hidden md:block" /> outdoor spaces.
             </h3>
-            {/* SEO descriptive paragraph */}
             <p className="text-gray-600 text-lg leading-relaxed font-medium">
               Amend Landscaping provides expert <span className="text-green-800 font-semibold">landscaping, lawn care, and snow removal in Fort Wayne</span>.
               Our comprehensive services include <span className="text-green-800 font-semibold">weekly mowing, mulch installation, hedge trimming, weed/overgrowth removal, junk removal, and seasonal cleanups</span>.
