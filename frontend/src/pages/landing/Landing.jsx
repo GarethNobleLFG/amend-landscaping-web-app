@@ -97,7 +97,6 @@ function Landing() {
         </script>
       </Helmet>
 
-      {/* Navigation Header */}
       <Header />
 
       <Hero />
