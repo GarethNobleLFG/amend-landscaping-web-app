@@ -170,7 +170,7 @@ export default function Booking() {
         <div className="relative min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-green-200 py-12 px-4 sm:px-6 flex flex-col items-center overflow-hidden">
 
             <Helmet>
-                <title>Book an Appointment | Professional Lawn Care Fort Wayne</title>
+                <title>Get a Quote | Professional Lawn Care Fort Wayne</title>
                 <meta name="description" content="Schedule your landscaping quote or lawn maintenance service online. Amend Landscaping offers easy booking for Fort Wayne residents." />
             </Helmet>
 
@@ -230,7 +230,7 @@ export default function Booking() {
                 </div>
 
                 <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4 drop-shadow-sm">
-                    {isCommercial ? 'Commercial Registration' : 'Book an Appointment'}
+                    {isCommercial ? 'Commercial Registration' : 'Get a Quote'}
                 </h1>
 
                 <p className="text-lg text-gray-700 font-medium drop-shadow-sm max-w-lg mx-auto">

@@ -170,7 +170,7 @@ function Landing() {
                         <h4 className="text-2xl font-bold mb-4 text-gray-900">{service.name}</h4>
                         <p className="text-gray-600 text-lg leading-relaxed mb-8 grow">{service.description}</p>
                         <a href="/book" className="inline-flex items-center text-green-700 font-bold transition-all hover:gap-3">
-                          Book Now <ArrowRight className="w-5 h-5 ml-2" />
+                          Get a Quote Now <ArrowRight className="w-5 h-5 ml-2" />
                         </a>
                       </div>
                     </motion.div>
