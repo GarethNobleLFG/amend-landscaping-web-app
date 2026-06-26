@@ -1,0 +1,22 @@
+{
+  "name": "Amend Landscaping LLC",
+  "short_name": "Amend Landscaping",
+  "description": "Expert lawn care, hardscaping, and outdoor design in Fort Wayne, Indiana.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#15803d",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/logo.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}
