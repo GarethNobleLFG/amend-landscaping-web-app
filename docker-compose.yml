@@ -31,7 +31,7 @@ services:
       - .env
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${LOCAL_POSTGRES_PASSWORD:-password}
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: amend_landscaping
     ports:
       - "5433:5432"
