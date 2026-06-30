@@ -57,7 +57,7 @@ export default function Hero() {
             />
           </div>
           <div className="flex items-center min-w-0">
-            <span className="text-green-800 font-bold text-[10px] sm:text-xs uppercase tracking-normal sm:tracking-widest whitespace-nowrap">
+            <span className="text-green-800 font-bold text-[8px] sm:text-xs uppercase tracking-normal sm:tracking-widest whitespace-nowrap">
               Proudly Serviced 78+ Fort Wayne Properties
             </span>
           </div>
