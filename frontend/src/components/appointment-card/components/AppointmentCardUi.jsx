@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import {
     MapPin, Phone, Mail, CheckCircle, Clock, XCircle, History,
-    Building, User, Edit2, Save, X, Loader2, Search, Archive
+    Building, User, Edit2, Save, X, Loader2, Archive
 } from 'lucide-react';
 
 const AppointmentCardUi = ({
