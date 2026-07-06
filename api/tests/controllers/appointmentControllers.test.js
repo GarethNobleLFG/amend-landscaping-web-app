@@ -212,6 +212,38 @@ describe('Appointment Controller Logic', () => {
         });
     });
 
+    describe('Archiving Record', () => {
+        it('should return 200 and the updated record when successfully archived', async () => {
+            const archivedAppointment = { ...mockAppointment, id: 123, is_archived: true };
+            appointmentService.archiveAppointment.mockResolvedValue(archivedAppointment);
+
+            const res = await request(app)
+                .patch('/appointments/123/archive');
+
+            expect(appointmentService.archiveAppointment).toHaveBeenCalledWith('123');
+            expect(res.status).toBe(200);
+            expect(res.body.is_archived).toBe(true);
+        });
+
+        it('should return 404 if the appointment provided for archiving is not found', async () => {
+            appointmentService.archiveAppointment.mockResolvedValue(null);
+
+            const res = await request(app).patch('/appointments/999/archive');
+
+            expect(res.status).toBe(404);
+            expect(res.body.error).toBe('Appointment not found');
+        });
+
+        it('should return 500 if the archive service throws an error', async () => {
+            appointmentService.archiveAppointment.mockRejectedValue(new Error('DB failure'));
+
+            const res = await request(app).patch('/appointments/123/archive');
+
+            expect(res.status).toBe(500);
+            expect(res.body.error).toBe('Failed to archive appointment');
+        });
+    });
+
     describe('Denying an Appointment', () => {
         it('should return 200 and pass custom message when an appointment is successfully denied', async () => {
             appointmentService.denyAppointment.mockResolvedValue(true);
