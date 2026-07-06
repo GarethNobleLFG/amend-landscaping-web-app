@@ -10,11 +10,11 @@ const Header = ({ showNav = true, showBackToHome = false }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const navLinks = [
-        { name: 'Services', href: isHome ? '#services' : '/#services' },
+        { name: 'Services', href: '/#services' },
         { name: 'Policies', href: '/policies' },
         { name: 'About', href: '/about' },
         { name: 'Pricing', href: '/pricing' },
-        { name: 'Feedback/Questions', href: isHome ? '#feedback' : '/#feedback' },
+        { name: 'Feedback/Questions', href: '/#feedback' },
     ];
 
     const handleLogoClick = () => {
@@ -24,6 +24,29 @@ const Header = ({ showNav = true, showBackToHome = false }) => {
             navigate('/');
         }
         setIsMenuOpen(false);
+    };
+
+    const handleNavClick = (e, href) => {
+        if (href.startsWith('/#')) {
+            e.preventDefault();
+            const id = href.split('#')[1];
+
+            if (isHome) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else {
+                navigate('/');
+                setTimeout(() => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 100);
+            }
+            setIsMenuOpen(false);
+        }
     };
 
     return (
@@ -43,7 +66,6 @@ const Header = ({ showNav = true, showBackToHome = false }) => {
                     alt="Amend Landscaping Logo"
                     className="h-12 md:h-16 w-auto object-contain -mt-1"
                 />
-                {/* Text hidden on mobile, visible on medium screens and up */}
                 <span className="hidden md:inline">Amend</span>
                 <span className="text-gray-900 hidden md:inline">Landscaping</span>
             </div>
@@ -56,6 +78,7 @@ const Header = ({ showNav = true, showBackToHome = false }) => {
                             <a
                                 key={link.name}
                                 href={link.href}
+                                onClick={(e) => handleNavClick(e, link.href)}
                                 className="hover:text-green-700 transition-colors"
                             >
                                 {link.name}
@@ -89,7 +112,7 @@ const Header = ({ showNav = true, showBackToHome = false }) => {
                 </div>
             </div>
 
-            {/* Mobile Dropdown - Solid white background outside the blurred header flow */}
+            {/* Mobile Dropdown */}
             {isMenuOpen && (
                 <div className="absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-2xl md:hidden">
                     <nav className="flex flex-col p-6 space-y-4">
@@ -97,7 +120,7 @@ const Header = ({ showNav = true, showBackToHome = false }) => {
                             <a
                                 key={link.name}
                                 href={link.href}
-                                onClick={() => setIsMenuOpen(false)}
+                                onClick={(e) => handleNavClick(e, link.href)}
                                 className="text-lg text-gray-700 hover:text-green-700 font-semibold"
                             >
                                 {link.name}
