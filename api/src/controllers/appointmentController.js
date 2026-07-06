@@ -74,6 +74,22 @@ const markAsSeen = async (req, res) => {
     }
 };
 
+const archive = async (req, res) => {
+    try {
+        const archivedAppointment = await appointmentService.archiveAppointment(req.params.id);
+
+        if (!archivedAppointment) {
+            return res.status(404).json({ error: 'Appointment not found' });
+        }
+
+        res.status(200).json(archivedAppointment);
+    }
+    catch (error) {
+        console.error('Error archiving appointment:', error);
+        res.status(500).json({ error: 'Failed to archive appointment' });
+    }
+};
+
 // PATCH /appointments/:id/deny
 const deny = async (req, res) => {
     try {
@@ -137,5 +153,6 @@ module.exports = {
     markAsSeen,
     deny,
     cancel,
+    archive,
     approve
 };

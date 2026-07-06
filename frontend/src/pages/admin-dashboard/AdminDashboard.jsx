@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ClipboardList, LayoutDashboard, ImageIcon, MessageSquare } from 'lucide-react';
-import { useGetAppointments, useApproveAppointment, useDenyAppointment, useCancelAppointment, useUpdateAppointment } from '../../hooks/appointmentHooks';
+import { useGetAppointments, useUpdateAppointment } from '../../hooks/appointmentHooks';
 import { useGetFeedback } from '../../hooks/feedbackHooks';
-import AppointmentCard from '../../components/AppointmentCard';
-import ApproveModal from './ApproveModal';
-import DenyCancelModal from './DenyCancelModal';
+import AppointmentCard from '../../components/appointment-card/AppointmentCard';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Building, User, Wrench, Mail } from 'lucide-react';
 import ServicesTab from '../../components/ServicesCard';
@@ -20,32 +18,21 @@ import ContactsTab from '../../components/contactsTab';
 
 const AdminDashboard = () => {
     const { appointments, fetchAppointments, isLoading, error } = useGetAppointments();
-    const { approveAppointment } = useApproveAppointment();
-    const { denyAppointment } = useDenyAppointment();
-    const { cancelAppointment } = useCancelAppointment();
     const { isSessionExpiredOpen, closeSessionExpired } = useSessionExpired();
     const { updateAppointment } = useUpdateAppointment();
     const { feedback, fetchFeedback: fetchAllFeedback } = useGetFeedback();
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    const triggerRefresh = () => setRefreshTrigger(prev => prev + 1);
+    const navigate = useNavigate();
 
     useEffect(() => {
         closeSessionExpired();
-    }, [closeSessionExpired]); 
+    }, [closeSessionExpired]);
 
     useEffect(() => {
         fetchAllFeedback();
     }, [fetchAllFeedback]);
-
-    const unreadFeedbackCount = feedback.filter(f => !f.is_read).length;
-
-    const [processingId, setProcessingId] = useState(null);
-    const [activeTab, setActiveTab] = useState('pending');
-
-
-    // Modal State Control
-    const [actionState, setActionState] = useState({ type: null, id: null });
-    const closeModals = () => setActionState({ type: null, id: null });
-
-    const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -64,46 +51,30 @@ const AdminDashboard = () => {
             navigate('/admin');
         }
     }, [navigate]);
+
     useEffect(() => {
         fetchAppointments();
-    }, [fetchAppointments]);
+    }, [fetchAppointments, refreshTrigger]);
 
-    const handleConfirmAction = async (customMessage) => {
-        const { type, id } = actionState;
-        setProcessingId(id);
+    const unreadFeedbackCount = feedback.filter(f => !f.is_read).length;
+    const [activeTab, setActiveTab] = useState('pending');
 
-        let result;
-        if (type === 'approve') {
-            result = await approveAppointment(id, customMessage);
-        } else if (type === 'deny') {
-            result = await denyAppointment(id, customMessage);
-        } else if (type === 'cancel') {
-            result = await cancelAppointment(id, customMessage);
-        }
-
-        if (result && result.success) {
-            fetchAppointments();
-            closeModals();
-        } else if (result) {
-            alert(result.error || `Failed to ${type} appointment.`);
-        }
-
-        setProcessingId(null);
-    };
-
-    const pendingAppointments = appointments.filter(app => !app.approved);
-    const approvedAppointments = appointments.filter(app => app.approved);
-    const displayedAppointments = activeTab === 'pending' ? pendingAppointments : approvedAppointments;
+    const archivedAppointments = appointments.filter(app => app.is_archived);
+    const pendingAppointments = appointments.filter(app => !app.approved && !app.is_archived);
+    const approvedAppointments = appointments.filter(app => app.approved && !app.is_archived);
+    
+    const displayedAppointments =
+        activeTab === 'pending' ? pendingAppointments :
+            activeTab === 'approved' ? approvedAppointments :
+                activeTab === 'archived' ? archivedAppointments : [];
 
     // Segment into Residential and Commercial
     const commercialAppointments = displayedAppointments.filter(app => app.is_commercial);
     const residentialAppointments = displayedAppointments.filter(app => !app.is_commercial);
 
-
-
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
-            {/* Top Navigation Bar Mock */}
+            {/* Top Navigation Bar */}
             <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
@@ -148,15 +119,10 @@ const AdminDashboard = () => {
 
                 {/* Tabs */}
                 <div className="flex items-center justify-between xl:justify-start gap-x-2 md:gap-x-4 mb-8 border-b border-gray-200 pb-2">
-
-                    {/* Primary Action Tabs (Text + Count) */}
                     <div className="flex gap-x-3 md:gap-x-4">
                         <button
                             onClick={() => setActiveTab('pending')}
-                            className={`pb-2 px-1 flex items-center gap-1.5 text-xs md:text-sm lg:text-base font-bold transition-all whitespace-nowrap ${activeTab === 'pending'
-                                ? 'border-b-2 border-green-600 text-green-700'
-                                : 'text-gray-500 hover:text-gray-700'
-                                }`}
+                            className={`pb-2 px-1 flex items-center gap-1.5 text-xs md:text-sm lg:text-base font-bold transition-all whitespace-nowrap ${activeTab === 'pending' ? 'border-b-2 border-green-600 text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
                         >
                             Pending
                             <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${activeTab === 'pending' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}>
@@ -165,22 +131,26 @@ const AdminDashboard = () => {
                         </button>
                         <button
                             onClick={() => setActiveTab('approved')}
-                            className={`pb-2 px-1 flex items-center gap-1.5 text-xs md:text-sm lg:text-base font-bold transition-all whitespace-nowrap ${activeTab === 'approved'
-                                ? 'border-b-2 border-green-600 text-green-700'
-                                : 'text-gray-500 hover:text-gray-700'
-                                }`}
+                            className={`pb-2 px-1 flex items-center gap-1.5 text-xs md:text-sm lg:text-base font-bold transition-all whitespace-nowrap ${activeTab === 'approved' ? 'border-b-2 border-green-600 text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
                         >
                             Approved
                             <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${activeTab === 'approved' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}>
                                 {approvedAppointments.length}
                             </span>
                         </button>
+                        <button
+                            onClick={() => setActiveTab('archived')}
+                            className={`pb-2 px-1 flex items-center gap-1.5 text-xs md:text-sm lg:text-base font-bold transition-all whitespace-nowrap ${activeTab === 'archived' ? 'border-b-2 border-green-600 text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Archived
+                            <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${activeTab === 'archived' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}>
+                                {archivedAppointments.length}
+                            </span>
+                        </button>
                     </div>
 
-                    {/* Vertical Divider for clarity */}
                     <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block"></div>
 
-                    {/* Management Tabs (Icon Only on small, Text on large) */}
                     <div className="flex items-center gap-x-1 md:gap-x-2">
                         {[
                             { id: 'feedback', icon: Mail, label: 'Feedback' },
@@ -194,14 +164,9 @@ const AdminDashboard = () => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 title={tab.label}
-                                className={`p-2 rounded-lg flex items-center gap-2 transition-all relative ${activeTab === tab.id // Added 'relative'
-                                    ? 'bg-green-50 text-green-700 shadow-sm'
-                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                                    }`}
+                                className={`p-2 rounded-lg flex items-center gap-2 transition-all relative ${activeTab === tab.id ? 'bg-green-50 text-green-700 shadow-sm' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
                             >
                                 <tab.icon className="w-5 h-5" />
-
-                                {/* The Red Badge (only for feedback tab and when count > 0) */}
                                 {tab.id === 'feedback' && unreadFeedbackCount > 0 && (
                                     <span className="absolute -top-1 -right-1 flex h-4 w-4">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -210,7 +175,6 @@ const AdminDashboard = () => {
                                         </span>
                                     </span>
                                 )}
-
                                 <span className="hidden xl:inline text-sm font-semibold">{tab.label}</span>
                             </button>
                         ))}
@@ -251,12 +215,16 @@ const AdminDashboard = () => {
                                     <Check className="w-10 h-10 text-green-500" />
                                 </div>
                                 <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                                    {activeTab === 'pending' ? "You're all caught up!" : "No approved requests yet."}
+                                    {activeTab === 'pending' ? "You're all caught up!" :
+                                        activeTab === 'archived' ? "No archived records." :
+                                            "No approved requests yet."}
                                 </h3>
                                 <p className="text-gray-500 text-lg">
                                     {activeTab === 'pending'
                                         ? "There are no pending requests requiring your attention right now."
-                                        : "Once you approve appointments, they will show up here."}
+                                        : activeTab === 'archived'
+                                            ? "Archived appointments will stay here for your historical records."
+                                            : "Once you approve appointments, they will show up here."}
                                 </p>
                             </motion.div>
                         ) : (
@@ -266,7 +234,7 @@ const AdminDashboard = () => {
                                     <div>
                                         <h2 className="text-xl font-extrabold text-gray-800 mb-6 flex items-center gap-2 tracking-tight">
                                             <User className="w-5 h-5 text-teal-600" />
-                                            Residential {activeTab === 'pending' ? 'Requests' : 'Appointments'}
+                                            Residential {activeTab === 'pending' ? 'Requests' : activeTab === 'archived' ? 'Archive' : 'Appointments'}
                                             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800 ml-1">
                                                 {residentialAppointments.length}
                                             </span>
@@ -277,12 +245,8 @@ const AdminDashboard = () => {
                                                     <AppointmentCard
                                                         key={appointment.id}
                                                         appointment={appointment}
-                                                        onApprove={(id) => setActionState({ type: 'approve', id })}
-                                                        onDeny={(id) => setActionState({ type: 'deny', id })}
-                                                        onCancel={(id) => setActionState({ type: 'cancel', id })}
                                                         onUpdate={updateAppointment}
-                                                        onUpdateSuccess={fetchAppointments}
-                                                        isUpdating={processingId === appointment.id}
+                                                        onUpdateSuccess={triggerRefresh}
                                                     />
                                                 ))}
                                             </AnimatePresence>
@@ -295,7 +259,7 @@ const AdminDashboard = () => {
                                     <div>
                                         <h2 className="text-xl font-extrabold text-gray-800 mb-6 flex items-center gap-2 tracking-tight">
                                             <Building className="w-5 h-5 text-blue-600" />
-                                            Commercial {activeTab === 'pending' ? 'Requests' : 'Appointments'}
+                                            Commercial {activeTab === 'pending' ? 'Requests' : activeTab === 'archived' ? 'Archive' : 'Appointments'}
                                             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 ml-1">
                                                 {commercialAppointments.length}
                                             </span>
@@ -306,10 +270,8 @@ const AdminDashboard = () => {
                                                     <AppointmentCard
                                                         key={appointment.id}
                                                         appointment={appointment}
-                                                        onApprove={(id) => setActionState({ type: 'approve', id })}
-                                                        onDeny={(id) => setActionState({ type: 'deny', id })}
-                                                        onCancel={(id) => setActionState({ type: 'cancel', id })}
-                                                        isUpdating={processingId === appointment.id}
+                                                        onUpdate={updateAppointment}
+                                                        onUpdateSuccess={triggerRefresh}
                                                     />
                                                 ))}
                                             </AnimatePresence>
@@ -321,22 +283,6 @@ const AdminDashboard = () => {
                     </motion.div>
                 )}
             </main>
-
-            {/* Render Modals */}
-            <ApproveModal
-                isOpen={actionState.type === 'approve'}
-                onClose={closeModals}
-                onConfirm={handleConfirmAction}
-                isProcessing={processingId === actionState.id}
-            />
-
-            <DenyCancelModal
-                isOpen={actionState.type === 'deny' || actionState.type === 'cancel'}
-                actionType={actionState.type}
-                onClose={closeModals}
-                onConfirm={handleConfirmAction}
-                isProcessing={processingId === actionState.id}
-            />
 
             <SessionExpiredModal
                 isOpen={isSessionExpiredOpen}

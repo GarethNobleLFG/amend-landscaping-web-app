@@ -143,6 +143,26 @@ describe('Appointment Business Logic (Service)', () => {
         });
     });
 
+    describe('Archiving Appointments', () => {
+        it('should mark an appointment as archived in the repository', async () => {
+            const archivedAppointment = { ...mockAppointment, is_archived: true };
+            appointmentRepo.update.mockResolvedValue(archivedAppointment);
+
+            const result = await appointmentService.archiveAppointment(1);
+
+            expect(appointmentRepo.update).toHaveBeenCalledWith(1, { is_archived: true });
+            expect(result.is_archived).toBe(true);
+        });
+
+        it('should return null if the appointment to archive does not exist', async () => {
+            appointmentRepo.update.mockResolvedValue(null);
+
+            const result = await appointmentService.archiveAppointment(999);
+
+            expect(result).toBeNull();
+        });
+    });
+
     describe('Removing Appointments', () => {
         it('should fetch, delete, and send denial email with custom message', async () => {
             const customMessage = 'Too busy right now.';

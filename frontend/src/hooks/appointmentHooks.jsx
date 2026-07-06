@@ -262,6 +262,44 @@ export function useMarkAppointmentAsSeen() {
     return { markAsSeen, isLoading, error };
 }
 
+export function useArchiveAppointment() {
+    const navigate = useNavigate();
+    const { showSessionExpired } = useSessionExpired();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const archiveAppointment = async (id) => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`${API_BASE_URL}/appointments/${id}/archive`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(),
+            });
+
+            if (isAuthError(response.status)) {
+                handleAuthError(navigate, showSessionExpired);
+                return { success: false, error: 'Session expired' };
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to archive appointment');
+            }
+
+            const data = await response.json();
+            return { success: true, data };
+        } catch (err) {
+            setError(err.message);
+            return { success: false, error: err.message };
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return { archiveAppointment, isLoading, error };
+}
+
 export function useDenyAppointment() {
     const navigate = useNavigate();
     const { showSessionExpired } = useSessionExpired();
