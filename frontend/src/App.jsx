@@ -8,6 +8,8 @@ import About from './pages/landing/AboutUs';
 import Footer from './components/Footer';
 import Pricing from './pages/landing/Pricing';
 import Policies from './pages/landing/Policies';
+import Privacy from './pages/Privacy'; 
+import Terms from './pages/Terms';  
 
 const AppContent = () => {
   const location = useLocation();
@@ -24,6 +26,8 @@ const AppContent = () => {
         <Route path="/about" element={<About />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/policies" element={<Policies />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>      
       {!isAdminPage && <Footer />}
