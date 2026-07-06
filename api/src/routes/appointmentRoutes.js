@@ -21,6 +21,9 @@ router.patch('/:id/approve', authenticateToken, requireAdmin, appointmentControl
 // Mark an appointment as seen
 router.patch('/:id/seen', authenticateToken, requireAdmin, appointmentController.markAsSeen);
 
+// Archive an appointment by ID
+router.patch('/:id/archive', authenticateToken, requireAdmin, appointmentController.archive);
+
 // Deny an appointment by ID
 router.patch('/:id/deny', authenticateToken, requireAdmin, appointmentController.deny);
 

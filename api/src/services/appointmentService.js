@@ -40,6 +40,10 @@ const markAsSeen = async (id) => {
     return await appointmentRepo.updateSeenStatus(id, true);
 };
 
+const archiveAppointment = async (id) => {
+    return await appointmentRepo.update(id, { is_archived: true });
+};
+
 const denyAppointment = async (id, message) => {
     const appointment = await appointmentRepo.findById(id);
     if (!appointment) return false;
@@ -84,5 +88,6 @@ module.exports = {
     markAsSeen,
     denyAppointment,
     cancelAppointment,
+    archiveAppointment,
     approveAppointment
 };

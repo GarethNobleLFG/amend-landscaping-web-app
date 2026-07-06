@@ -59,7 +59,7 @@ const Privacy = () => {
                     <section>
                         <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Your Rights</h2>
                         <p className="text-gray-600">
-                            You may request to view, update, or delete your contact information at any time by contacting us directly at <span className="font-semibold">amendlandscapingllc@gmail.com</span>.
+                            You may request to view, update, or delete your contact information at any time by contacting us directly at <span className="font-semibold">amendlandscaping@gmail.com</span>.
                         </p>
                     </section>
                 </div>

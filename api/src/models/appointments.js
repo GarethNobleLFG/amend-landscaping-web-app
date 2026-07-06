@@ -58,6 +58,11 @@ const Appointment = sequelize.define('Appointment', {
         allowNull: false,
         defaultValue: false
     },
+    is_archived: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
     referral_info: {
         type: DataTypes.STRING,
         allowNull: true
