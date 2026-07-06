@@ -66,7 +66,7 @@ const AppointmentCardUi = ({
                     </div>
                     {!isEditing && (
                         <div className="flex gap-1 ml-2">
-                            {!appointment.is_archived && (
+                            {!appointment.is_archived && appointment.approved && (
                                 <button
                                     onClick={() => setIsArchiveModalOpen(true)}
                                     className="relative group p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
