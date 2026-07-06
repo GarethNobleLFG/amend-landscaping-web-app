@@ -43,7 +43,7 @@ const Footer = () => {
                         </p>
 
                         <p className="text-sm text-gray-600 mt-1">
-                            ✉️ amendlandscaping@gmail.com
+                            ✉️ amendlandscapingllc@gmail.com
                         </p>
                     </div>
 
@@ -85,6 +85,14 @@ const Footer = () => {
 
                     <a href="/policies" className="hover:text-green-700 transition">
                         Policies
+                    </a> 
+
+                    <a href="/privacy" className="hover:text-green-700 transition">
+                        Privacy
+                    </a>
+
+                    <a href="/terms" className="hover:text-green-700 transition">
+                        Terms
                     </a>
 
                     <a href="/commercial" className="hover:text-green-700 transition">
