@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import {
     MapPin, Phone, Mail, CheckCircle, Clock, XCircle, History,
-    Building, User, Edit2, Save, X, Loader2, Archive
+    Building, User, Edit2, Save, X, Loader2, Archive, Users
 } from 'lucide-react';
 
 const AppointmentCardUi = ({
@@ -30,8 +30,8 @@ const AppointmentCardUi = ({
             whileHover={!isEditing && !appointment.is_archived ? { y: -4 } : {}}
             onMouseEnter={handleMouseEnter}
             className={`bg-white rounded-2xl shadow-sm border transition-all p-6 flex flex-col h-full relative overflow-hidden ${isEditing ? 'border-green-400 ring-2 ring-green-100 scale-[1.02] z-30' :
-                    appointment.is_archived ? 'border-gray-200 bg-gray-50/50 grayscale-[0.2]' :
-                        'border-gray-100 hover:shadow-lg'
+                appointment.is_archived ? 'border-gray-200 bg-gray-50/50 grayscale-[0.2]' :
+                    'border-gray-100 hover:shadow-lg'
                 }`}
         >
             {/* Pulse indicator - Only show if not archived */}
@@ -44,9 +44,9 @@ const AppointmentCardUi = ({
 
             {/* Top Border Gradient */}
             <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${appointment.is_archived ? 'from-gray-400 to-gray-500' :
-                    appointment.is_commercial ? 'from-blue-500 to-indigo-600' :
-                        appointment.approved ? 'from-green-500 to-green-600' :
-                            'from-yellow-400 to-yellow-500'
+                appointment.is_commercial ? 'from-blue-500 to-indigo-600' :
+                    appointment.approved ? 'from-green-500 to-green-600' :
+                        'from-yellow-400 to-yellow-500'
                 }`}></div>
 
             <div className="flex-grow">
@@ -94,7 +94,7 @@ const AppointmentCardUi = ({
                 {/* Badges/Toggles */}
                 <div className="flex flex-wrap gap-2 mb-6">
                     <span className={`flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border ${appointment.is_archived ? 'text-gray-600 bg-gray-100 border-gray-300' :
-                            appointment.approved ? 'text-green-700 bg-green-50 border-green-200' : 'text-yellow-700 bg-yellow-50 border-yellow-200'
+                        appointment.approved ? 'text-green-700 bg-green-50 border-green-200' : 'text-yellow-700 bg-yellow-50 border-yellow-200'
                         }`}>
                         {appointment.is_archived ? <Archive className="w-3 h-3 mr-1" /> :
                             appointment.approved ? <CheckCircle className="w-3 h-3 mr-1" /> : <Clock className="w-3 h-3 mr-1" />}
@@ -104,7 +104,7 @@ const AppointmentCardUi = ({
                         disabled={!isEditing || appointment.is_archived}
                         onClick={() => setFormData({ ...formData, is_commercial: !formData.is_commercial })}
                         className={`flex items-center text-xs font-bold px-2.5 py-1 rounded-full border transition-all ${appointment.is_archived ? 'text-gray-500 bg-gray-50 border-gray-200 opacity-60' :
-                                formData.is_commercial ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-teal-700 bg-teal-50 border-teal-200'
+                            formData.is_commercial ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-teal-700 bg-teal-50 border-teal-200'
                             } ${isEditing ? 'cursor-pointer hover:brightness-95' : 'cursor-default'}`}
                     >
                         {formData.is_commercial ? <Building className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
@@ -150,6 +150,22 @@ const AppointmentCardUi = ({
                                 <span>{appointment.address}, <br />{appointment.city}, {appointment.state} {appointment.zip}</span>
                             )}
                         </div>
+                    </div>
+                    {/* Added Referral Section */}
+                    <div className="flex items-center text-gray-600 text-sm font-medium">
+                        <Users className={`w-4 h-4 mr-3 shrink-0 ${appointment.is_archived ? 'text-gray-400' : 'text-green-600'}`} />
+                        {isEditing ? (
+                            <input
+                                placeholder="Referral source..."
+                                className="border-b border-gray-200 outline-none w-full bg-gray-50/50"
+                                value={formData.referral_info || ''}
+                                onChange={(e) => setFormData({ ...formData, referral_info: e.target.value })}
+                            />
+                        ) : (
+                            <span className={!appointment.referral_info ? 'italic text-gray-400' : ''}>
+                                {appointment.referral_info || 'No referral info'}
+                            </span>
+                        )}
                     </div>
                 </div>
 
