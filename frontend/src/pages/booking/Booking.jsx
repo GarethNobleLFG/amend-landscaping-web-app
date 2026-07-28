@@ -126,11 +126,11 @@ export default function Booking() {
 
         const needsCustom = [
             'Customer referred by Friend/Neighbor',
-            'Customer found through'
+            'Customer found through other'
         ].includes(formData.referralSelection);
 
         if (needsCustom) {
-            const details = formData.referralCustom?.trim() || '(User left blank)';
+            const details = formData.referralCustom?.trim() || '(User left other field blank)';
             finalReferral = `${formData.referralSelection}: ${details}`;
         }
 
@@ -459,7 +459,7 @@ export default function Booking() {
                                         <option value="Customer found through Instagram">Instagram</option>
                                         <option value="Customer referred by Friend/Neighbor">Referral from Friend/Neighbor</option>
                                         <option value="Customer found through seeing flyer/sign">Saw our truck or a sign</option>
-                                        <option value="Customer found through">Other</option>
+                                        <option value="Customer found through other">Other</option>
                                     </select>
                                 </div>
 
@@ -486,7 +486,7 @@ export default function Booking() {
                                     )}
 
                                     {/* Option 2: Other Source */}
-                                    {formData.referralSelection === 'Customer found through' && (
+                                    {formData.referralSelection === 'Customer found through other' && (
                                         <motion.div
                                             key="other-input"
                                             initial={{ opacity: 0, height: 0 }}
