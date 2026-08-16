@@ -35,13 +35,13 @@ export default function Booking() {
             .map(img => img.url);
     }, [apiImages]);
 
-    // useEffect(() => {
-    //     if (slideImages.length <= 1) return;
-    //     const timer = setInterval(() => {
-    //         setCurrentIndex((prevIndex) => (prevIndex + 1) % slideImages.length);
-    //     }, 5000);
-    //     return () => clearInterval(timer);
-    // }, [slideImages.length]);
+    useEffect(() => {
+        if (slideImages.length <= 1) return;
+        const timer = setInterval(() => {
+            setCurrentIndex((prevIndex) => (prevIndex + 1) % slideImages.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [slideImages.length]);
 
     const total = slideImages.length;
     const prevIndex = total > 0 ? (currentIndex - 1 + total) % total : 0;
@@ -112,12 +112,12 @@ export default function Booking() {
     };
 
     const nextStep = () => {
-        setStep(prev => prev + 1);
+        setStep(prev => (prev >= 2 ? prev : prev + 1));
         window.scrollTo(0, 0);
     };
 
     const prevStep = () => {
-        setStep(prev => prev - 1);
+        setStep(prev => (prev <= 1 ? prev : prev - 1));
         window.scrollTo(0, 0);
     };
 
