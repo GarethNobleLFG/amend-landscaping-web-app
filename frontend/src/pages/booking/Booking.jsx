@@ -270,8 +270,7 @@ export default function Booking() {
                     </div>
                 )}
 
-                <AnimatePresence mode="wait">
-
+                <AnimatePresence>
                     {/* ----- STEP 1: SERVICES OR REQUIREMENTS ----- */}
                     {step === 1 && (
                         <motionElement.div key="step1" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full">
