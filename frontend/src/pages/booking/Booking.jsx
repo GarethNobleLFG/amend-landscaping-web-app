@@ -35,23 +35,13 @@ export default function Booking() {
             .map(img => img.url);
     }, [apiImages]);
 
-    useEffect(() => {
-        if (slideImages.length <= 1) return;
-        const timer = setInterval(() => {
-            setCurrentIndex((prevIndex) => (prevIndex + 1) % slideImages.length);
-        }, 5000);
-        return () => clearInterval(timer);
-    }, [slideImages.length]);
-
-    useEffect(() => {
-        const handlePageShow = (event) => {
-            if (event.persisted) {
-                window.location.reload();
-            }
-        };
-        window.addEventListener('pageshow', handlePageShow);
-        return () => window.removeEventListener('pageshow', handlePageShow);
-    }, []);
+    // useEffect(() => {
+    //     if (slideImages.length <= 1) return;
+    //     const timer = setInterval(() => {
+    //         setCurrentIndex((prevIndex) => (prevIndex + 1) % slideImages.length);
+    //     }, 5000);
+    //     return () => clearInterval(timer);
+    // }, [slideImages.length]);
 
     const total = slideImages.length;
     const prevIndex = total > 0 ? (currentIndex - 1 + total) % total : 0;
