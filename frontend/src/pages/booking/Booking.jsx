@@ -112,13 +112,13 @@ export default function Booking() {
     };
 
     const nextStep = () => {
-        window.scrollTo(0, 0);
         setStep(prev => prev + 1);
+        window.scrollTo(0, 0);
     };
 
     const prevStep = () => {
-        window.scrollTo(0, 0);
         setStep(prev => prev - 1);
+        window.scrollTo(0, 0);
     };
 
     const handleSubmit = async (e) => {
