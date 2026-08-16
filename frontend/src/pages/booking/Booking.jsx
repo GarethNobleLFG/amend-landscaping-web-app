@@ -111,14 +111,12 @@ export default function Booking() {
         });
     };
 
-    // const nextStep = () => {
-    //     setStep(prev => (prev >= 2 ? prev : prev + 1));
-    //     window.scrollTo(0, 0);
-    // };
+    const nextStep = () => {
+        setStep(prev => prev + 1);
+    };
 
     const prevStep = () => {
-        setStep(prev => (prev <= 1 ? prev : prev - 1));
-        window.scrollTo(0, 0);
+        setStep(prev => prev - 1);
     };
 
     const handleSubmit = async (e) => {
@@ -336,7 +334,7 @@ export default function Booking() {
                             </div>
 
                             <button
-                                onClick={() => setStep(2)}
+                                onClick={nextStep}
                                 disabled={formData.servicesRequested.length === 0 || servicesLoading}
                                 className="mt-auto w-full flex items-center justify-center gap-2 bg-green-700 disabled:bg-gray-300 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 disabled:hover:bg-gray-300 transition-colors shadow-lg"
                             >
