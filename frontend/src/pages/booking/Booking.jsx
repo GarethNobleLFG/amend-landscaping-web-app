@@ -271,7 +271,7 @@ export default function Booking() {
                 <AnimatePresence>
                     {/* ----- STEP 1: SERVICES OR REQUIREMENTS ----- */}
                     {step === 1 && (
-                        <motionElement.div key="step1" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full">
+                        <motionElement.div variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full">
                             <div className="flex items-center gap-3 mb-8">
                                 <Sparkles className="w-8 h-8 text-green-500" />
                                 <h2 className="text-3xl font-bold text-gray-900">
@@ -346,7 +346,7 @@ export default function Booking() {
 
                     {/* ----- STEP 2: DETAILS ----- */}
                     {step === 2 && (
-                        <motionElement.form key="step2" onSubmit={handleSubmit} variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full">
+                        <motionElement.form onSubmit={handleSubmit} variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full">
                             <div className="flex items-center gap-3 mb-8">
                                 <User className="w-8 h-8 text-green-500" />
                                 <h2 className="text-3xl font-bold text-gray-900">
