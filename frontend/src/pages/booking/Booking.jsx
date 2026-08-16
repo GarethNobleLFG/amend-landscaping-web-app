@@ -29,6 +29,14 @@ export default function Booking() {
         fetchLandingImages();
     }, [fetchServices, fetchLandingImages]);
 
+    useEffect(() => {
+        const handleResume = () => {
+            window.location.reload();
+        };
+        document.addEventListener('resume', handleResume);
+        return () => document.removeEventListener('resume', handleResume);
+    }, []);
+
     const slideImages = useMemo(() => {
         return apiImages
             .filter(img => img.url)
