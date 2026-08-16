@@ -116,12 +116,18 @@ export default function Booking() {
     };
 
     const nextStep = (e) => {
-        if (e) e.preventDefault();
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         setStep(prev => prev + 1);
     };
 
     const prevStep = (e) => {
-        if (e) e.preventDefault();
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        } 
         setStep(prev => prev - 1);
     };
 
@@ -343,7 +349,7 @@ export default function Booking() {
                                 type="button"
                                 onClick={(e) => nextStep(e)}
                                 disabled={formData.servicesRequested.length === 0 || servicesLoading}
-                                className="mt-auto w-full flex items-center justify-center gap-2 bg-green-700 disabled:bg-gray-300 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 disabled:hover:bg-gray-300 transition-colors shadow-lg"
+                                className="mt-auto w-full flex items-center justify-center gap-2 bg-green-700 disabled:bg-gray-300 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 disabled:hover:bg-gray-300 transition-colors shadow-lg relative z-30"
                             >
                                 Next: {isCommercial ? 'Company & Rep Details' : 'Personal Details'} <ArrowRight className="w-5 h-5" />
                             </button>
