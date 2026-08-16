@@ -31,6 +31,7 @@ const httpRequestDurationMicroseconds = new client.Histogram({
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
 // Track request duration and status codes
 app.use((req, res, next) => {
   const end = httpRequestDurationMicroseconds.startTimer();
@@ -52,10 +53,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')
   immutable: true
 }));
 
-// Basic test route
-app.get('/', (req, res) => {
-  res.send('Amend Landscaping API is running!');
-});
+// API Routes
 app.use('/appointments', appointmentRoutes);
 app.use('/users', userRoutes);
 app.use('/services', serviceRoutes);
@@ -67,6 +65,23 @@ app.use('/contacts', contactRoutes);
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', client.register.contentType);
   res.end(await client.register.metrics());
+});
+
+app.use(express.static(path.join(process.cwd(), 'dist'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('index.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
+
+app.get('*', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
 });
 
 // Initialize database and start the server
