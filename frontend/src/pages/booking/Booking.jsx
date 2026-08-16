@@ -111,10 +111,10 @@ export default function Booking() {
         });
     };
 
-    const nextStep = () => {
-        setStep(prev => (prev >= 2 ? prev : prev + 1));
-        window.scrollTo(0, 0);
-    };
+    // const nextStep = () => {
+    //     setStep(prev => (prev >= 2 ? prev : prev + 1));
+    //     window.scrollTo(0, 0);
+    // };
 
     const prevStep = () => {
         setStep(prev => (prev <= 1 ? prev : prev - 1));
