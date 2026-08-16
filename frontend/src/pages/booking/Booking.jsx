@@ -336,7 +336,7 @@ export default function Booking() {
                             </div>
 
                             <button
-                                onClick={nextStep}
+                                onClick={() => setStep(2)}
                                 disabled={formData.servicesRequested.length === 0 || servicesLoading}
                                 className="mt-auto w-full flex items-center justify-center gap-2 bg-green-700 disabled:bg-gray-300 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 disabled:hover:bg-gray-300 transition-colors shadow-lg"
                             >
