@@ -43,6 +43,16 @@ export default function Booking() {
         return () => clearInterval(timer);
     }, [slideImages.length]);
 
+    useEffect(() => {
+        const handlePageShow = (event) => {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        };
+        window.addEventListener('pageshow', handlePageShow);
+        return () => window.removeEventListener('pageshow', handlePageShow);
+    }, []);
+
     const total = slideImages.length;
     const prevIndex = total > 0 ? (currentIndex - 1 + total) % total : 0;
     const nextIndex = total > 0 ? (currentIndex + 1) % total : 0;
