@@ -43,10 +43,6 @@ export default function Booking() {
         return () => clearInterval(timer);
     }, [slideImages.length]);
 
-    useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [step]);
-
     const total = slideImages.length;
     const prevIndex = total > 0 ? (currentIndex - 1 + total) % total : 0;
     const nextIndex = total > 0 ? (currentIndex + 1) % total : 0;
@@ -115,20 +111,14 @@ export default function Booking() {
         });
     };
 
-    const nextStep = (e) => {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
+    const nextStep = () => {
         setStep(prev => prev + 1);
+        window.scrollTo(0, 0);
     };
 
-    const prevStep = (e) => {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        } 
+    const prevStep = () => {
         setStep(prev => prev - 1);
+        window.scrollTo(0, 0);
     };
 
     const handleSubmit = async (e) => {
@@ -346,10 +336,9 @@ export default function Booking() {
                             </div>
 
                             <button
-                                type="button"
-                                onClick={(e) => nextStep(e)}
+                                onClick={nextStep}
                                 disabled={formData.servicesRequested.length === 0 || servicesLoading}
-                                className="mt-auto w-full flex items-center justify-center gap-2 bg-green-700 disabled:bg-gray-300 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 disabled:hover:bg-gray-300 transition-colors shadow-lg relative z-30"
+                                className="mt-auto w-full flex items-center justify-center gap-2 bg-green-700 disabled:bg-gray-300 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 disabled:hover:bg-gray-300 transition-colors shadow-lg"
                             >
                                 Next: {isCommercial ? 'Company & Rep Details' : 'Personal Details'} <ArrowRight className="w-5 h-5" />
                             </button>
