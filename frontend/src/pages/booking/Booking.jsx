@@ -137,7 +137,7 @@ export default function Booking() {
         ].includes(formData.referralSelection);
 
         if (needsCustom) {
-            const details = formData.referralCustom?.trim() || '(User left other field blank)';
+            const details = formData.referralCustom?.trim() || '(User left blank)';
             finalReferral = `${formData.referralSelection}: ${details}`;
         }
 
