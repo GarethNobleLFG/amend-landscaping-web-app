@@ -1,4 +1,4 @@
-name: Deployments
+name: deploy-prod-api
 
 on:
   push:
@@ -13,7 +13,7 @@ env:
   REPO_NAME: amend-landscaping-repo
 
 jobs:
-  deploy-prod-api:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
