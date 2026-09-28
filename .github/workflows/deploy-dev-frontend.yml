@@ -1,4 +1,4 @@
-name: CI/CD Pipeline - Frontend (Dev)
+name: deployments
 
 on:
   push:
