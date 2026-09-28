@@ -11,14 +11,13 @@ if (isProduction) {
     dialectOptions: {
       ssl: {
         require: true,
-        rejectUnauthorized: false // Required for Supabase/Heroku/Render
+        rejectUnauthorized: false
       }
     }
   });
 } 
 else {
-  // Local Docker development
-  sequelize = new Sequelize('amend_landscaping', 'postgres', process.env.LOCAL_POSTGRES_PASSWORD, {
+  sequelize = new Sequelize('amend_landscaping', 'postgres', 'password', {
     host: 'db',
     dialect: 'postgres',
     logging: false,

@@ -1,7 +1,7 @@
 module.exports = {
   development: {
     username: "postgres",
-    password: process.env.LOCAL_POSTGRES_PASSWORD,
+    password: "password",
     database: "amend_landscaping",
     host: "db",
     dialect: "postgres"
