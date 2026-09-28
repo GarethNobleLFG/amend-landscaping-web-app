@@ -28,7 +28,7 @@ services:
     image: postgres:15-alpine
     restart: always
     env_file:
-      - .env
+      - ./api/.env
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -48,7 +48,7 @@ services:
     depends_on:
       - db
     ports:
-      - "${PORT}:${PORT}"
+      - "3001:3001"
     env_file:
       - ./api/.env 
     volumes:
