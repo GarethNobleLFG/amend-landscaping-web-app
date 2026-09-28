@@ -1,4 +1,4 @@
-name: Full Stack CI
+name: Checks
 
 on:
   push:
