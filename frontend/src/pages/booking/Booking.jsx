@@ -111,8 +111,15 @@ export default function Booking() {
         });
     };
 
-    const nextStep = () => window.scrollTo(0, 0) || setStep(prev => prev + 1);
-    const prevStep = () => window.scrollTo(0, 0) || setStep(prev => prev - 1);
+    const nextStep = () => {
+        setStep(prev => prev + 1);
+        window.scrollTo(0, 0);
+    };
+
+    const prevStep = () => {
+        setStep(prev => prev - 1);
+        window.scrollTo(0, 0);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -130,7 +137,7 @@ export default function Booking() {
         ].includes(formData.referralSelection);
 
         if (needsCustom) {
-            const details = formData.referralCustom?.trim() || '(User left other field blank)';
+            const details = formData.referralCustom?.trim() || '(User left blank)';
             finalReferral = `${formData.referralSelection}: ${details}`;
         }
 
@@ -263,8 +270,7 @@ export default function Booking() {
                     </div>
                 )}
 
-                <AnimatePresence mode="wait">
-
+                <AnimatePresence>
                     {/* ----- STEP 1: SERVICES OR REQUIREMENTS ----- */}
                     {step === 1 && (
                         <motionElement.div key="step1" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full">

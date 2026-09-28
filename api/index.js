@@ -14,7 +14,7 @@ const contactRoutes = require('./src/routes/contactRoutes');
 const client = require('prom-client');
 
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 3001;
 
 const collectDefaultMetrics = client.collectDefaultMetrics;
 collectDefaultMetrics();
@@ -45,14 +45,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// This is static file path for local development of image storing, uploading, and retrieving.
 app.use(express.static(path.join(process.cwd(), 'public')));
 app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads'), {
   maxAge: '1y',
   immutable: true
 }));
 
-// Basic test route
 app.get('/', (req, res) => {
   res.send('Amend Landscaping API is running!');
 });
@@ -69,14 +67,11 @@ app.get('/metrics', async (req, res) => {
   res.end(await client.register.metrics());
 });
 
-// Initialize database and start the server
 async function startServer() {
   try {
-    // Test the database connection
     await sequelize.authenticate();
     console.log('Database connection has been established successfully.');
 
-    // Start the server only if the database connects
     app.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });
