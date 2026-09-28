@@ -57,8 +57,8 @@ jobs:
             NODE_ENV=production
             DATABASE_URL=${{ secrets.DEV_DATABASE_URL }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
-            COMPANY_USER=${{ secrets.COMPANY_USER }}
-            COMPANY_PASS=${{ secrets.COMPANY_PASS }}
-            ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
+            COMPANY_USER=${{ secrets.DEV_COMPANY_USER }}
+            COMPANY_PASS=${{ secrets.DEV_COMPANY_PASS }}
+            ADMIN_EMAIL=${{ secrets.DEV_ADMIN_EMAIL }}
             SUPABASE_URL=${{ secrets.SUPABASE_URL }}
             SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
