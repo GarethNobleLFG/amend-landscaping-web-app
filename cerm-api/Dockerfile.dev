@@ -1,0 +1,21 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS dev
+
+WORKDIR /app
+
+# Copy project file and restore dependencies for Cerm.API only
+COPY src/Cerm.API/CermApi.API.csproj ./src/Cerm.API/
+RUN dotnet restore ./src/Cerm.API/CermApi.API.csproj
+
+# Copy the API source code
+COPY src/Cerm.API/ ./src/Cerm.API/
+
+WORKDIR /app/src/Cerm.API
+
+# Set Development environment & bind to all network interfaces on port 5000
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV ASPNETCORE_URLS=http://+:5005
+
+EXPOSE 5005
+
+# Use dotnet watch for live reload during development
+CMD ["dotnet", "watch", "run", "--non-interactive"]

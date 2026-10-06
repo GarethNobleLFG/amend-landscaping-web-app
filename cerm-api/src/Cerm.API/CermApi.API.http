@@ -1,0 +1,6 @@
+@CermApi.API_HostAddress = http://localhost:5299
+
+GET {{CermApi.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -10,7 +10,6 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
 dist
 dist-ssr
 *.local
@@ -19,13 +18,26 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 .idea
+.vs/
+.rider/
 .DS_Store
 *.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
 *.ntvs*
 *.njsproj
-*.sln
 *.sw?
 
+# .NET Build Outputs
+[Bb]in/
+[Oo]bj/
+out/
+
+# Credentials & Credentials files
 amend-landscaping-llc-e72929d8f855.json
+*.pfx
+*.publishsettings
 
 uploads/

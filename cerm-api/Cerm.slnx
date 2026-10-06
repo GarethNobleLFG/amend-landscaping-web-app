@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Cerm.API/">
+    <Project Path="src/Cerm.API/CermApi.API.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Cerm.UnitTests/Cerm.UnitTests.csproj" />
+  </Folder>
+</Solution>
