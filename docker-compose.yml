@@ -101,6 +101,22 @@ services:
       - /app/node_modules
     command: npm run dev -- --host 0.0.0.0 --port 5174
 
+  cerm-frontend:
+    build:
+      context: ./cerm-frontend
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - cerm-api
+    ports:
+      - "5175:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./cerm-frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+
 volumes:
   pg_data:
   cerm_pg_data:
