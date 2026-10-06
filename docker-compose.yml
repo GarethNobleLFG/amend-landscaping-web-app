@@ -58,17 +58,6 @@ services:
       - HOST=0.0.0.0
     command: npm run dev
 
-  cerm-api:
-    build:
-      context: ./cerm-api
-      dockerfile: Dockerfile.dev
-    ports:
-      - "5005:5005"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-    volumes:
-      - ./cerm-api/src/Cerm.API:/app/src/Cerm.API
-
   frontend:
     build: 
       context: ./frontend
