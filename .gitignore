@@ -41,3 +41,20 @@ amend-landscaping-llc-e72929d8f855.json
 *.publishsettings
 
 uploads/
+
+# Go binaries & build artifacts
+bin/
+tmp/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test & coverage outputs
+*.test
+*.out
+coverage.html
+
+# Go vendor directory (if using go mod vendor)
+# vendor/

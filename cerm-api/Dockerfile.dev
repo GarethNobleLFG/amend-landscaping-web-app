@@ -1,0 +1,15 @@
+FROM golang:1.23-alpine
+
+WORKDIR /app
+
+ENV GOTOOLCHAIN=auto
+
+RUN go install github.com/air-verse/air@latest
+
+COPY go.mod ./
+RUN go mod download
+COPY . .
+
+EXPOSE 8080
+
+CMD ["air", "--build.cmd", "go build -o ./tmp/main ./cmd/api/main.go", "--build.bin", "./tmp/main"]
