@@ -38,6 +38,18 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
 
+  cerm-db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: cerm_user
+      POSTGRES_PASSWORD: cerm_password
+      POSTGRES_DB: cerm_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - cerm_pg_data:/var/lib/postgresql/data
+
   api:
     build: 
       context: ./api
@@ -62,12 +74,16 @@ services:
     build:
       context: ./cerm-api
       dockerfile: Dockerfile.dev
+    depends_on:
+      - cerm-db
     ports:
       - "8080:8080"
     volumes:
       - ./cerm-api:/app
     environment:
       - PORT=8080
+      - APP_ENV=development
+      - DATABASE_URL=postgres://cerm_user:cerm_password@cerm-db:5432/cerm_db?sslmode=disable
 
   frontend:
     build: 
@@ -87,5 +103,6 @@ services:
 
 volumes:
   pg_data:
+  cerm_pg_data:
   prometheus_data:
   grafana_data:
