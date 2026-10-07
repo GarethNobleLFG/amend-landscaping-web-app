@@ -13,6 +13,9 @@ export default defineConfig((): UserConfig => {
       tsconfigPaths(),
     ],
     server: {
+      watch: {
+        usePolling: true,
+      },
       headers: {
         'Cache-Control': 'public, max-age=0',
       },
