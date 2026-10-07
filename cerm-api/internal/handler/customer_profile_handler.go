@@ -3,7 +3,7 @@ package handler
 import (
 	"database/sql"
 	"errors"
-
+	
 	"cerm-api/internal/model"
 	"cerm-api/internal/service"
 	"github.com/gofiber/fiber/v2"

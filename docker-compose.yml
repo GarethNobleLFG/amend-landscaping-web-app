@@ -80,10 +80,12 @@ services:
       - "8080:8080"
     volumes:
       - ./cerm-api:/app
+    env_file:
+      - ./cerm-api/.env
     environment:
       - PORT=8080
       - APP_ENV=development
-      - DATABASE_URL=postgres://cerm_user:cerm_password@cerm-db:5432/cerm_db?sslmode=disable
+      - DATABASE_URL=postgres://cerm_user:cerm_password@cerm-db:5432/cerm_db?sslmode=disable 
 
   # frontend:
   #   build: 
@@ -105,6 +107,8 @@ services:
     build:
       context: ./cerm-frontend
       dockerfile: Dockerfile.dev
+      args:
+        CACHEBUST: ${CACHEBUST:-1}
     depends_on:
       - cerm-api
     ports:

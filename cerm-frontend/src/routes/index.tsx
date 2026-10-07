@@ -1,35 +1,42 @@
-import { component$, useSignal, $ } from "@builder.io/qwik";
+import { component$, useSignal, useStore } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
-import { useNavigate } from "@builder.io/qwik-city";
+import { useSignIn, useSignUp } from "~/hooks/user-auth";
+
+export { useSignIn, useSignUp };
 
 export default component$(() => {
   const isSignUp = useSignal(false);
   const email = useSignal("");
-  const password = useSignal("");
   const fullName = useSignal("");
-  const company = useSignal("");
-  const nav = useNavigate();
+  const creationCode = useSignal("");
 
-  const handleSubmit = $(async (e: Event) => {
-    e.preventDefault();
-    // Redirect to main admin dashboard
-    nav("/dashboard");
+  const pw = useStore({
+    password: "",
+    confirm: "",
+    mismatch: false,
   });
+
+  const signIn = useSignIn();
+  const signUp = useSignUp();
+
+  const activeError = isSignUp.value
+    ? (signUp.value as any)?.message
+    : (signIn.value as any)?.message;
 
   return (
     <div class="min-h-screen w-full flex flex-col md:flex-row bg-slate-50 text-gray-900 font-sans">
 
-      {/* LEFT SIDE: Brand Panel (Centered on Mobile, Left-aligned on Desktop) */}
+      {/* LEFT SIDE: Brand Panel */}
       <div class="w-full md:w-1/2 bg-gradient-to-br from-green-50/90 via-white to-green-100/50 p-6 sm:p-12 lg:p-16 flex flex-col justify-between items-center md:items-start text-center md:text-left border-b md:border-b-0 md:border-r border-slate-200/80">
 
-        {/* Top Logo & Title (Slightly Smaller) */}
+        {/* Top Logo & Title */}
         <div class="flex items-center justify-center md:justify-start gap-3.5 w-full">
           <img
             src="/logo.webp"
             alt="Amend Logo"
             class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain"
             onError$={(e) => {
-              (e.target as HTMLImageElement).src = "/logo.wepg";
+              (e.target as HTMLImageElement).src = "/logo.png";
             }}
           />
           <span class="font-extrabold text-2xl sm:text-3xl lg:text-4xl tracking-tight text-gray-900">
@@ -44,85 +51,158 @@ export default component$(() => {
           </h1>
         </div>
 
-        {/* Bottom Copyright Text (Centered on mobile, left on desktop) */}
+        {/* Bottom Copyright */}
         <div class="text-xs text-gray-400 font-semibold pt-4 text-center md:text-left w-full">
           © {new Date().getFullYear()} Amend Landscaping LLC. All rights reserved.
         </div>
 
       </div>
 
-      {/* RIGHT SIDE: 50% Evenly Spaced Login Form */}
+      {/* RIGHT SIDE: Login / Sign Up Form */}
       <div class="w-full md:w-1/2 bg-white p-6 sm:p-12 lg:p-16 flex flex-col justify-between items-center text-center">
 
         <div class="w-full hidden md:block" />
 
-        {/* Centered Form Block */}
         <div class="my-auto w-full max-w-md flex flex-col items-center px-2 sm:px-6 py-6 md:py-0">
 
           <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">
             {isSignUp.value ? "Create your CERM account" : "Log into CERM"}
           </h2>
 
-          <form onSubmit$={handleSubmit} class="w-full space-y-4">
-            {isSignUp.value && (
-              <>
-                <input
-                  type="text"
-                  required
-                  value={fullName.value}
-                  onInput$={(e) => (fullName.value = (e.target as HTMLInputElement).value)}
-                  placeholder="Full Name"
-                  class="w-full px-5 py-4 bg-slate-100 border border-slate-200 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600 focus:bg-white transition-all"
-                />
-                <input
-                  type="text"
-                  required
-                  value={company.value}
-                  onInput$={(e) => (company.value = (e.target as HTMLInputElement).value)}
-                  placeholder="Company Name"
-                  class="w-full px-5 py-4 bg-slate-100 border border-slate-200 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600 focus:bg-white transition-all"
-                />
-              </>
-            )}
-
-            <input
-              type="email"
-              required
-              value={email.value}
-              onInput$={(e) => (email.value = (e.target as HTMLInputElement).value)}
-              placeholder="Email, username or phone"
-              class="w-full px-5 py-4 bg-slate-100 border border-slate-200 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600 focus:bg-white transition-all"
-            />
-
-            <input
-              type="password"
-              required
-              value={password.value}
-              onInput$={(e) => (password.value = (e.target as HTMLInputElement).value)}
-              placeholder="Password"
-              class="w-full px-5 py-4 bg-slate-100 border border-slate-200 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600 focus:bg-white transition-all"
-            />
-
-            <button
-              type="submit"
-              class="w-full py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full text-base shadow-md shadow-green-600/20 active:scale-[0.98] transition-all cursor-pointer mt-3"
-            >
-              {isSignUp.value ? "Sign Up" : "Log In"}
-            </button>
-          </form>
-
-          {!isSignUp.value && (
-            <div class="pt-5">
-              <a href="#" class="text-xs font-semibold text-gray-600 hover:text-green-700 transition-colors">
-                Forgot password?
-              </a>
+          {/* Global Error Message */}
+          {activeError && (
+            <div class="w-full mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold text-left">
+              {activeError}
             </div>
           )}
 
-          {/* Divider */}
+          {/* SIGN IN FORM */}
+          {!isSignUp.value && (
+            <form
+              preventdefault:submit
+              onSubmit$={async () => {
+                await signIn.submit({
+                  email: email.value,
+                  password: pw.password,
+                });
+              }}
+              class="w-full space-y-4"
+            >
+              <input
+                type="email"
+                name="email"
+                required
+                value={email.value}
+                onInput$={(e) => (email.value = (e.target as HTMLInputElement).value)}
+                placeholder="Email address"
+                class="w-full px-5 py-4 bg-slate-100 border border-slate-200 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600 focus:bg-white transition-all"
+              />
+              <input
+                type="password"
+                name="password"
+                required
+                value={pw.password}
+                onInput$={(e) => { pw.password = (e.target as HTMLInputElement).value; }}
+                placeholder="Password"
+                class="w-full px-5 py-4 bg-slate-100 border border-slate-200 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600 focus:bg-white transition-all"
+              />
+              <a href="#" class="block text-xs font-semibold text-gray-500 hover:text-green-700 transition-colors mt-2">
+                Forgot password?
+              </a>
+              <button
+                type="submit"
+                class="w-full py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-bold rounded-full text-base shadow-md shadow-green-600/20 active:scale-[0.98] transition-all cursor-pointer mt-1"
+              >
+                Log In
+              </button>
+            </form>
+          )}
+
+          {/* SIGN UP FORM */}
+          {isSignUp.value && (
+            <form
+              preventdefault:submit
+              onSubmit$={async () => {
+                if (pw.mismatch) return;
+                await signUp.submit({
+                  name: fullName.value,
+                  email: email.value,
+                  password: pw.password,
+                  creationCode: creationCode.value,
+                });
+              }}
+              class="w-full space-y-4"
+            >
+              <input
+                type="text"
+                name="name"
+                required
+                value={fullName.value}
+                onInput$={(e) => (fullName.value = (e.target as HTMLInputElement).value)}
+                placeholder="Full Name"
+                class="w-full px-5 py-4 bg-slate-100 border border-slate-200 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600 focus:bg-white transition-all"
+              />
+              <input
+                type="email"
+                name="email"
+                required
+                value={email.value}
+                onInput$={(e) => (email.value = (e.target as HTMLInputElement).value)}
+                placeholder="Email address"
+                class="w-full px-5 py-4 bg-slate-100 border border-slate-200 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600 focus:bg-white transition-all"
+              />
+              <input
+                type="password"
+                name="password"
+                required
+                value={pw.password}
+                onInput$={(e) => {
+                  pw.password = (e.target as HTMLInputElement).value;
+                  pw.mismatch = pw.confirm.length > 0 && pw.password !== pw.confirm;
+                }}
+                placeholder="Password"
+                class="w-full px-5 py-4 bg-slate-100 border border-slate-200 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600 focus:bg-white transition-all"
+              />
+              <div>
+                <input
+                  type="password"
+                  required
+                  value={pw.confirm}
+                  onInput$={(e) => {
+                    pw.confirm = (e.target as HTMLInputElement).value;
+                    pw.mismatch = pw.confirm.length > 0 && pw.password !== pw.confirm;
+                  }}
+                  placeholder="Confirm Password"
+                  class={`w-full px-5 py-4 bg-slate-100 border text-sm rounded-xl focus:outline-none focus:ring-2 focus:bg-white transition-all ${pw.mismatch ? "border-red-400 focus:ring-red-400" : "border-slate-200 focus:ring-green-600"}`}
+                />
+                {pw.mismatch && (
+                  <p class="text-xs text-red-500 font-semibold mt-1.5 text-left pl-1">
+                    Passwords do not match
+                  </p>
+                )}
+              </div>
+              <input
+                type="text"
+                name="creationCode"
+                required
+                value={creationCode.value}
+                onInput$={(e) => (creationCode.value = (e.target as HTMLInputElement).value)}
+                placeholder="Access Code"
+                class="w-full px-5 py-4 bg-slate-100 border border-slate-200 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600 focus:bg-white transition-all"
+              />
+              <button
+                type="submit"
+                disabled={pw.mismatch}
+                class="w-full py-4 px-6 bg-green-600 hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-full text-base shadow-md shadow-green-600/20 active:scale-[0.98] transition-all cursor-pointer mt-1"
+              >
+                Create Account
+              </button>
+            </form>
+          )}
+
+          {/* Divider + Toggle */}
           <div class="w-full border-t border-slate-100 my-6 sm:my-8" />
 
-          {/* Toggle Button */}
           {isSignUp.value ? (
             <button
               onClick$={() => (isSignUp.value = false)}
@@ -141,13 +221,11 @@ export default component$(() => {
 
         </div>
 
-        {/* Bottom Amend Footer */}
         <div class="pt-6 sm:pt-8 text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center justify-center gap-1.5 w-full">
           <span class="text-green-600 font-extrabold">Amend Landscaping</span>
         </div>
 
       </div>
-
     </div>
   );
 });

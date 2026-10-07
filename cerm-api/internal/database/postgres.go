@@ -29,8 +29,7 @@ func ConnectDB() (*sql.DB, error) {
 		db.SetMaxIdleConns(5)
 		db.SetConnMaxLifetime(5 * time.Minute)
 		db.SetConnMaxIdleTime(15 * time.Minute)
-	} 
-	else {
+	} else {
 		db.SetMaxOpenConns(10)
 		db.SetMaxIdleConns(2)
 		db.SetConnMaxLifetime(5 * time.Minute)

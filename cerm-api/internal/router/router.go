@@ -3,24 +3,35 @@ package router
 import (
 	"database/sql"
 
+	"cerm-api/internal/handler"
 	"cerm-api/internal/repository"
 	"cerm-api/internal/service"
 	"github.com/gofiber/fiber/v2"
 )
 
 func SetupRoutes(app *fiber.App, db *sql.DB) {
-	// Initialize Repository -> Service -> Handler
+	// Customer Profile: Repo -> Service -> Handler
 	customerRepo := repository.NewCustomerProfileRepository(db)
 	customerSvc := service.NewCustomerProfileService(customerRepo)
-	customerHandler := NewCustomerProfileHandler(customerSvc)
+	customerHandler := handler.NewCustomerProfileHandler(customerSvc) 
 
-	// Health Check Route
+	// Auth (User): Repo -> Service -> Handler
+	userRepo := repository.NewUserRepository(db)
+	userSvc := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userSvc)
+
+	// Health Check
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"status": "ok",
 			"db":     "connected",
 		})
 	})
+
+	// Auth Routes
+	auth := app.Group("/api/auth")
+	auth.Post("/signup", userHandler.SignUp)
+	auth.Post("/signin", userHandler.SignIn)
 
 	// Customer Profiles API Routes
 	api := app.Group("/api/customer-profiles")
