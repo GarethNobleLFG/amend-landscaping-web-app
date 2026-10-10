@@ -3,9 +3,11 @@ package handler
 import (
 	"database/sql"
 	"errors"
-	
+	"strconv"
+
 	"cerm-api/internal/model"
 	"cerm-api/internal/service"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -33,7 +35,13 @@ func (h *CustomerProfileHandler) Create(c *fiber.Ctx) error {
 
 // PUT /api/customer-profiles/:id
 func (h *CustomerProfileHandler) Update(c *fiber.Ctx) error {
-	id := c.Params("id")
+	idStr := c.Params("id")
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid customer profile ID format"})
+	}
+
 	var profile model.CustomerProfile
 	if err := c.BodyParser(&profile); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
@@ -70,7 +78,15 @@ func (h *CustomerProfileHandler) GetUnapproved(c *fiber.Ctx) error {
 
 // DELETE /api/customer-profiles/:id
 func (h *CustomerProfileHandler) Delete(c *fiber.Ctx) error {
-	id := c.Params("id")
+	idStr := c.Params("id")
+
+	// Parse string parameter to int64
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid customer profile ID format"})
+	}
+
+	// Pass the parsed int64 `id` to the service
 	if err := h.service.DeleteCustomerProfile(c.UserContext(), id); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Customer profile not found"})

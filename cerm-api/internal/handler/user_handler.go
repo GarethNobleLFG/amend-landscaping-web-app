@@ -2,6 +2,7 @@ package handler
 
 import (
 	"cerm-api/internal/service"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -14,10 +15,10 @@ func NewUserHandler(svc service.UserService) *UserHandler {
 }
 
 type signUpRequest struct {
-    Name         string `json:"name" form:"name"`
-    Email        string `json:"email" form:"email"`
-    Password     string `json:"password" form:"password"`
-    CreationCode string `json:"creation_code" form:"creation_code"` 
+	Name         string `json:"name" form:"name"`
+	Email        string `json:"email" form:"email"`
+	Password     string `json:"password" form:"password"`
+	CreationCode string `json:"creation_code" form:"creation_code"`
 }
 
 type signInRequest struct {
@@ -61,4 +62,19 @@ func (h *UserHandler) SignIn(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(res)
+}
+
+// GET /api/auth/me (Used by Qwik City route loader to verify session & fetch role)
+func (h *UserHandler) Me(c *fiber.Ctx) error {
+	userID, ok := c.Locals("userID").(string)
+	if !ok || userID == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+
+	user, err := h.service.GetByID(c.UserContext(), userID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(user)
 }

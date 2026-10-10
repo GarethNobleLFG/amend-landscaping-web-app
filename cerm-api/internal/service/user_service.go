@@ -14,13 +14,14 @@ import (
 )
 
 type AuthResponse struct {
-	Token string      `json:"token"`
-	User  model.User  `json:"user"`
+	Token string     `json:"token"`
+	User  model.User `json:"user"`
 }
 
 type UserService interface {
 	SignUp(ctx context.Context, name, email, password, creationCode string) (*AuthResponse, error)
 	SignIn(ctx context.Context, email, password string) (*AuthResponse, error)
+	GetByID(ctx context.Context, userID string) (*model.User, error) // <-- Added to interface
 }
 
 type userService struct {
@@ -77,6 +78,14 @@ func (s *userService) SignIn(ctx context.Context, email, password string) (*Auth
 	}
 
 	return &AuthResponse{Token: token, User: *user}, nil
+}
+
+func (s *userService) GetByID(ctx context.Context, userID string) (*model.User, error) {
+	user, err := s.repo.FindByID(ctx, userID)
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
+	return user, nil
 }
 
 func generateJWT(user *model.User) (string, error) {

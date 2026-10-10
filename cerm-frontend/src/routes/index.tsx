@@ -1,5 +1,6 @@
 import { component$, useSignal, useStore } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import { useNavigate } from "@builder.io/qwik-city"; 
 import { useSignIn, useSignUp } from "~/hooks/user-auth";
 
 export { useSignIn, useSignUp };
@@ -18,6 +19,7 @@ export default component$(() => {
 
   const signIn = useSignIn();
   const signUp = useSignUp();
+  const nav = useNavigate();
 
   const activeError = isSignUp.value
     ? (signUp.value as any)?.message
@@ -28,8 +30,6 @@ export default component$(() => {
 
       {/* LEFT SIDE: Brand Panel */}
       <div class="w-full md:w-1/2 bg-gradient-to-br from-green-50/90 via-white to-green-100/50 p-6 sm:p-12 lg:p-16 flex flex-col justify-between items-center md:items-start text-center md:text-left border-b md:border-b-0 md:border-r border-slate-200/80">
-
-        {/* Top Logo & Title */}
         <div class="flex items-center justify-center md:justify-start gap-3.5 w-full">
           <img
             src="/logo.webp"
@@ -44,32 +44,26 @@ export default component$(() => {
           </span>
         </div>
 
-        {/* Center Headline */}
         <div class="my-auto py-10 md:py-12 flex flex-col items-center justify-center text-center w-full">
           <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black text-gray-900 tracking-tight leading-tight">
             Keep <span class="text-green-600">track of it all.</span>
           </h1>
         </div>
 
-        {/* Bottom Copyright */}
         <div class="text-xs text-gray-400 font-semibold pt-4 text-center md:text-left w-full">
           © {new Date().getFullYear()} Amend Landscaping LLC. All rights reserved.
         </div>
-
       </div>
 
       {/* RIGHT SIDE: Login / Sign Up Form */}
       <div class="w-full md:w-1/2 bg-white p-6 sm:p-12 lg:p-16 flex flex-col justify-between items-center text-center">
-
         <div class="w-full hidden md:block" />
 
         <div class="my-auto w-full max-w-md flex flex-col items-center px-2 sm:px-6 py-6 md:py-0">
-
           <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">
             {isSignUp.value ? "Create your CERM account" : "Log into CERM"}
           </h2>
 
-          {/* Global Error Message */}
           {activeError && (
             <div class="w-full mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold text-left">
               {activeError}
@@ -81,10 +75,19 @@ export default component$(() => {
             <form
               preventdefault:submit
               onSubmit$={async () => {
-                await signIn.submit({
+                const res = await signIn.submit({
                   email: email.value,
                   password: pw.password,
                 });
+
+                if (res?.value?.success || res?.value?.user) {
+                  const role = res.value.user?.role;
+                  if (role === "ADMIN") {
+                    await nav("/dashboard");
+                  } else if (role === "EMPLOYEE") {
+                    await nav("/job-schedule");
+                  }
+                }
               }}
               class="w-full space-y-4"
             >
@@ -124,12 +127,21 @@ export default component$(() => {
               preventdefault:submit
               onSubmit$={async () => {
                 if (pw.mismatch) return;
-                await signUp.submit({
+                const res = await signUp.submit({
                   name: fullName.value,
                   email: email.value,
                   password: pw.password,
                   creationCode: creationCode.value,
                 });
+
+                if (res?.value?.success || res?.value?.user) {
+                  const role = res.value.user?.role;
+                  if (role === "ADMIN") {
+                    await nav("/dashboard");
+                  } else if (role === "EMPLOYEE") {
+                    await nav("/job-schedule");
+                  }
+                }
               }}
               class="w-full space-y-4"
             >
@@ -200,7 +212,6 @@ export default component$(() => {
             </form>
           )}
 
-          {/* Divider + Toggle */}
           <div class="w-full border-t border-slate-100 my-6 sm:my-8" />
 
           {isSignUp.value ? (
@@ -218,13 +229,11 @@ export default component$(() => {
               Create new account
             </button>
           )}
-
         </div>
 
         <div class="pt-6 sm:pt-8 text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center justify-center gap-1.5 w-full">
           <span class="text-green-600 font-extrabold">Amend Landscaping</span>
         </div>
-
       </div>
     </div>
   );

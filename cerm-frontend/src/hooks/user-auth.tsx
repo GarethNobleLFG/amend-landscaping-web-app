@@ -1,4 +1,4 @@
-import { globalAction$, z, zod$ } from "@builder.io/qwik-city";
+import { globalAction$, routeLoader$, z, zod$ } from "@builder.io/qwik-city";
 
 const API_BASE = import.meta.env.PUBLIC_CERM_API_URL ?? "http://cerm-api:8080";
 
@@ -11,13 +11,8 @@ export interface AuthUser {
   updated_at: string;
 }
 
-export interface AuthResult {
-  token: string;
-  user: AuthUser;
-}
-
 export const useSignUp = globalAction$(
-  async (data, { fail }) => {
+  async (data, { fail, cookie }) => {
     try {
       const res = await fetch(`${API_BASE}/api/auth/signup`, {
         method: "POST",
@@ -36,7 +31,15 @@ export const useSignUp = globalAction$(
         return fail(res.status, { message: json.error ?? "Sign up failed" });
       }
 
-      return { success: true, token: json.token, user: json.user as AuthUser };
+      cookie.set("cerm_token", json.token, {
+        path: "/",
+        httpOnly: true,
+        secure: import.meta.env.PROD,
+        sameSite: "strict",
+        maxAge: 60 * 60 * 24, 
+      });
+
+      return { success: true, user: json.user };
     } catch {
       return fail(500, { message: "Network error. Please try again." });
     }
@@ -50,7 +53,7 @@ export const useSignUp = globalAction$(
 );
 
 export const useSignIn = globalAction$(
-  async (data, { fail }) => {
+  async (data, { fail, cookie }) => {
     try {
       const res = await fetch(`${API_BASE}/api/auth/signin`, {
         method: "POST",
@@ -67,7 +70,15 @@ export const useSignIn = globalAction$(
         return fail(res.status, { message: json.error ?? "Sign in failed" });
       }
 
-      return { success: true, token: json.token, user: json.user as AuthUser };
+      cookie.set("cerm_token", json.token, {
+        path: "/",
+        httpOnly: true,
+        secure: import.meta.env.PROD,
+        sameSite: "strict",
+        maxAge: 60 * 60 * 24,
+      });
+
+      return { success: true, user: json.user };
     } catch {
       return fail(500, { message: "Network error. Please try again." });
     }
@@ -77,3 +88,25 @@ export const useSignIn = globalAction$(
     password: z.string().min(1, "Password is required"),
   })
 );
+
+export const useAuthUser = routeLoader$(async ({ cookie, redirect }) => {
+  const token = cookie.get("cerm_token");
+
+  if (!token) {
+    throw redirect(302, "/"); 
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token.value}` },
+    });
+
+    if (!res.ok) throw new Error("Unauthorized");
+
+    const user: AuthUser = await res.json();
+    return user;
+  } catch {
+    cookie.delete("cerm_token", { path: "/" });
+    throw redirect(302, "/");
+  }
+});

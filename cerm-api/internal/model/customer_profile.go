@@ -6,7 +6,7 @@ import (
 )
 
 type CustomerProfile struct {
-	ID                string          `json:"id" db:"id"`
+	ID                int64           `json:"id" db:"id"`
 	Name              string          `json:"name" db:"name"`
 	Email             string          `json:"email" db:"email"`
 	PhoneNumber       string          `json:"phone_number" db:"phone_number"`

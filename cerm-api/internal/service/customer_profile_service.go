@@ -10,10 +10,10 @@ import (
 
 type CustomerProfileService interface {
 	CreateCustomerProfile(ctx context.Context, profile *model.CustomerProfile) error
-	UpdateCustomerProfile(ctx context.Context, id string, profile *model.CustomerProfile) error
+	UpdateCustomerProfile(ctx context.Context, id int64, profile *model.CustomerProfile) error
 	GetApprovedProfiles(ctx context.Context) ([]model.CustomerProfile, error)
 	GetUnapprovedProfiles(ctx context.Context) ([]model.CustomerProfile, error)
-	DeleteCustomerProfile(ctx context.Context, id string) error
+	DeleteCustomerProfile(ctx context.Context, id int64) error
 }
 
 type customerProfileService struct {
@@ -31,8 +31,8 @@ func (s *customerProfileService) CreateCustomerProfile(ctx context.Context, prof
 	return s.repo.Create(ctx, profile)
 }
 
-func (s *customerProfileService) UpdateCustomerProfile(ctx context.Context, id string, profile *model.CustomerProfile) error {
-	if id == "" {
+func (s *customerProfileService) UpdateCustomerProfile(ctx context.Context, id int64, profile *model.CustomerProfile) error {
+	if id == 0 {
 		return errors.New("invalid customer profile ID")
 	}
 	return s.repo.Update(ctx, id, profile)
@@ -46,8 +46,8 @@ func (s *customerProfileService) GetUnapprovedProfiles(ctx context.Context) ([]m
 	return s.repo.GetByApproved(ctx, false)
 }
 
-func (s *customerProfileService) DeleteCustomerProfile(ctx context.Context, id string) error {
-	if id == "" {
+func (s *customerProfileService) DeleteCustomerProfile(ctx context.Context, id int64) error {
+	if id == 0 {
 		return errors.New("invalid customer profile ID")
 	}
 	return s.repo.Delete(ctx, id)
