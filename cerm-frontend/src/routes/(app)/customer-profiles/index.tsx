@@ -1,5 +1,6 @@
 import { component$, useSignal, $, useStore } from "@builder.io/qwik";
-import { useApprovedProfiles, useUpdateCustomerProfile, useDeleteCustomerProfile } from "../../hooks/customer-handling";
+import { useApprovedProfiles, useUpdateCustomerProfile, useDeleteCustomerProfile } from "../../../hooks/customer-handling";
+export { useApprovedProfiles, useUpdateCustomerProfile, useDeleteCustomerProfile  } from "../../../hooks/customer-handling"
 
 export const CustomerProfileCard = component$((props: { profile: any; onRefresh$: any }) => {
   const { profile, onRefresh$ } = props;
@@ -135,7 +136,7 @@ export const CustomerProfileCard = component$((props: { profile: any; onRefresh$
   );
 });
 
-export const CustomerProfiles = component$(() => {
+export default component$(() => {
   // Use loader to fetch approved profiles server-side
   const profilesSignal = useApprovedProfiles();
 

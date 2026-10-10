@@ -1,4 +1,4 @@
- import { component$, Slot, $ } from "@builder.io/qwik";
+import { component$, Slot, $ } from "@builder.io/qwik";
 import { Link, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { useAuthUser } from "~/hooks/user-auth";
 
@@ -244,7 +244,7 @@ export default component$(() => {
               <Link
                 key={item.id}
                 href={item.href}
-                class={`w-full flex items-center gap-4 p-3.5 text-base font-semibold transition-all rounded-2xl ${
+                class={`w-full flex items-center gap-4 p-3.5 text-base font-semibold rounded-2xl ${
                   isActive
                     ? "bg-green-600 text-white font-bold shadow-md shadow-green-600/20"
                     : "text-gray-700 hover:bg-gray-200/80 hover:text-gray-900"
@@ -256,7 +256,7 @@ export default component$(() => {
 
                   {item.badge !== undefined && item.badge > 0 && (
                     <span
-                      class={`absolute -top-2 -right-3 px-2 py-0.5 min-w-[22px] h-5 rounded-full text-xs font-bold leading-none flex items-center justify-center shadow-sm transition-colors ${
+                      class={`absolute -top-2 -right-3 px-2 py-0.5 min-w-[22px] h-5 rounded-full text-xs font-bold leading-none flex items-center justify-center shadow-sm ${
                         item.isRedBadge
                           ? "bg-rose-500 text-white"
                           : isActive
@@ -269,8 +269,12 @@ export default component$(() => {
                   )}
                 </div>
 
-                {/* Label Revealed on Sidebar Hover */}
-                <span class="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden text-sm">
+                {/* Label Revealed on Sidebar Hover (Instant text color switch) */}
+                <span
+                  class={`opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-xs whitespace-nowrap overflow-hidden text-sm ${
+                    isActive ? "text-white" : "text-gray-700"
+                  }`}
+                >
                   {item.label}
                 </span>
               </Link>
@@ -296,8 +300,8 @@ export default component$(() => {
               <Link
                 key={item.id}
                 href={item.href}
-                class={`flex flex-col items-center justify-center p-2 rounded-xl transition-all relative ${
-                  isActive ? "text-green-600 scale-110" : "text-gray-600"
+                class={`flex flex-col items-center justify-center p-2 rounded-xl relative ${
+                  isActive ? "text-green-600 scale-110 font-bold" : "text-gray-600"
                 }`}
               >
                 <div class="relative">
@@ -318,7 +322,7 @@ export default component$(() => {
 
           <Link
             href="/dashboard/"
-            class="flex flex-col items-center justify-center p-2 rounded-xl transition-all text-gray-600"
+            class="flex flex-col items-center justify-center p-2 rounded-xl text-gray-600"
             title="Dashboard"
           >
             <IconGrid class="w-6 h-6" />
