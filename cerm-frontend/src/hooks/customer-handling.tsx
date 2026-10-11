@@ -151,6 +151,7 @@ export const useUpdateCustomerProfile = globalAction$(
     is_seen: z.boolean().optional(),
     admin_notes: z.string().optional(),
     job_payout: z.coerce.number().optional(),
+    services_requested: z.any().optional(),
   })
 );
 
