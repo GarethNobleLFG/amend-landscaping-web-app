@@ -1,11 +1,12 @@
 import { component$, Slot, $ } from "@builder.io/qwik";
 import { Link, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { useAuthUser } from "~/hooks/user-auth";
+import { useUnapprovedProfiles } from "~/hooks/customer-handling";
 
 // ============================================================================
-// 1. RE-EXPORT ROUTE LOADER (Protects all child routes & registers for Qwik)
+// 1. RE-EXPORT ROUTE LOADERS
 // ============================================================================
-export { useAuthUser };
+export { useAuthUser, useUnapprovedProfiles };
 
 // ============================================================================
 // 2. QWIK SVG ICON COMPONENTS
@@ -22,9 +23,12 @@ const IconLogOut = component$((props: { class?: string }) => (
   </svg>
 ));
 
-const IconStar = component$((props: { class?: string }) => (
+// Updated Intake Down Arrow Icon
+const IconIntake = component$((props: { class?: string }) => (
   <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    <path d="M12 17V3" />
+    <path d="m6 11 6 6 6-6" />
+    <path d="M19 21H5" />
   </svg>
 ));
 
@@ -88,8 +92,27 @@ const IconDashboard = component$((props: { class?: string }) => (
   </svg>
 ));
 
+export const IconChecklist = component$((props: { class?: string }) => (
+  <svg
+    class={props.class || "w-4 h-4"}
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    viewBox="0 0 24 24"
+  >
+    <path d="M11 6h9" />
+    <path d="M11 12h9" />
+    <path d="M11 18h9" />
+    <path d="M3 6l2 2 4-4" />
+    <path d="M3 12l2 2 4-4" />
+    <path d="M3 18l2 2 4-4" />
+  </svg>
+));
+
 // ============================================================================
-// 3. NAVIGATION CONFIGURATION TABLE
+// 3. NAVIGATION TYPES
 // ============================================================================
 interface NavItem {
   id: string;
@@ -101,90 +124,91 @@ interface NavItem {
   roles?: string[];
 }
 
-const NAVIGATION_CONFIG: NavItem[] = [
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    href: "/dashboard/",
-    icon: IconDashboard,
-    roles: ["ADMIN"],
-  },
-  {
-    id: "starred",
-    label: "Starred",
-    href: "/starred/",
-    icon: IconStar,
-    badge: 2,
-    isRedBadge: false,
-    roles: ["ADMIN"],
-  },
-  {
-    id: "customer-profiles",
-    label: "Customer Profiles",
-    href: "/customer-profiles/",
-    icon: IconUsers,
-    roles: ["ADMIN"],
-  },
-  {
-    id: "feedback",
-    label: "Feedback",
-    href: "/feedback/",
-    icon: IconSend,
-    badge: 3,
-    isRedBadge: true,
-    roles: ["ADMIN"],
-  },
-  {
-    id: "services",
-    label: "Services",
-    href: "/services/",
-    icon: IconWrench,
-    roles: ["ADMIN"],
-  },
-  {
-    id: "pages",
-    label: "Pages",
-    href: "/pages/",
-    icon: IconLayers,
-    roles: ["ADMIN"],
-  },
-  {
-    id: "reviews",
-    label: "Reviews",
-    href: "/reviews/",
-    icon: IconMessageSquare,
-    roles: ["ADMIN"],
-  },
-  {
-    id: "gallery",
-    label: "Image Gallery",
-    href: "/gallery/",
-    icon: IconImageIcon,
-    roles: ["ADMIN"],
-  },
-  {
-    id: "archive",
-    label: "Archive",
-    href: "/archive/",
-    icon: IconArchive,
-    badge: 12,
-    isRedBadge: false,
-    roles: ["ADMIN"],
-  },
-];
-
 // ============================================================================
 // 4. MAIN QWIK LAYOUT COMPONENT
 // ============================================================================
 export default component$(() => {
   const userData = useAuthUser();
+  const unapprovedProfiles = useUnapprovedProfiles();
   const location = useLocation();
   const nav = useNavigate();
 
   const userRole = userData.value?.role || "EMPLOYEE";
+  const unapprovedCount = unapprovedProfiles.value?.length ?? 0;
+
+  // Dynamically constructed navigation configuration based on state
+  const navigationConfig: NavItem[] = [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      href: "/dashboard/",
+      icon: IconDashboard,
+      roles: ["ADMIN"],
+    },
+    {
+      id: "intake",
+      label: "Intake",
+      href: "/intake/",
+      icon: IconIntake,
+      badge: unapprovedCount,
+      isRedBadge: unapprovedCount > 0, // Glow red when there are pending unapproved profiles
+      roles: ["ADMIN"],
+    },
+    {
+      id: "post-routes",
+      label: "Post Routes",
+      href: "/post-routes/",
+      icon: IconSend,
+      roles: ["ADMIN"],
+    },
+    {
+      id: "customer-profiles",
+      label: "Customer Profiles",
+      href: "/customer-profiles/",
+      icon: IconChecklist,
+      roles: ["ADMIN"],
+    },
+    {
+      id: "services",
+      label: "Services",
+      href: "/services/",
+      icon: IconWrench,
+      roles: ["ADMIN"],
+    },
+    {
+      id: "pages",
+      label: "Pages",
+      href: "/pages/",
+      icon: IconLayers,
+      roles: ["ADMIN"],
+    },
+    {
+      id: "reviews",
+      label: "Reviews",
+      href: "/reviews/",
+      icon: IconMessageSquare,
+      roles: ["ADMIN"],
+    },
+    {
+      id: "gallery",
+      label: "Image Gallery",
+      href: "/gallery/",
+      icon: IconImageIcon,
+      roles: ["ADMIN"],
+    },
+    {
+      id: "archive",
+      label: "Archive",
+      href: "/archive/",
+      icon: IconArchive,
+      badge: 12,
+      isRedBadge: false,
+      roles: ["ADMIN"],
+    },
+  ];
 
   // Filter routes based on role
-  const filteredNavConfig = NAVIGATION_CONFIG.filter((item) => {
+  const filteredNavConfig = navigationConfig.filter((item) => {
     if (!item.roles) return true;
     return item.roles.includes(userRole);
   });
@@ -192,7 +216,6 @@ export default component$(() => {
   const mobileBottomItems = filteredNavConfig.slice(0, 4);
 
   const handleSignOut = $(async () => {
-    // Delete cookie on client side or redirect to logout route
     document.cookie = "cerm_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
     await nav("/");
   });
@@ -234,7 +257,7 @@ export default component$(() => {
         {/* Desktop Fixed Layout Spacer */}
         <div class="hidden md:block w-20 flex-shrink-0" />
 
-        {/* Desktop Expand-on-Hover Left Sidebar (Hidden on Mobile) */}
+        {/* Desktop Expand-on-Hover Left Sidebar */}
         <aside class="hidden md:flex group absolute top-0 left-0 bottom-0 z-40 w-20 hover:w-64 transition-all duration-300 ease-in-out py-4 pl-3 pr-3 flex-col gap-2 overflow-hidden bg-slate-100/95 backdrop-blur-md hover:shadow-2xl border-none">
           {filteredNavConfig.map((item) => {
             const IconComponent = item.icon;
@@ -256,12 +279,12 @@ export default component$(() => {
 
                   {item.badge !== undefined && item.badge > 0 && (
                     <span
-                      class={`absolute -top-2 -right-3 px-2 py-0.5 min-w-[22px] h-5 rounded-full text-xs font-bold leading-none flex items-center justify-center shadow-sm ${
+                      class={`absolute -top-2 -right-3 px-2 py-0.5 min-w-[22px] h-5 rounded-full text-xs font-bold leading-none flex items-center justify-center transition-all ${
                         item.isRedBadge
-                          ? "bg-rose-500 text-white"
+                          ? "bg-rose-500 text-white shadow-lg shadow-rose-500/50 animate-pulse"
                           : isActive
-                          ? "bg-white text-green-800"
-                          : "bg-slate-200/90 text-slate-700"
+                          ? "bg-white text-green-800 shadow-sm"
+                          : "bg-slate-200/90 text-slate-700 shadow-sm"
                       }`}
                     >
                       {item.badge}
@@ -269,7 +292,7 @@ export default component$(() => {
                   )}
                 </div>
 
-                {/* Label Revealed on Sidebar Hover (Instant text color switch) */}
+                {/* Label Revealed on Sidebar Hover */}
                 <span
                   class={`opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-xs whitespace-nowrap overflow-hidden text-sm ${
                     isActive ? "text-white" : "text-gray-700"
@@ -285,7 +308,6 @@ export default component$(() => {
         {/* Dynamic Main Workspace Container */}
         <main class="flex-1 overflow-y-auto px-4 md:px-6 py-4 flex justify-center pb-24 md:pb-6">
           <div class="w-full max-w-5xl">
-            {/* Child Page Route Content Renders Here */}
             <Slot />
           </div>
         </main>
@@ -308,8 +330,10 @@ export default component$(() => {
                   <IconComponent class="w-6 h-6" />
                   {item.badge !== undefined && item.badge > 0 && (
                     <span
-                      class={`absolute -top-1.5 -right-2 px-1.5 py-0.2 min-w-[16px] h-4 rounded-full text-[10px] font-bold leading-none flex items-center justify-center shadow-sm ${
-                        item.isRedBadge ? "bg-rose-500 text-white" : "bg-slate-300 text-slate-800"
+                      class={`absolute -top-1.5 -right-2 px-1.5 py-0.2 min-w-[16px] h-4 rounded-full text-[10px] font-bold leading-none flex items-center justify-center transition-all ${
+                        item.isRedBadge 
+                          ? "bg-rose-500 text-white shadow-md shadow-rose-500/50 animate-pulse" 
+                          : "bg-slate-300 text-slate-800 shadow-sm"
                       }`}
                     >
                       {item.badge}
