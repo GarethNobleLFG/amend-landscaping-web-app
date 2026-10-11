@@ -2,15 +2,22 @@ import { component$, type Signal, type PropFunction, $, useVisibleTask$, useSign
 import type { CustomerProfile } from "../../../../hooks/customer-handling";
 import { IconX } from "./icons";
 
+export interface ServiceItem {
+    id: number;
+    name: string;
+    description: string;
+}
+
 interface EditModalProps {
     formData: Signal<Partial<CustomerProfile>>;
+    availableServices?: ServiceItem[];
     onClose$: PropFunction<() => void>;
     onSubmit$: PropFunction<() => any | Promise<any>>;
 }
 
-export const EditModal = component$<EditModalProps>(({ formData, onClose$, onSubmit$ }) => {
+export const EditModal = component$<EditModalProps>(({ formData, availableServices = [], onClose$, onSubmit$ }) => {
     const isCommercial = Boolean(formData.value.is_commercial);
-    
+
     // UI state signals for button loading/success animation
     const isSubmitting = useSignal(false);
     const isSuccess = useSignal(false);
@@ -33,21 +40,21 @@ export const EditModal = component$<EditModalProps>(({ formData, onClose$, onSub
     });
 
     // Wrapped submit handler to drive CSS animations & timing lock
-    const handleSave$=$(async () => {
+    const handleSave$ = $(async () => {
         if (isSubmitting.value || isSuccess.value) return;
-        
+
         isSubmitting.value = true;
-        
+
         try {
             const res = await onSubmit$();
-            
+
             // Check for 200 status or success response
             const isOk = res?.status === 200 || res?.value?.success || res === true;
 
             if (isOk) {
                 isSubmitting.value = false;
                 isSuccess.value = true;
-                
+
                 // Keep modal open so the full checkmark drawing & hold animation plays out
                 setTimeout(() => {
                     onClose$();
@@ -59,6 +66,13 @@ export const EditModal = component$<EditModalProps>(({ formData, onClose$, onSub
             isSubmitting.value = false;
         }
     });
+
+    // Safely resolve services_requested whether it's a JSON string or an object
+    const rawServices = formData.value.services_requested;
+    const currentServices: Record<string, boolean> =
+        typeof rawServices === "string"
+            ? (() => { try { return JSON.parse(rawServices); } catch { return {}; } })()
+            : (rawServices as Record<string, boolean>) || {};
 
     return (
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
@@ -239,6 +253,53 @@ export const EditModal = component$<EditModalProps>(({ formData, onClose$, onSub
                     </div>
                 </div>
 
+                {/* Requested Services Checkbox Section (Single Column Layout) */}
+                <div class="mb-6">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
+                        Requested Services
+                    </h4>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+                        {availableServices.length > 0 ? (
+                            <div class="grid grid-cols-1 gap-3">
+                                {availableServices.map((service) => {
+                                    const isChecked = Boolean(currentServices[service.name]);
+                                    return (
+                                        <label
+                                            key={service.id}
+                                            class="flex items-center gap-3 p-2.5 bg-white rounded-xl border border-gray-200 cursor-pointer hover:border-green-500 transition-all text-sm font-medium text-gray-900 select-none"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={isChecked}
+                                                onChange$={(e) => {
+                                                    const checked = (e.target as HTMLInputElement).checked;
+
+                                                    const raw = formData.value.services_requested;
+                                                    const currentMap: Record<string, boolean> =
+                                                        typeof raw === "string"
+                                                            ? (() => { try { return JSON.parse(raw); } catch { return {}; } })()
+                                                            : { ...((raw as Record<string, boolean>) || {}) };
+
+                                                    currentMap[service.name] = checked;
+
+                                                    formData.value = {
+                                                        ...formData.value,
+                                                        services_requested: { ...currentMap },
+                                                    };
+                                                }}
+                                                class="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
+                                            />
+                                            <span class="truncate">{service.name}</span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <span class="text-sm text-gray-500 italic">No services available</span>
+                        )}
+                    </div>
+                </div>
+
                 {/* Vertical Auto-Expanding Notes Sections */}
                 <div class="flex flex-col gap-4 mb-8">
                     <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
@@ -282,7 +343,7 @@ export const EditModal = component$<EditModalProps>(({ formData, onClose$, onSub
                     >
                         Cancel
                     </button>
-                    
+
                     <button
                         onClick$={handleSave$}
                         disabled={isSubmitting.value || isSuccess.value}

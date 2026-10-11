@@ -5,12 +5,13 @@ import {
   useDeleteCustomerProfile,
   type CustomerProfile,
 } from "../../../hooks/customer-handling";
+import { useAmendServices } from "../../../hooks/amend-api-handling";
 import { CustomerCard } from "./components/customer-card";
 import { ViewModal } from "./components/view-modal";
 import { EditModal } from "./components/edit-modal";
 import { DeleteModal } from "./components/delete-modal";
 
-export { useApprovedProfiles, useUpdateCustomerProfile, useDeleteCustomerProfile };
+export { useApprovedProfiles, useUpdateCustomerProfile, useDeleteCustomerProfile, useAmendServices };
 
 // Search Icon Component
 const IconSearch = component$((props: { class?: string }) => (
@@ -22,6 +23,7 @@ const IconSearch = component$((props: { class?: string }) => (
 
 export default component$(() => {
   const profilesSignal = useApprovedProfiles();
+  const servicesSignal = useAmendServices();
   const updateAction = useUpdateCustomerProfile();
   const deleteAction = useDeleteCustomerProfile();
 
@@ -71,6 +73,7 @@ export default component$(() => {
   });
 
   const profiles = profilesSignal.value || [];
+  const availableServices = servicesSignal.value || [];
   const query = searchQuery.value.trim().toLowerCase();
 
   // 1. Filter profiles by Commercial / Non-Commercial tab selection
@@ -127,7 +130,7 @@ export default component$(() => {
       </div>
 
       {/* Invisible Scrollable Container */}
-      <div class="max-h-[600px] overflow-y-auto pr-1 space-y-3 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
+      <div class="max-h-[525px] overflow-y-auto pr-1 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
         {filteredProfiles.length === 0 ? (
           <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
             No customer profiles found
@@ -151,7 +154,12 @@ export default component$(() => {
       )}
 
       {activeModal.value === "edit" && selectedProfile.value && (
-        <EditModal formData={editFormData} onClose$={closeModal} onSubmit$={handleEditSubmit} />
+        <EditModal
+          formData={editFormData}
+          availableServices={availableServices}
+          onClose$={closeModal}
+          onSubmit$={handleEditSubmit}
+        />
       )}
 
       {activeModal.value === "delete" && selectedProfile.value && (

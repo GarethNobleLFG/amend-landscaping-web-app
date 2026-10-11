@@ -14,6 +14,14 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
         ? `${profile.address || ""}, ${profile.city || ""} ${profile.state || ""} ${profile.zip || ""}`.trim()
         : "N/A";
 
+    // Extract requested services from profile.services_requested dictionary object where value is true
+    const servicesObj = (profile as any).services_requested || (profile as any).services || (profile as any).requested_services || {};
+    const activeServices: string[] = typeof servicesObj === "object" && servicesObj !== null
+        ? Object.entries(servicesObj)
+            .filter(([_, enabled]) => Boolean(enabled))
+            .map(([serviceName]) => serviceName)
+        : [];
+
     return (
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
             <div class="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
@@ -80,6 +88,27 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                                     : "N/A"}
                             </span>
                         </div>
+                    </div>
+                </div>
+
+                {/* Requested Services Bullet Points Section */}
+                <div class="mb-6">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
+                        Requested Services
+                    </h4>
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
+                        {activeServices.length > 0 ? (
+                            <ul class="space-y-2">
+                                {activeServices.map((service, idx) => (
+                                    <li key={idx} class="flex items-center gap-2.5 text-gray-900 font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-600 flex-shrink-0" />
+                                        <span>{service}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <span class="text-gray-500 italic">No services selected</span>
+                        )}
                     </div>
                 </div>
 
