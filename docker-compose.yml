@@ -87,6 +87,21 @@ services:
       - APP_ENV=development
       - DATABASE_URL=postgres://cerm_user:cerm_password@cerm-db:5432/cerm_db?sslmode=disable 
 
+  email-service-api:
+    build:
+      context: ./email-service-api
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./email-service-api:/app
+    env_file:
+      - ./email-service-api/.env
+    environment:
+      - PORT=8081
+      - APP_ENV=development
+      - DATABASE_URL=postgres://cerm_user:cerm_password@cerm-db:5432/cerm_db?sslmode=disable 
+
   # frontend:
   #   build: 
   #     context: ./frontend
