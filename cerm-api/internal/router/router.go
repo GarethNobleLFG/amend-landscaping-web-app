@@ -18,5 +18,5 @@ func SetupRoutes(app *fiber.App, db *sql.DB) {
 	// Register modular route groups
 	RegisterAuthRoutes(app, db)
 	RegisterAmendApiRoutes(app)
-	RegisterCustomerRoutes(app, db)
+	RegisterJobProfileRoutes(app, db)
 }

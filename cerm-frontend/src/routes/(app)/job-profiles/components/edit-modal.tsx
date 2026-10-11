@@ -1,5 +1,5 @@
 import { component$, type Signal, type PropFunction, $, useVisibleTask$, useSignal } from "@builder.io/qwik";
-import type { CustomerProfile } from "../../../../hooks/customer-handling";
+import type { JobProfile } from "../../../../hooks/job-profile-handling";
 import { IconX } from "./icons";
 
 export interface ServiceItem {
@@ -9,7 +9,7 @@ export interface ServiceItem {
 }
 
 interface EditModalProps {
-    formData: Signal<Partial<CustomerProfile>>;
+    formData: Signal<Partial<JobProfile>>;
     availableServices?: ServiceItem[];
     onClose$: PropFunction<() => void>;
     onSubmit$: PropFunction<() => any | Promise<any>>;
@@ -63,6 +63,7 @@ export const EditModal = component$<EditModalProps>(({ formData, availableServic
                 isSubmitting.value = false;
             }
         } catch (err) {
+            console.error(err);
             isSubmitting.value = false;
         }
     });
@@ -118,7 +119,7 @@ export const EditModal = component$<EditModalProps>(({ formData, availableServic
                             {isCommercial ? "Edit Commercial Profile" : "Edit Profile"}
                         </span>
                         <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">
-                            {formData.value.name || (isCommercial ? "Company" : "Customer")}
+                            {formData.value.name || (isCommercial ? "Company" : "Job")}
                         </h3>
                     </div>
                     <div>
@@ -304,7 +305,7 @@ export const EditModal = component$<EditModalProps>(({ formData, availableServic
                 <div class="flex flex-col gap-4 mb-8">
                     <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
                         <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                            Admin Notes (Visible to Staff)
+                             Scratch Notes (Not Visible to Staff)
                         </label>
                         <textarea
                             value={formData.value.admin_notes || ""}

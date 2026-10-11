@@ -3,8 +3,8 @@ import {
   useApprovedProfiles,
   useUpdateCustomerProfile,
   useDeleteCustomerProfile,
-  type CustomerProfile,
-} from "../../../hooks/customer-handling";
+  type JobProfile,
+} from "../../../hooks/job-profile-handling";
 import { useAmendServices } from "../../../hooks/amend-api-handling";
 import { CustomerCard } from "./components/customer-card";
 import { ViewModal } from "./components/view-modal";
@@ -27,9 +27,9 @@ export default component$(() => {
   const updateAction = useUpdateCustomerProfile();
   const deleteAction = useDeleteCustomerProfile();
 
-  const selectedProfile = useSignal<CustomerProfile | null>(null);
+  const selectedProfile = useSignal<JobProfile | null>(null);
   const activeModal = useSignal<"view" | "edit" | "delete" | null>(null);
-  const editFormData = useSignal<Partial<CustomerProfile>>({});
+  const editFormData = useSignal<Partial<JobProfile>>({});
 
   // Tab state: 'residential' (non-commercial) vs 'commercial'
   const activeTab = useSignal<"residential" | "commercial">("residential");
@@ -37,18 +37,18 @@ export default component$(() => {
   // Search query signal for prefix filtering
   const searchQuery = useSignal("");
 
-  const openViewModal = $((profile: CustomerProfile) => {
+  const openViewModal = $((profile: JobProfile) => {
     selectedProfile.value = profile;
     activeModal.value = "view";
   });
 
-  const openEditModal = $((profile: CustomerProfile) => {
+  const openEditModal = $((profile: JobProfile) => {
     selectedProfile.value = profile;
     editFormData.value = { ...profile };
     activeModal.value = "edit";
   });
 
-  const openDeleteModal = $((profile: CustomerProfile) => {
+  const openDeleteModal = $((profile: JobProfile) => {
     selectedProfile.value = profile;
     activeModal.value = "delete";
   });
@@ -121,7 +121,7 @@ export default component$(() => {
           <IconSearch class="w-5 h-5 text-gray-600 mr-3.5 flex-shrink-0" />
           <input
             type="text"
-            placeholder="Search customer profiles"
+            placeholder="Search job profiles"
             value={searchQuery.value}
             onInput$={(e) => (searchQuery.value = (e.target as HTMLInputElement).value)}
             class="w-full bg-transparent text-sm text-gray-900 placeholder:text-gray-600 focus:outline-none"
@@ -133,7 +133,7 @@ export default component$(() => {
       <div class="max-h-[525px] overflow-y-auto pr-1 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
         {filteredProfiles.length === 0 ? (
           <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
-            No customer profiles found
+            No job profiles found
           </div>
         ) : (
           filteredProfiles.map((profile) => (

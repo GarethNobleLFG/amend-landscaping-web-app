@@ -1,4 +1,4 @@
-import { globalAction$, routeLoader$, z, zod$ } from "@builder.io/qwik-city";
+import {  routeLoader$} from "@builder.io/qwik-city";
 
 const API_BASE = import.meta.env.PUBLIC_CERM_API_URL ?? "http://cerm-api:8080";
 

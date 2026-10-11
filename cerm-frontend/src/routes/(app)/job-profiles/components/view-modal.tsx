@@ -1,9 +1,9 @@
 import { component$, type PropFunction } from "@builder.io/qwik";
-import type { CustomerProfile } from "../../../../hooks/customer-handling";
+import type { JobProfile } from "../../../../hooks/job-profile-handling";
 import { IconX } from "./icons";
 
 interface ViewModalProps {
-    profile: CustomerProfile;
+    profile: JobProfile;
     onClose$: PropFunction<() => void>;
 }
 
@@ -18,7 +18,7 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
     const servicesObj = (profile as any).services_requested || (profile as any).services || (profile as any).requested_services || {};
     const activeServices: string[] = typeof servicesObj === "object" && servicesObj !== null
         ? Object.entries(servicesObj)
-            .filter(([_, enabled]) => Boolean(enabled))
+            .filter(([enabled]) => Boolean(enabled))
             .map(([serviceName]) => serviceName)
         : [];
 
@@ -37,7 +37,7 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
                     <div>
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-400">
-                            {isCommercial ? "Commercial Profile" : "Customer Profile"}
+                            {isCommercial ? "Commercial Profile" : "Job Profile"}
                         </span>
                         <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">
                             {profile.name || "N/A"}
@@ -116,7 +116,7 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                 <div class="flex flex-col gap-4 mb-8">
                     <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                            Admin Notes (Visible to Staff)
+                            Scratch Notes (Not Visible to Staff)
                         </h4>
                         <p class="text-sm text-gray-700 whitespace-pre-wrap">{profile.admin_notes || "N/A"}</p>
                     </div>

@@ -1,8 +1,8 @@
 import { component$, type PropFunction } from "@builder.io/qwik";
-import type { CustomerProfile } from "../../../../hooks/customer-handling";
+import type { JobProfile } from "../../../../hooks/job-profile-handling";
 
 interface DeleteModalProps {
-  profile: CustomerProfile;
+  profile: JobProfile;
   onClose$: PropFunction<() => void>;
   onConfirm$: PropFunction<() => void>;
 }

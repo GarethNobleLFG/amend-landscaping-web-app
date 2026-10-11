@@ -2,7 +2,7 @@ import { globalAction$, routeLoader$, z, zod$ } from "@builder.io/qwik-city";
 
 const API_BASE = import.meta.env.PUBLIC_CERM_API_URL ?? "http://cerm-api:8080";
 
-export interface CustomerProfile {
+export interface JobProfile {
   id: number;
   name: string;
   email: string;
@@ -33,13 +33,13 @@ export const useApprovedProfiles = routeLoader$(async ({ cookie, redirect }) => 
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/customer-profiles/approved`, {
+    const res = await fetch(`${API_BASE}/api/job-profiles/approved`, {
       headers: { Authorization: `Bearer ${token.value}` },
     });
 
     if (!res.ok) throw new Error("Failed to fetch approved profiles");
 
-    const profiles: CustomerProfile[] = await res.json();
+    const profiles: JobProfile[] = await res.json();
     return profiles ?? [];
   } catch {
     throw redirect(302, "/");
@@ -54,13 +54,13 @@ export const useUnapprovedProfiles = routeLoader$(async ({ cookie, redirect }) =
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/customer-profiles/unapproved`, {
+    const res = await fetch(`${API_BASE}/api/job-profiles/unapproved`, {
       headers: { Authorization: `Bearer ${token.value}` },
     });
 
     if (!res.ok) throw new Error("Failed to fetch unapproved profiles");
 
-    const profiles: CustomerProfile[] = await res.json();
+    const profiles: JobProfile[] = await res.json();
     return profiles ?? [];
   } catch {
     throw redirect(302, "/");
@@ -73,7 +73,7 @@ export const useCreateCustomerProfile = globalAction$(
     if (!token) return fail(401, { message: "Unauthorized" });
 
     try {
-      const res = await fetch(`${API_BASE}/api/customer-profiles`, {
+      const res = await fetch(`${API_BASE}/api/job-profiles`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -117,7 +117,7 @@ export const useUpdateCustomerProfile = globalAction$(
     const { id, ...payload } = data;
 
     try {
-      const res = await fetch(`${API_BASE}/api/customer-profiles/${id}`, {
+      const res = await fetch(`${API_BASE}/api/job-profiles/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -161,7 +161,7 @@ export const useDeleteCustomerProfile = globalAction$(
     if (!token) return fail(401, { message: "Unauthorized" });
 
     try {
-      const res = await fetch(`${API_BASE}/api/customer-profiles/${data.id}`, {
+      const res = await fetch(`${API_BASE}/api/job-profiles/${data.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token.value}`,

@@ -1,7 +1,7 @@
 import { component$, Slot, $, useSignal } from "@builder.io/qwik";
 import { Link, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { useAuthUser } from "~/hooks/user-auth";
-import { useUnapprovedProfiles } from "~/hooks/customer-handling";
+import { useUnapprovedProfiles } from "~/hooks/job-profile-handling";
 
 // ============================================================================
 // 1. RE-EXPORT ROUTE LOADERS
@@ -168,9 +168,9 @@ export default component$(() => {
       roles: ["ADMIN"],
     },
     {
-      id: "customer-profiles",
-      label: "Customer Profiles",
-      href: "/customer-profiles/",
+      id: "job-profiles",
+      label: "Job Profiles",
+      href: "/job-profiles/",
       icon: IconChecklist,
       roles: ["ADMIN"],
     },

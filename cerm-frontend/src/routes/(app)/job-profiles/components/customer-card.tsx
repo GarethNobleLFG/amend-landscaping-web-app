@@ -1,12 +1,12 @@
 import { component$, type PropFunction } from "@builder.io/qwik";
-import type { CustomerProfile } from "../../../../hooks/customer-handling";
+import type { JobProfile } from "../../../../hooks/job-profile-handling";
 import { IconEye, IconPencil, IconTrash } from "./icons";
 
 interface CustomerCardProps {
-  profile: CustomerProfile;
-  onView$: PropFunction<(profile: CustomerProfile) => void>;
-  onEdit$: PropFunction<(profile: CustomerProfile) => void>;
-  onDelete$: PropFunction<(profile: CustomerProfile) => void>;
+  profile: JobProfile;
+  onView$: PropFunction<(profile: JobProfile) => void>;
+  onEdit$: PropFunction<(profile: JobProfile) => void>;
+  onDelete$: PropFunction<(profile: JobProfile) => void>;
 }
 
 export const CustomerCard = component$<CustomerCardProps>(
