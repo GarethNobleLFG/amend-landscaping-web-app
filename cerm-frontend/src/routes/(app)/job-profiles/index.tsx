@@ -9,7 +9,7 @@ import { useAmendServices } from "../../../hooks/amend-api-handling";
 import { JobCard } from "./components/job-card";
 import { ViewModal } from "./components/view-modal";
 import { EditModal } from "./components/edit-modal";
-import { DeleteModal } from "./components/delete-modal";
+import { DeleteModal } from "../../../components/ui/delete-modal";
 
 export { useApprovedProfiles, useUpdateJobProfile, useDeleteJobProfile, useAmendServices };
 
@@ -165,6 +165,7 @@ export default component$(() => {
       {activeModal.value === "delete" && selectedProfile.value && (
         <DeleteModal
           profile={selectedProfile.value}
+          text="Delete Profile"
           onClose$={closeModal}
           onConfirm$={handleDeleteConfirm}
         />

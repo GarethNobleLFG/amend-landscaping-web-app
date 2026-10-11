@@ -8,6 +8,8 @@ import {
 import { useAmendServices } from "../../../hooks/amend-api-handling";
 import { IntakeCard } from "./components/intake-card";
 import { DescriptionModal } from "./components/description-modal";
+import { ApproveModal } from "./components/approve-modal";
+import { DeleteModal } from "../../../components/ui/delete-modal";
 
 export { useUpdateJobProfile, useDeleteJobProfile, useAmendServices };
 
@@ -21,7 +23,6 @@ export default component$(() => {
   const activeModal = useSignal<"approve" | "deny" | null>(null);
   const editFormData = useSignal<Partial<JobProfile>>({});
 
-  // Description Modal state
   const isDescModalOpen = useSignal(false);
   const selectedDescription = useSignal({ text: "", title: "" });
 
@@ -29,7 +30,11 @@ export default component$(() => {
 
   const openApproveModal = $((profile: JobProfile) => {
     selectedProfile.value = profile;
-    editFormData.value = { ...profile, approved: true, is_seen: true };
+    editFormData.value = {
+      ...profile,
+      approved: true,
+      is_seen: true,
+    };
     activeModal.value = "approve";
   });
 
@@ -54,9 +59,6 @@ export default component$(() => {
   const handleApproveSubmit = $(async () => {
     if (!editFormData.value.id) return { status: 400, success: false };
     const res = await updateAction.submit(editFormData.value as any);
-    if (res.status === 200 || res.value?.success) {
-      closeModal();
-    }
     return res;
   });
 
@@ -69,8 +71,8 @@ export default component$(() => {
   });
 
   const profiles = profilesSignal.value || [];
+  const availableServices = servicesSignal.value || [];
 
-  // Calculate counts for each filter
   const residentialProfiles = profiles.filter((p) => !p.is_commercial);
   const commercialProfiles = profiles.filter((p) => Boolean(p.is_commercial));
 
@@ -143,6 +145,25 @@ export default component$(() => {
           title={selectedDescription.value.title}
           description={selectedDescription.value.text}
           onClose$={() => (isDescModalOpen.value = false)}
+        />
+      )}
+
+      {/* Exclusive Modals */}
+      {activeModal.value === "approve" && selectedProfile.value && (
+        <ApproveModal
+          formData={editFormData}
+          availableServices={availableServices}
+          onClose$={closeModal}
+          onSubmit$={handleApproveSubmit}
+        />
+      )}
+
+      {activeModal.value === "deny" && selectedProfile.value && (
+        <DeleteModal
+          profile={selectedProfile.value}
+          text="Send Deny Email & Delete Intake"
+          onClose$={closeModal}
+          onConfirm$={handleDenyConfirm}
         />
       )}
     </div>
