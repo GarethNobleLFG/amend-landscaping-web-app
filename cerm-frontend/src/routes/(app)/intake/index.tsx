@@ -1,0 +1,150 @@
+import { component$, useSignal, $ } from "@builder.io/qwik";
+import {
+  useUnapprovedProfiles,
+  useUpdateJobProfile,
+  useDeleteJobProfile,
+  type JobProfile,
+} from "../../../hooks/job-profile-handling";
+import { useAmendServices } from "../../../hooks/amend-api-handling";
+import { IntakeCard } from "./components/intake-card";
+import { DescriptionModal } from "./components/description-modal";
+
+export { useUpdateJobProfile, useDeleteJobProfile, useAmendServices };
+
+export default component$(() => {
+  const profilesSignal = useUnapprovedProfiles();
+  const servicesSignal = useAmendServices();
+  const updateAction = useUpdateJobProfile();
+  const deleteAction = useDeleteJobProfile();
+
+  const selectedProfile = useSignal<JobProfile | null>(null);
+  const activeModal = useSignal<"approve" | "deny" | null>(null);
+  const editFormData = useSignal<Partial<JobProfile>>({});
+
+  // Description Modal state
+  const isDescModalOpen = useSignal(false);
+  const selectedDescription = useSignal({ text: "", title: "" });
+
+  const activeTab = useSignal<"residential" | "commercial">("residential");
+
+  const openApproveModal = $((profile: JobProfile) => {
+    selectedProfile.value = profile;
+    editFormData.value = { ...profile, approved: true, is_seen: true };
+    activeModal.value = "approve";
+  });
+
+  const openDenyModal = $((profile: JobProfile) => {
+    selectedProfile.value = profile;
+    activeModal.value = "deny";
+  });
+
+  const openDescriptionModal = $((text: string, name?: string) => {
+    selectedDescription.value = {
+      text,
+      title: name ? `Description: ${name}` : "Full Description",
+    };
+    isDescModalOpen.value = true;
+  });
+
+  const closeModal = $(() => {
+    activeModal.value = null;
+    selectedProfile.value = null;
+  });
+
+  const handleApproveSubmit = $(async () => {
+    if (!editFormData.value.id) return { status: 400, success: false };
+    const res = await updateAction.submit(editFormData.value as any);
+    if (res.status === 200 || res.value?.success) {
+      closeModal();
+    }
+    return res;
+  });
+
+  const handleDenyConfirm = $(async () => {
+    if (!selectedProfile.value?.id) return;
+    const res = await deleteAction.submit({ id: selectedProfile.value.id });
+    if (res.status === 200 || res.value?.success) {
+      closeModal();
+    }
+  });
+
+  const profiles = profilesSignal.value || [];
+
+  // Calculate counts for each filter
+  const residentialProfiles = profiles.filter((p) => !p.is_commercial);
+  const commercialProfiles = profiles.filter((p) => Boolean(p.is_commercial));
+
+  const displayedProfiles =
+    activeTab.value === "commercial" ? commercialProfiles : residentialProfiles;
+
+  return (
+    <div class="space-y-6">
+      <div class="flex flex-col items-center gap-4">
+        {/* Tab Switcher with Red Flashing Badges */}
+        <div class="inline-flex bg-slate-200/80 p-1 rounded-full text-xs font-bold text-gray-600">
+          <button
+            onClick$={() => (activeTab.value = "residential")}
+            class={`px-5 py-2 rounded-full transition-all flex items-center gap-2 ${
+              activeTab.value === "residential"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "hover:text-gray-900"
+            }`}
+          >
+            Residential Intake
+            {residentialProfiles.length > 0 && (
+              <span class="inline-flex items-center justify-center bg-rose-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[18px] animate-pulse">
+                {residentialProfiles.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick$={() => (activeTab.value = "commercial")}
+            class={`px-5 py-2 rounded-full transition-all flex items-center gap-2 ${
+              activeTab.value === "commercial"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "hover:text-gray-900"
+            }`}
+          >
+            Commercial Intake
+            {commercialProfiles.length > 0 && (
+              <span class="inline-flex items-center justify-center bg-rose-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[18px] animate-pulse">
+                {commercialProfiles.length}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Grid Display */}
+      <div class="max-h-[525px] overflow-y-auto pr-1 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
+        {displayedProfiles.length === 0 ? (
+          <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
+            No unapproved intake profiles found
+          </div>
+        ) : (
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {displayedProfiles.map((profile) => (
+              <IntakeCard
+                key={profile.id}
+                profile={profile}
+                onApprove$={openApproveModal}
+                onDeny$={openDenyModal}
+                onViewDescription$={openDescriptionModal}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Description Viewer Modal */}
+      {isDescModalOpen.value && (
+        <DescriptionModal
+          title={selectedDescription.value.title}
+          description={selectedDescription.value.text}
+          onClose$={() => (isDescModalOpen.value = false)}
+        />
+      )}
+    </div>
+  );
+});
