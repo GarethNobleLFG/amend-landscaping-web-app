@@ -2,14 +2,14 @@ import { component$, type PropFunction } from "@builder.io/qwik";
 import type { JobProfile } from "../../../../hooks/job-profile-handling";
 import { IconEye, IconPencil, IconTrash } from "./icons";
 
-interface CustomerCardProps {
+interface JobCardProps {
   profile: JobProfile;
   onView$: PropFunction<(profile: JobProfile) => void>;
   onEdit$: PropFunction<(profile: JobProfile) => void>;
   onDelete$: PropFunction<(profile: JobProfile) => void>;
 }
 
-export const CustomerCard = component$<CustomerCardProps>(
+export const JobCard = component$<JobCardProps>(
   ({ profile, onView$, onEdit$, onDelete$ }) => {
     return (
       <div class="flex items-center justify-between p-3.5 bg-white hover:bg-slate-200/80 rounded-xl transition-all group">

@@ -67,7 +67,7 @@ export const useUnapprovedProfiles = routeLoader$(async ({ cookie, redirect }) =
   }
 });
 
-export const useCreateCustomerProfile = globalAction$(
+export const useCreateJobProfile = globalAction$(
   async (data, { fail, cookie }) => {
     const token = cookie.get("cerm_token");
     if (!token) return fail(401, { message: "Unauthorized" });
@@ -109,7 +109,7 @@ export const useCreateCustomerProfile = globalAction$(
   })
 );
 
-export const useUpdateCustomerProfile = globalAction$(
+export const useUpdateJobProfile = globalAction$(
   async (data, { fail, cookie }) => {
     const token = cookie.get("cerm_token");
     if (!token) return fail(401, { message: "Unauthorized" });
@@ -155,7 +155,7 @@ export const useUpdateCustomerProfile = globalAction$(
   })
 );
 
-export const useDeleteCustomerProfile = globalAction$(
+export const useDeleteJobProfile = globalAction$(
   async (data, { fail, cookie }) => {
     const token = cookie.get("cerm_token");
     if (!token) return fail(401, { message: "Unauthorized" });

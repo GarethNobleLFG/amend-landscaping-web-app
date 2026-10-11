@@ -1,17 +1,17 @@
 import { component$, useSignal, $ } from "@builder.io/qwik";
 import {
   useApprovedProfiles,
-  useUpdateCustomerProfile,
-  useDeleteCustomerProfile,
+  useUpdateJobProfile,
+  useDeleteJobProfile,
   type JobProfile,
 } from "../../../hooks/job-profile-handling";
 import { useAmendServices } from "../../../hooks/amend-api-handling";
-import { CustomerCard } from "./components/customer-card";
+import { JobCard } from "./components/job-card";
 import { ViewModal } from "./components/view-modal";
 import { EditModal } from "./components/edit-modal";
 import { DeleteModal } from "./components/delete-modal";
 
-export { useApprovedProfiles, useUpdateCustomerProfile, useDeleteCustomerProfile, useAmendServices };
+export { useApprovedProfiles, useUpdateJobProfile, useDeleteJobProfile, useAmendServices };
 
 // Search Icon Component
 const IconSearch = component$((props: { class?: string }) => (
@@ -24,8 +24,8 @@ const IconSearch = component$((props: { class?: string }) => (
 export default component$(() => {
   const profilesSignal = useApprovedProfiles();
   const servicesSignal = useAmendServices();
-  const updateAction = useUpdateCustomerProfile();
-  const deleteAction = useDeleteCustomerProfile();
+  const updateAction = useUpdateJobProfile();
+  const deleteAction = useDeleteJobProfile();
 
   const selectedProfile = useSignal<JobProfile | null>(null);
   const activeModal = useSignal<"view" | "edit" | "delete" | null>(null);
@@ -137,7 +137,7 @@ export default component$(() => {
           </div>
         ) : (
           filteredProfiles.map((profile) => (
-            <CustomerCard
+            <JobCard
               key={profile.id}
               profile={profile}
               onView$={openViewModal}
