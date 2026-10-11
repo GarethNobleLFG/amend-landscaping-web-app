@@ -1,4 +1,4 @@
-import { component$, Slot, $ } from "@builder.io/qwik";
+import { component$, Slot, $, useSignal } from "@builder.io/qwik";
 import { Link, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { useAuthUser } from "~/hooks/user-auth";
 import { useUnapprovedProfiles } from "~/hooks/customer-handling";
@@ -23,7 +23,6 @@ const IconLogOut = component$((props: { class?: string }) => (
   </svg>
 ));
 
-// Updated Intake Down Arrow Icon
 const IconIntake = component$((props: { class?: string }) => (
   <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
     <path d="M12 17V3" />
@@ -41,12 +40,6 @@ const IconArchive = component$((props: { class?: string }) => (
 const IconSend = component$((props: { class?: string }) => (
   <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
     <line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-  </svg>
-));
-
-const IconUsers = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
   </svg>
 ));
 
@@ -80,12 +73,6 @@ const IconBell = component$((props: { class?: string }) => (
   </svg>
 ));
 
-const IconGrid = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>
-  </svg>
-));
-
 const IconDashboard = component$((props: { class?: string }) => (
   <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
     <rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="10" rx="1"/><rect width="7" height="5" x="3" y="14" rx="1"/>
@@ -108,6 +95,22 @@ export const IconChecklist = component$((props: { class?: string }) => (
     <path d="M3 6l2 2 4-4" />
     <path d="M3 12l2 2 4-4" />
     <path d="M3 18l2 2 4-4" />
+  </svg>
+));
+
+const IconDotsVertical = component$((props: { class?: string }) => (
+  <svg
+    class={props.class || "w-6 h-6"}
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    viewBox="0 0 24 24"
+  >
+    <circle cx="12" cy="12" r="1" />
+    <circle cx="12" cy="5" r="1" />
+    <circle cx="12" cy="19" r="1" />
   </svg>
 ));
 
@@ -135,6 +138,9 @@ export default component$(() => {
 
   const userRole = userData.value?.role || "EMPLOYEE";
   const unapprovedCount = unapprovedProfiles.value?.length ?? 0;
+
+  // Signal to control mobile popup menu visibility
+  const isMobileMenuOpen = useSignal(false);
 
   // Dynamically constructed navigation configuration based on state
   const navigationConfig: NavItem[] = [
@@ -213,7 +219,12 @@ export default component$(() => {
     return item.roles.includes(userRole);
   });
 
+  // Mobile Bottom items: First 4 pinned, remaining items accessible via "More Options"
   const mobileBottomItems = filteredNavConfig.slice(0, 4);
+  const mobileMoreItems = filteredNavConfig.slice(4);
+
+  // Check if any item inside the overflow menu is currently active
+  const isMoreActive = mobileMoreItems.some((item) => location.url.pathname === item.href);
 
   const handleSignOut = $(async () => {
     document.cookie = "cerm_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
@@ -257,8 +268,8 @@ export default component$(() => {
         {/* Desktop Fixed Layout Spacer */}
         <div class="hidden md:block w-20 flex-shrink-0" />
 
-        {/* Desktop Expand-on-Hover Left Sidebar */}
-        <aside class="hidden md:flex group absolute top-0 left-0 bottom-0 z-40 w-20 hover:w-64 transition-all duration-300 ease-in-out py-4 pl-3 pr-3 flex-col gap-2 overflow-hidden bg-slate-100/95 backdrop-blur-md hover:shadow-2xl border-none">
+        {/* Desktop Expand-on-Hover Left Sidebar: Vertically centered around height midpoint */}
+        <aside class="hidden md:flex group absolute top-0 left-0 bottom-0 z-40 w-20 hover:w-64 transition-all duration-300 ease-in-out py-4 pl-3 pr-3 flex-col justify-center gap-2 overflow-hidden bg-slate-100/95 backdrop-blur-md hover:shadow-2xl border-none">
           {filteredNavConfig.map((item) => {
             const IconComponent = item.icon;
             const isActive = location.url.pathname === item.href;
@@ -312,8 +323,9 @@ export default component$(() => {
           </div>
         </main>
 
-        {/* Mobile Bottom Navigation Bar */}
-        <nav class="fixed bottom-0 left-0 right-0 h-16 bg-slate-100/95 backdrop-blur-md border-t border-gray-200/80 flex items-center justify-around px-2 z-50 md:hidden shadow-lg">
+        {/* Mobile Bottom Navigation Bar: Horizontally centered around bottom midpoint */}
+        <nav class="fixed bottom-0 left-0 right-0 h-16 bg-slate-100/95 backdrop-blur-md border-t border-gray-200/80 flex items-center justify-center gap-4 px-4 z-50 md:hidden shadow-lg">
+          {/* First 4 Navigation Items */}
           {mobileBottomItems.map((item) => {
             const IconComponent = item.icon;
             const isActive = location.url.pathname === item.href;
@@ -322,6 +334,7 @@ export default component$(() => {
               <Link
                 key={item.id}
                 href={item.href}
+                onClick$={() => (isMobileMenuOpen.value = false)}
                 class={`flex flex-col items-center justify-center p-2 rounded-xl relative ${
                   isActive ? "text-green-600 scale-110 font-bold" : "text-gray-600"
                 }`}
@@ -344,13 +357,69 @@ export default component$(() => {
             );
           })}
 
-          <Link
-            href="/dashboard/"
-            class="flex flex-col items-center justify-center p-2 rounded-xl text-gray-600"
-            title="Dashboard"
-          >
-            <IconGrid class="w-6 h-6" />
-          </Link>
+          {/* Rightmost Action Button: Toggles Floating Nav Popup Space */}
+          <div class="relative">
+            <button
+              onClick$={() => (isMobileMenuOpen.value = !isMobileMenuOpen.value)}
+              class={`flex flex-col items-center justify-center p-2 rounded-xl text-gray-600 transition-all ${
+                isMoreActive || isMobileMenuOpen.value ? "text-green-600 scale-110 font-bold" : ""
+              }`}
+              title="More Navigation Options"
+            >
+              <IconDotsVertical class="w-6 h-6" />
+            </button>
+
+            {/* Floating Popover UI Space for Remaining Actions */}
+            {isMobileMenuOpen.value && (
+              <>
+                {/* Backdrop to dismiss menu when clicking outside */}
+                <div
+                  class="fixed inset-0 z-40"
+                  onClick$={() => (isMobileMenuOpen.value = false)}
+                />
+
+                <div class="absolute right-0 bottom-14 z-50 min-w-[190px] bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-150">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 py-1 border-b border-slate-100 mb-1">
+                    More Options
+                  </span>
+
+                  {mobileMoreItems.map((item) => {
+                    const IconComponent = item.icon;
+                    const isActive = location.url.pathname === item.href;
+
+                    return (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        onClick$={() => (isMobileMenuOpen.value = false)}
+                        class={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                          isActive
+                            ? "bg-green-600 text-white font-bold shadow-sm"
+                            : "text-gray-700 hover:bg-slate-100 active:bg-slate-200"
+                        }`}
+                      >
+                        <div class="relative flex-shrink-0">
+                          <IconComponent class={`w-5 h-5 ${isActive ? "text-white" : "text-gray-600"}`} />
+                          {item.badge !== undefined && item.badge > 0 && (
+                            <span
+                              class={`absolute -top-1 -right-2 px-1.5 py-0.2 min-w-[14px] h-3.5 rounded-full text-[9px] font-bold leading-none flex items-center justify-center ${
+                                item.isRedBadge
+                                  ? "bg-rose-500 text-white"
+                                  : "bg-slate-200 text-slate-800"
+                              }`}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                        <span class="truncate">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
         </nav>
       </div>
     </div>
