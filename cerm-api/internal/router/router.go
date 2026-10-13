@@ -19,4 +19,5 @@ func SetupRoutes(app *fiber.App, db *sql.DB) {
 	RegisterAuthRoutes(app, db)
 	RegisterAmendApiRoutes(app)
 	RegisterJobProfileRoutes(app, db)
+	RegisterEmailRoutes(app)
 }
