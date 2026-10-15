@@ -14,7 +14,7 @@ func SetupRoutes(app *fiber.App) {
 		})
 	})
 
-	// Email routes group.
+	// Email routes group
 	emailGroup := app.Group("/api/emails")
 	emailGroup.Post("/approve", handler.SendApprovalEmailHandler)
 	emailGroup.Post("/confirm", handler.SendConfirmationEmailHandler)
