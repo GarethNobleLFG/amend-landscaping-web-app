@@ -1,10 +1,9 @@
 const appointmentRepo = require('../repositories/appointmentRepository');
 const contactService = require('./contactService');
+const emailService = require('./email-services.service');
 const { sendApprovalEmail } = require('./email-services/service-types/approve');
 const { sendDenialEmail } = require('./email-services/service-types/deny');
 const { sendCancellationEmail } = require('./email-services/service-types/cancel');
-const { sendAdminNotificationEmail } = require('./email-services/service-types/notify');
-const { sendConfirmationEmail } = require('./email-services/service-types/confirm');
 
 const createAppointment = async (appointmentData) => {
     const newAppointment = await appointmentRepo.create(appointmentData);
@@ -16,8 +15,8 @@ const createAppointment = async (appointmentData) => {
             phoneNumber: newAppointment.phoneNumber
         });
 
-        await sendAdminNotificationEmail(newAppointment);
-        await sendConfirmationEmail(newAppointment);
+        await emailService.triggerAdminNotification(newAppointment);
+        await emailService.triggerConfirmationEmail(newAppointment);
     }
 
     return newAppointment;

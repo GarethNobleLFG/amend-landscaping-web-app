@@ -54,9 +54,6 @@ services:
     build: 
       context: ./api
       dockerfile: Dockerfile.dev
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
     depends_on:
       - db
     ports:
@@ -66,8 +63,6 @@ services:
     volumes:
       - ./api:/app 
       - /app/node_modules
-    environment:
-      - HOST=0.0.0.0
     command: npm run dev
 
   cerm-api:
@@ -84,7 +79,6 @@ services:
       - ./cerm-api/.env
     environment:
       - PORT=8080
-      - APP_ENV=development
       - DATABASE_URL=postgres://cerm_user:cerm_password@cerm-db:5432/cerm_db?sslmode=disable 
 
   email-service-api:
@@ -99,24 +93,25 @@ services:
       - ./email-service-api/.env
     environment:
       - PORT=8081
-      - APP_ENV=development
       - DATABASE_URL=postgres://cerm_user:cerm_password@cerm-db:5432/cerm_db?sslmode=disable 
 
-  # frontend:
-  #   build: 
-  #     context: ./frontend
-  #     dockerfile: Dockerfile.dev
-  #   depends_on:
-  #     - api
-  #   ports:
-  #     - "5174:5174"
-  #   environment:
-  #     - CHOKIDAR_USEPOLLING=true
-  #     - WATCHPACK_POLLING=true
-  #   volumes:
-  #     - ./frontend:/app 
-  #     - /app/node_modules
-  #   command: npm run dev -- --host 0.0.0.0 --port 5174
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - api
+    ports:
+      - "5174:5174"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/app 
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 5174
 
   cerm-frontend:
     build:
