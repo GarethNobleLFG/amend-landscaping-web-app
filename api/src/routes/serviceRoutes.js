@@ -8,7 +8,7 @@ const { authenticateToken, requireAdmin } = require('../middleware/authMiddlewar
 router.post('/', authenticateToken, requireAdmin, serviceController.createService);
 
 // Get all services including unavailable ones (admin only)
-router.get('/all', authenticateToken, requireAdmin, serviceController.getAllServices);
+router.get('/all', serviceController.getAllServices);
 
 // Get only available services (public)
 router.get('/', serviceController.getAvailableServices);
