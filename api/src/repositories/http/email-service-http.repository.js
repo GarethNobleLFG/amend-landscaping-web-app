@@ -1,3 +1,4 @@
+/* global fetch */
 const API_BASE = process.env.EMAIL_SERVICE_URL || "http://email-service-api:8081";
 
 async function sendConfirmationEmail(appointment) {
