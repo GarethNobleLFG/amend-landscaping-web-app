@@ -6,22 +6,26 @@ import {
   type JobProfile,
 } from "../../../hooks/job-profile-handling";
 import { useAmendServices } from "../../../hooks/amend-api-handling";
+import { useApproveJob, useDenyJob } from "../../../hooks/email-services";
 import { IntakeCard } from "./components/intake-card";
 import { DescriptionModal } from "./components/description-modal";
 import { ApproveModal } from "./components/approve-modal";
 import { DeleteModal } from "../../../components/ui/delete-modal";
 
-export { useUpdateJobProfile, useDeleteJobProfile, useAmendServices };
+export { useUpdateJobProfile, useDeleteJobProfile, useAmendServices, useApproveJob, useDenyJob };
 
 export default component$(() => {
   const profilesSignal = useUnapprovedProfiles();
   const servicesSignal = useAmendServices();
   const updateAction = useUpdateJobProfile();
   const deleteAction = useDeleteJobProfile();
+  const approveEmailAction = useApproveJob();
+  const denyEmailAction = useDenyJob();
 
   const selectedProfile = useSignal<JobProfile | null>(null);
   const activeModal = useSignal<"approve" | "deny" | null>(null);
   const editFormData = useSignal<Partial<JobProfile>>({});
+  const customMessage = useSignal("");
 
   const isDescModalOpen = useSignal(false);
   const selectedDescription = useSignal({ text: "", title: "" });
@@ -35,11 +39,13 @@ export default component$(() => {
       approved: true,
       is_seen: true,
     };
+    customMessage.value = "";
     activeModal.value = "approve";
   });
 
   const openDenyModal = $((profile: JobProfile) => {
     selectedProfile.value = profile;
+    customMessage.value = "";
     activeModal.value = "deny";
   });
 
@@ -54,16 +60,38 @@ export default component$(() => {
   const closeModal = $(() => {
     activeModal.value = null;
     selectedProfile.value = null;
+    customMessage.value = "";
   });
 
   const handleApproveSubmit = $(async () => {
     if (!editFormData.value.id) return { status: 400, success: false };
+
+    // 1. Update the job profile in the DB
     const res = await updateAction.submit(editFormData.value as any);
+    if (res.status !== 200 && !res.value?.success) {
+      return res;
+    }
+
+    // 2. Trigger the approval email
+    await approveEmailAction.submit({
+      jobProfile: editFormData.value as JobProfile,
+      customMessage: customMessage.value,
+    });
+
+    // NOTE: Removed closeModal() here so ApproveModal can display its checkmark animation!
     return res;
   });
 
   const handleDenyConfirm = $(async () => {
     if (!selectedProfile.value?.id) return;
+
+    // 1. Trigger the denial email
+    await denyEmailAction.submit({
+      jobProfile: selectedProfile.value,
+      customMessage: customMessage.value,
+    });
+
+    // 2. Delete the profile
     const res = await deleteAction.submit({ id: selectedProfile.value.id });
     if (res.status === 200 || res.value?.success) {
       closeModal();
@@ -119,7 +147,7 @@ export default component$(() => {
       </div>
 
       {/* Grid Display */}
-      <div class="max-h-[525px] overflow-y-auto pr-1 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
+      <div class="max-h-[600px] overflow-y-auto pr-1 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
         {displayedProfiles.length === 0 ? (
           <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
             No unapproved intake profiles found
@@ -152,6 +180,7 @@ export default component$(() => {
       {activeModal.value === "approve" && selectedProfile.value && (
         <ApproveModal
           formData={editFormData}
+          customMessage={customMessage}
           availableServices={availableServices}
           onClose$={closeModal}
           onSubmit$={handleApproveSubmit}
@@ -161,7 +190,8 @@ export default component$(() => {
       {activeModal.value === "deny" && selectedProfile.value && (
         <DeleteModal
           profile={selectedProfile.value}
-          text="Send Deny Email & Delete Intake"
+          customMessage={customMessage}
+          text="Deny & Delete Intake Request"
           onClose$={closeModal}
           onConfirm$={handleDenyConfirm}
         />
