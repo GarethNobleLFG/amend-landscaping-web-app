@@ -62,3 +62,4 @@ jobs:
             ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
             SUPABASE_URL=${{ secrets.SUPABASE_URL }}
             SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+            EMAIL_SERVICE_API_URL=${{ secrets.EMAIL_SERVICE_API_URL }}
