@@ -32,7 +32,7 @@ async function sendAdminNotificationEmail(appointment, adminEmail = null) {
             payload.admin_email = adminEmail;
         }
 
-        const response = await fetch(`${API_BASE}/api/emails/notify`, {
+        const response = await fetch(`${API_BASE}/api/emails/admin/notify`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
