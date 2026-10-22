@@ -269,10 +269,16 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                                     <input
                                         type="text"
                                         required
+                                        maxLength={2}
                                         value={formData.value.state || ""}
-                                        placeholder="State"
-                                        onInput$={(e) => (formData.value = { ...formData.value, state: (e.target as HTMLInputElement).value })}
-                                        class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        placeholder="ST"
+                                        onInput$={(e) => {
+                                            const target = e.target as HTMLInputElement;
+                                            const cleaned = target.value.replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 2);
+                                            target.value = cleaned;
+                                            formData.value = { ...formData.value, state: cleaned };
+                                        }}
+                                        class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 uppercase"
                                     />
                                 </div>
                                 <div>
@@ -282,7 +288,12 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                                         required
                                         value={formData.value.zip || ""}
                                         placeholder="Zip"
-                                        onInput$={(e) => (formData.value = { ...formData.value, zip: (e.target as HTMLInputElement).value })}
+                                        onInput$={(e) => {
+                                            const target = e.target as HTMLInputElement;
+                                            const cleaned = target.value.replace(/\D/g, "").slice(0, 10);
+                                            target.value = cleaned;
+                                            formData.value = { ...formData.value, zip: cleaned };
+                                        }}
                                         class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                                     />
                                 </div>

@@ -108,6 +108,7 @@ export const useCreateJobProfile = globalAction$(
     description: z.string().optional(),
     admin_notes: z.string().optional(),
     job_payout: z.coerce.number().optional(),
+    schedule: z.string().optional(),
   })
 );
 
