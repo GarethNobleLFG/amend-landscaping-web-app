@@ -21,7 +21,8 @@ type AuthResponse struct {
 type UserService interface {
 	SignUp(ctx context.Context, name, email, password, creationCode string) (*AuthResponse, error)
 	SignIn(ctx context.Context, email, password string) (*AuthResponse, error)
-	GetByID(ctx context.Context, userID string) (*model.User, error) // <-- Added to interface
+	GetByID(ctx context.Context, userID string) (*model.User, error)
+	GetAll(ctx context.Context) ([]*model.User, error) // <-- Added to interface
 }
 
 type userService struct {
@@ -86,6 +87,14 @@ func (s *userService) GetByID(ctx context.Context, userID string) (*model.User, 
 		return nil, errors.New("user not found")
 	}
 	return user, nil
+}
+
+func (s *userService) GetAll(ctx context.Context) ([]*model.User, error) {
+	users, err := s.repo.FindAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
 func generateJWT(user *model.User) (string, error) {

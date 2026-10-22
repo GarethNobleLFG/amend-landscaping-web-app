@@ -78,3 +78,13 @@ func (h *UserHandler) Me(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(user)
 }
+
+// GET /api/users (Fetches all users for admin user management)
+func (h *UserHandler) GetAll(c *fiber.Ctx) error {
+	users, err := h.service.GetAll(c.UserContext())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(users)
+}

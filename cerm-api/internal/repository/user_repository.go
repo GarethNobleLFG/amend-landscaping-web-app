@@ -10,7 +10,8 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, user *model.User) error
 	FindByEmail(ctx context.Context, email string) (*model.User, error)
-	FindByID(ctx context.Context, id string) (*model.User, error) // <-- Added to interface
+	FindByID(ctx context.Context, id string) (*model.User, error)
+	FindAll(ctx context.Context) ([]*model.User, error)
 }
 
 type userRepository struct {
@@ -69,4 +70,37 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*model.User, 
 		return nil, err
 	}
 	return user, nil
+}
+
+func (r *userRepository) FindAll(ctx context.Context) ([]*model.User, error) {
+	query := `SELECT id, name, email, password, role, created_at, updated_at FROM users`
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*model.User
+	for rows.Next() {
+		user := &model.User{}
+		err := rows.Scan(
+			&user.ID,
+			&user.Name,
+			&user.Email,
+			&user.Password,
+			&user.Role,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

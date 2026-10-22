@@ -110,3 +110,24 @@ export const useAuthUser = routeLoader$(async ({ cookie, redirect }) => {
     throw redirect(302, "/");
   }
 });
+
+export const useUsers = routeLoader$(async ({ cookie, redirect }) => {
+  const token = cookie.get("cerm_token");
+
+  if (!token) {
+    throw redirect(302, "/");
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/users`, {
+      headers: { Authorization: `Bearer ${token.value}` },
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch users");
+
+    const users: AuthUser[] = await res.json();
+    return users;
+  } catch {
+    throw redirect(302, "/");
+  }
+});

@@ -31,39 +31,9 @@ const IconIntake = component$((props: { class?: string }) => (
   </svg>
 ));
 
-const IconArchive = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>
-  </svg>
-));
-
 const IconSend = component$((props: { class?: string }) => (
   <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
     <line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-  </svg>
-));
-
-const IconWrench = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-  </svg>
-));
-
-const IconLayers = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
-  </svg>
-));
-
-const IconMessageSquare = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-  </svg>
-));
-
-const IconImageIcon = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
   </svg>
 ));
 
@@ -95,6 +65,38 @@ export const IconChecklist = component$((props: { class?: string }) => (
     <path d="M3 6l2 2 4-4" />
     <path d="M3 12l2 2 4-4" />
     <path d="M3 18l2 2 4-4" />
+  </svg>
+));
+
+const IconUsers = component$((props: { class?: string }) => (
+  <svg
+    class={props.class || "w-6 h-6"}
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    viewBox="0 0 24 24"
+  >
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+));
+
+const IconTeams = component$((props: { class?: string }) => (
+  <svg
+    class={props.class || "w-6 h-6"}
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    viewBox="0 0 24 24"
+  >
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
   </svg>
 ));
 
@@ -157,7 +159,7 @@ export default component$(() => {
       href: "/intake/",
       icon: IconIntake,
       badge: unapprovedCount,
-      isRedBadge: unapprovedCount > 0, // Glow red when there are pending unapproved profiles
+      isRedBadge: unapprovedCount > 0,
       roles: ["ADMIN"],
     },
     {
@@ -175,40 +177,17 @@ export default component$(() => {
       roles: ["ADMIN"],
     },
     {
-      id: "services",
-      label: "Services",
-      href: "/services/",
-      icon: IconWrench,
+      id: "users",
+      label: "User Management",
+      href: "/users/",
+      icon: IconUsers,
       roles: ["ADMIN"],
     },
     {
-      id: "pages",
-      label: "Pages",
-      href: "/pages/",
-      icon: IconLayers,
-      roles: ["ADMIN"],
-    },
-    {
-      id: "reviews",
-      label: "Reviews",
-      href: "/reviews/",
-      icon: IconMessageSquare,
-      roles: ["ADMIN"],
-    },
-    {
-      id: "gallery",
-      label: "Image Gallery",
-      href: "/gallery/",
-      icon: IconImageIcon,
-      roles: ["ADMIN"],
-    },
-    {
-      id: "archive",
-      label: "Archive",
-      href: "/archive/",
-      icon: IconArchive,
-      badge: 12,
-      isRedBadge: false,
+      id: "teams",
+      label: "Teams",
+      href: "/teams/",
+      icon: IconTeams,
       roles: ["ADMIN"],
     },
   ];
