@@ -161,7 +161,7 @@ export default component$(() => {
       </div>
 
       {/* Invisible Scrollable Container */}
-      <div class="max-h-[600px] overflow-y-auto pr-1 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
+      <div class="max-h-[550px] overflow-y-auto pr-1 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
         {filteredProfiles.length === 0 ? (
           <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
             No job profiles found
