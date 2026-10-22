@@ -154,7 +154,7 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                     <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3 text-red-800">
                         <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="10" />
-                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12" />
                             <line x1="12" y1="16" x2="12.01" y2="16" />
                         </svg>
                         <div class="flex-1 text-sm font-medium">
@@ -205,7 +205,7 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                                     class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                                 />
                             </div>
-                            <div class="sm:col-span-2">
+                            <div>
                                 <label class="block text-xs font-semibold text-gray-500 mb-1">
                                     {isCommercial ? "Business Phone *" : "Phone Number *"}
                                 </label>
@@ -220,6 +220,21 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                                         const formatted = formatPhoneNumber(target.value);
                                         target.value = formatted;
                                         formData.value = { ...formData.value, phone_number: formatted };
+                                    }}
+                                    class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                                />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 mb-1">
+                                    Scheduled Frequency <span class="text-gray-400 font-normal">(Just for Notes)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.value.schedule || ""}
+                                    placeholder="e.g. Weekly, As Needed"
+                                    onInput$={(e) => {
+                                        const val = (e.target as HTMLInputElement).value;
+                                        formData.value = { ...formData.value, schedule: val };
                                     }}
                                     class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                                 />
