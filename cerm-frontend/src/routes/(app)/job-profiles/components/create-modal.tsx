@@ -1,6 +1,7 @@
 import { component$, type Signal, type PropFunction, $, useVisibleTask$, useSignal } from "@builder.io/qwik";
 import type { JobProfile } from "../../../../hooks/job-profile-handling";
 import { IconX } from "./icons";
+import { formatPhoneNumber } from "../../../../hooks/utils/formatters";
 
 export interface ServiceItem {
     id: number;
@@ -22,35 +23,6 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
     const isSubmitting = useSignal(false);
     const isSuccess = useSignal(false);
     const errorMessage = useSignal<string | null>(null);
-
-    // Synchronous phone number formatting helper (strictly caps at 10 digits, no async race conditions)
-    const formatPhoneNumberSync = (input: string): string => {
-        const digits = input.replace(/\D/g, "").slice(0, 10);
-        if (!digits) return "";
-
-        const areaCode = digits.slice(0, 3);
-        const middle = digits.slice(3, 6);
-        const last = digits.slice(6, 10);
-
-        let formatted = "+1 ";
-        if (digits.length > 0) {
-            formatted += `(${areaCode}`;
-        }
-        if (digits.length >= 3) {
-            formatted += `) `;
-        }
-        if (middle) {
-            formatted += middle;
-        }
-        if (digits.length >= 6) {
-            formatted += `-`;
-        }
-        if (last) {
-            formatted += last;
-        }
-
-        return formatted;
-    };
 
     // Helper to adjust a textarea height dynamically to fit its content
     const autoResizeTextarea = $((el: HTMLTextAreaElement) => {
@@ -240,12 +212,12 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                                 <input
                                     type="text"
                                     required
-                                    maxLength={17}
+                                    maxLength={18}
                                     value={formData.value.phone_number || ""}
                                     placeholder="+1 (555) 000-0000"
                                     onInput$={(e) => {
                                         const target = e.target as HTMLInputElement;
-                                        const formatted = formatPhoneNumberSync(target.value);
+                                        const formatted = formatPhoneNumber(target.value);
                                         target.value = formatted;
                                         formData.value = { ...formData.value, phone_number: formatted };
                                     }}
