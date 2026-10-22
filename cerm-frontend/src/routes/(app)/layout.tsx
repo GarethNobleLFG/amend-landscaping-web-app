@@ -177,9 +177,9 @@ export default component$(() => {
       roles: ["ADMIN"],
     },
     {
-      id: "users",
+      id: "user-management",
       label: "User Management",
-      href: "/users/",
+      href: "/user-management/",
       icon: IconUsers,
       roles: ["ADMIN"],
     },
