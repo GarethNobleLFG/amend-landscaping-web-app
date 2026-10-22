@@ -10,7 +10,7 @@ interface TeamCardProps {
 
 export const TeamCard = component$(({ team, onEdit$, onDelete$ }: TeamCardProps) => {
   return (
-    <div class="bg-white rounded-2xl border border-slate-200/80 p-4 flex items-center justify-between shadow-xs hover:shadow-md transition-all">
+    <div class="bg-white rounded-2xl p-4 flex items-center justify-between transition-all">
       <div class="flex items-center gap-3.5">
         <div class="w-10 h-10 rounded-xl bg-green-100 text-green-700 font-extrabold flex items-center justify-center text-sm">
           {team.name ? team.name.charAt(0).toUpperCase() : "T"}
