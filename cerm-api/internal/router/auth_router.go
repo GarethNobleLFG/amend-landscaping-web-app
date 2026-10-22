@@ -21,5 +21,7 @@ func RegisterAuthRoutes(app *fiber.App, db *sql.DB) {
 	auth.Post("/signin", userHandler.SignIn)
 	auth.Get("/me", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN", "LEAD", "EMPLOYEE"), userHandler.Me)
 
-	app.Get("/api/users", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN"), userHandler.GetAll)
+	users := app.Group("/api/users", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN"))
+	users.Get("/", userHandler.GetAll)
+	users.Put("/:id", userHandler.Update)
 }

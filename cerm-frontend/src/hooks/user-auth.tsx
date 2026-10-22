@@ -7,6 +7,7 @@ export interface AuthUser {
   name: string;
   email: string;
   role: string;
+  team_id?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -131,3 +132,43 @@ export const useUsers = routeLoader$(async ({ cookie, redirect }) => {
     throw redirect(302, "/");
   }
 });
+
+export const useUpdateUser = globalAction$(
+  async (data, { fail, cookie }) => {
+    const token = cookie.get("cerm_token");
+    if (!token) return fail(401, { message: "Unauthorized" });
+
+    try {
+      const res = await fetch(`${API_BASE}/api/users/${data.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token.value}`,
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          team_id: data.team_id !== null && data.team_id !== undefined ? Number(data.team_id) : null,
+        }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        return fail(res.status, { message: json.error ?? "Failed to update user" });
+      }
+
+      return { success: true, user: json };
+    } catch {
+      return fail(500, { message: "Network error. Please try again." });
+    }
+  },
+  zod$({
+    id: z.string().min(1, "User ID is required"),
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Invalid email address"),
+    role: z.string().min(1, "Role is required"),
+    team_id: z.any().optional().nullable(),
+  })
+);

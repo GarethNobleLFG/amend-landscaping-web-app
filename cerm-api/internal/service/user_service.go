@@ -22,7 +22,8 @@ type UserService interface {
 	SignUp(ctx context.Context, name, email, password, creationCode string) (*AuthResponse, error)
 	SignIn(ctx context.Context, email, password string) (*AuthResponse, error)
 	GetByID(ctx context.Context, userID string) (*model.User, error)
-	GetAll(ctx context.Context) ([]*model.User, error) // <-- Added to interface
+	GetAll(ctx context.Context) ([]*model.User, error)
+	Update(ctx context.Context, id string, name, email, role string, teamID *int) (*model.User, error)
 }
 
 type userService struct {
@@ -49,6 +50,7 @@ func (s *userService) SignUp(ctx context.Context, name, email, password, creatio
 		Email:    email,
 		Password: string(hashed),
 		Role:     "EMPLOYEE",
+		TeamID:   nil,
 	}
 
 	if err := s.repo.Create(ctx, user); err != nil {
@@ -95,6 +97,24 @@ func (s *userService) GetAll(ctx context.Context) ([]*model.User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+func (s *userService) Update(ctx context.Context, id string, name, email, role string, teamID *int) (*model.User, error) {
+	user, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	user.Name = name
+	user.Email = email
+	user.Role = role
+	user.TeamID = teamID
+
+	if err := s.repo.Update(ctx, user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func generateJWT(user *model.User) (string, error) {
