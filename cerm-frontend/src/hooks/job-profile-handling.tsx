@@ -101,11 +101,13 @@ export const useCreateJobProfile = globalAction$(
     city: z.string().min(1, "City is required"),
     state: z.string().min(1, "State is required"),
     zip: z.string().min(1, "Zip is required"),
-    services_requested: z.any().optional(),
+    approved: z.boolean().optional(),
     is_commercial: z.boolean().optional(),
+    services_requested: z.any().optional(),
     referral_info: z.string().optional(),
-    schedule: z.string().optional(),
     description: z.string().optional(),
+    admin_notes: z.string().optional(),
+    job_payout: z.coerce.number().optional(),
   })
 );
 
