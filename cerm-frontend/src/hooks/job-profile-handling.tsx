@@ -46,7 +46,7 @@ export const useApprovedProfiles = routeLoader$(async ({ cookie, redirect }) => 
   }
 });
 
-export const useUnapprovedProfiles = routeLoader$(async ({ cookie, redirect }) => {
+export const useUnapprovedProfiles = routeLoader$<JobProfile[]>(async ({ cookie, redirect }) => {
   const token = cookie.get("cerm_token");
 
   if (!token) {
@@ -54,6 +54,19 @@ export const useUnapprovedProfiles = routeLoader$(async ({ cookie, redirect }) =
   }
 
   try {
+    const meRes = await fetch(`${API_BASE}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token.value}` },
+    });
+
+    if (!meRes.ok) return [];
+
+    const user = await meRes.json();
+    const userRole = (user?.role || "").toUpperCase();
+
+    if (userRole !== "ADMIN") {
+      return [];
+    }
+
     const res = await fetch(`${API_BASE}/api/job-profiles/unapproved`, {
       headers: { Authorization: `Bearer ${token.value}` },
     });
@@ -101,11 +114,14 @@ export const useCreateJobProfile = globalAction$(
     city: z.string().min(1, "City is required"),
     state: z.string().min(1, "State is required"),
     zip: z.string().min(1, "Zip is required"),
-    services_requested: z.any().optional(),
+    approved: z.boolean().optional(),
     is_commercial: z.boolean().optional(),
+    services_requested: z.any().optional(),
     referral_info: z.string().optional(),
-    schedule: z.string().optional(),
     description: z.string().optional(),
+    admin_notes: z.string().optional(),
+    job_payout: z.coerce.number().optional(),
+    schedule: z.string().optional(),
   })
 );
 

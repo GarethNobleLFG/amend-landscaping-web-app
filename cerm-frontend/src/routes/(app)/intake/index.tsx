@@ -78,7 +78,6 @@ export default component$(() => {
       customMessage: customMessage.value,
     });
 
-    // NOTE: Removed closeModal() here so ApproveModal can display its checkmark animation!
     return res;
   });
 
@@ -109,18 +108,18 @@ export default component$(() => {
 
   return (
     <div class="space-y-6">
+      {/* Tab Switcher: Fluid width on mobile, inline-flex on larger screens */}
       <div class="flex flex-col items-center gap-4">
-        {/* Tab Switcher with Red Flashing Badges */}
-        <div class="inline-flex bg-slate-200/80 p-1 rounded-full text-xs font-bold text-gray-600">
+        <div class="w-full sm:w-auto flex bg-slate-200/80 p-1 rounded-2xl sm:rounded-full text-xs font-bold text-gray-600">
           <button
             onClick$={() => (activeTab.value = "residential")}
-            class={`px-5 py-2 rounded-full transition-all flex items-center gap-2 ${
+            class={`flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 sm:py-2 rounded-xl sm:rounded-full transition-all flex items-center justify-center gap-2 ${
               activeTab.value === "residential"
                 ? "bg-white text-gray-900 shadow-sm"
                 : "hover:text-gray-900"
             }`}
           >
-            Residential Intake
+            Residential
             {residentialProfiles.length > 0 && (
               <span class="inline-flex items-center justify-center bg-rose-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[18px] animate-pulse">
                 {residentialProfiles.length}
@@ -130,13 +129,13 @@ export default component$(() => {
 
           <button
             onClick$={() => (activeTab.value = "commercial")}
-            class={`px-5 py-2 rounded-full transition-all flex items-center gap-2 ${
+            class={`flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 sm:py-2 rounded-xl sm:rounded-full transition-all flex items-center justify-center gap-2 ${
               activeTab.value === "commercial"
                 ? "bg-white text-gray-900 shadow-sm"
                 : "hover:text-gray-900"
             }`}
           >
-            Commercial Intake
+            Commercial
             {commercialProfiles.length > 0 && (
               <span class="inline-flex items-center justify-center bg-rose-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[18px] animate-pulse">
                 {commercialProfiles.length}
@@ -146,8 +145,8 @@ export default component$(() => {
         </div>
       </div>
 
-      {/* Grid Display */}
-      <div class="max-h-[600px] overflow-y-auto pr-1 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
+      {/* Grid Display: Removed hardcoded max-h so mobile flows with the page scrollbar naturally */}
+      <div class="w-full pb-4">
         {displayedProfiles.length === 0 ? (
           <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
             No unapproved intake profiles found

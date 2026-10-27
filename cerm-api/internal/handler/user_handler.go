@@ -26,6 +26,13 @@ type signInRequest struct {
 	Password string `json:"password" form:"password"`
 }
 
+type updateUserRequest struct {
+	Name   string `json:"name" form:"name"`
+	Email  string `json:"email" form:"email"`
+	Role   string `json:"role" form:"role"`
+	TeamID *int   `json:"team_id" form:"team_id"`
+}
+
 // POST /api/auth/signup
 func (h *UserHandler) SignUp(c *fiber.Ctx) error {
 	var req signUpRequest
@@ -74,6 +81,39 @@ func (h *UserHandler) Me(c *fiber.Ctx) error {
 	user, err := h.service.GetByID(c.UserContext(), userID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(user)
+}
+
+// GET /api/users (Fetches all users for admin user management)
+func (h *UserHandler) GetAll(c *fiber.Ctx) error {
+	users, err := h.service.GetAll(c.UserContext())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(users)
+}
+
+// PUT /api/users/:id (Updates user details & team assignment)
+func (h *UserHandler) Update(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "User ID is required"})
+	}
+
+	var req updateUserRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	user, err := h.service.Update(c.UserContext(), id, req.Name, req.Email, req.Role, req.TeamID)
+	if err != nil {
+		if err.Error() == "user not found" {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(user)

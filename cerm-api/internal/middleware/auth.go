@@ -78,15 +78,3 @@ func RequireRole(allowedRoles ...string) fiber.Handler {
 		return c.Next()
 	}
 }
-
-func AdminOnly() []fiber.Handler {
-	return []fiber.Handler{AuthMiddleware(), RequireRole("ADMIN")}
-}
-
-func LeadOrAdmin() []fiber.Handler {
-	return []fiber.Handler{AuthMiddleware(), RequireRole("ADMIN", "LEAD")}
-}
-
-func AnyAuthenticatedUser() []fiber.Handler {
-	return []fiber.Handler{AuthMiddleware(), RequireRole("ADMIN", "LEAD", "EMPLOYEE")}
-}

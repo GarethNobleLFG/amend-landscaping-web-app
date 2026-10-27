@@ -16,10 +16,10 @@ func RegisterJobProfileRoutes(app *fiber.App, db *sql.DB) {
 	jobSvc := service.NewJobProfileService(jobRepo)
 	jobHandler := handler.NewJobProfileHandler(jobSvc)
 
-	jobProfiles := app.Group("/api/job-profiles")
-	jobProfiles.Post("/", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN"), jobHandler.Create)
-	jobProfiles.Put("/:id", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN"), jobHandler.Update)
-	jobProfiles.Get("/approved", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN"), jobHandler.GetApproved)
-	jobProfiles.Get("/unapproved", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN"), jobHandler.GetUnapproved)
-	jobProfiles.Delete("/:id", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN"), jobHandler.Delete)
+	jobProfiles := app.Group("/api/job-profiles", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN"))
+	jobProfiles.Post("/", jobHandler.Create)
+	jobProfiles.Put("/:id", jobHandler.Update)
+	jobProfiles.Get("/approved", jobHandler.GetApproved)
+	jobProfiles.Get("/unapproved", jobHandler.GetUnapproved)
+	jobProfiles.Delete("/:id", jobHandler.Delete)
 }
