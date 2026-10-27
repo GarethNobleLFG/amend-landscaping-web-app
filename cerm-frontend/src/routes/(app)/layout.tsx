@@ -302,15 +302,16 @@ export default component$(() => {
           })}
         </aside>
 
-        {/* Dynamic Main Workspace Container */}
-        <main class="flex-1 overflow-y-auto px-4 md:px-6 py-4 flex justify-center pb-24 md:pb-6">
-          <div class="w-full max-w-5xl">
+        {/* Dynamic Main Workspace Container with Dynamic CSS Calc Padding */}
+        <main class="flex-1 overflow-y-auto px-4 md:px-6 py-4 flex flex-col items-center">
+          {/* pb-[calc(4rem+env(safe-area-inset-bottom)+2rem)] dynamically accounts for the 16 (4rem) mobile navbar height plus safe areas */}
+          <div class="w-full max-w-5xl pb-[calc(4rem+env(safe-area-inset-bottom)+3rem)] md:pb-6">
             <Slot />
           </div>
         </main>
 
-        {/* Mobile Bottom Navigation Bar: Horizontally centered around bottom midpoint */}
-        <nav class="fixed bottom-0 left-0 right-0 h-16 bg-slate-100/95 backdrop-blur-md border-t border-gray-200/80 flex items-center justify-center gap-4 px-4 z-50 md:hidden shadow-lg">
+        {/* Mobile Bottom Navigation Bar */}
+        <nav class="fixed bottom-0 left-0 right-0 h-16 pb-[env(safe-area-inset-bottom)] bg-slate-100/95 backdrop-blur-md border-t border-gray-200/80 flex items-center justify-center gap-4 px-4 z-50 md:hidden shadow-lg">
           {/* First 4 Navigation Items */}
           {mobileBottomItems.map((item) => {
             const IconComponent = item.icon;
