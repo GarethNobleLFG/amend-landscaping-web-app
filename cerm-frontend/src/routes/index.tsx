@@ -40,7 +40,7 @@ export default component$(() => {
             }}
           />
           <span class="font-extrabold text-2xl sm:text-3xl lg:text-4xl tracking-tight text-gray-900">
-            CERM <span class="text-green-600">by Amend</span>
+            <span class="text-green-600">Amend</span> Portal
           </span>
         </div>
 
@@ -61,7 +61,7 @@ export default component$(() => {
 
         <div class="my-auto w-full max-w-md flex flex-col items-center px-2 sm:px-6 py-6 md:py-0">
           <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">
-            {isSignUp.value ? "Create your CERM account" : "Log into CERM"}
+            {isSignUp.value ? "Create your account" : "Log in"}
           </h2>
 
           {activeError && (
@@ -244,11 +244,11 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Log In | CERM by Amend",
+  title: "Log In | Amend Portal",
   meta: [
     {
       name: "description",
-      content: "Log into CERM by Amend Landscaping.",
+      content: "Log into Amend Landscaping Portal.",
     },
   ],
 };
