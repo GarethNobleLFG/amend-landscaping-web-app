@@ -1,7 +1,7 @@
 import { component$, type Signal, type PropFunction, $, useVisibleTask$, useSignal } from "@builder.io/qwik";
 import type { JobProfile } from "../../../../hooks/job-profile-handling";
 import { IconX } from "../../../../components/ui/icons";
-import { formatPhoneNumber } from "../../../../hooks/utils/formatters";
+import { formatPhoneNumber } from "../../../../utils/formatters";
 
 export interface ServiceItem {
     id: number;
