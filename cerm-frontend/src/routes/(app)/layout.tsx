@@ -2,119 +2,12 @@ import { component$, Slot, $, useSignal } from "@builder.io/qwik";
 import { Link, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { useAuthUser } from "~/hooks/user-auth";
 import { useUnapprovedProfiles } from "~/hooks/job-profile-handling";
+import { IconDashboard, IconIntake, IconSend, IconChecklist, IconUsers, IconTeams, IconDotsVertical, IconLogOut } from "~/components/ui/icons";
 
 // ============================================================================
 // 1. RE-EXPORT ROUTE LOADERS
 // ============================================================================
 export { useAuthUser, useUnapprovedProfiles };
-
-// ============================================================================
-// 2. QWIK SVG ICON COMPONENTS
-// ============================================================================
-const IconClipboardList = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>
-  </svg>
-));
-
-const IconLogOut = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
-  </svg>
-));
-
-const IconIntake = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <path d="M12 17V3" />
-    <path d="m6 11 6 6 6-6" />
-    <path d="M19 21H5" />
-  </svg>
-));
-
-const IconSend = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-  </svg>
-));
-
-const IconBell = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
-  </svg>
-));
-
-const IconDashboard = component$((props: { class?: string }) => (
-  <svg class={props.class || "w-6 h-6"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-    <rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="10" rx="1"/><rect width="7" height="5" x="3" y="14" rx="1"/>
-  </svg>
-));
-
-export const IconChecklist = component$((props: { class?: string }) => (
-  <svg
-    class={props.class || "w-4 h-4"}
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    viewBox="0 0 24 24"
-  >
-    <path d="M11 6h9" />
-    <path d="M11 12h9" />
-    <path d="M11 18h9" />
-    <path d="M3 6l2 2 4-4" />
-    <path d="M3 12l2 2 4-4" />
-    <path d="M3 18l2 2 4-4" />
-  </svg>
-));
-
-const IconUsers = component$((props: { class?: string }) => (
-  <svg
-    class={props.class || "w-6 h-6"}
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    viewBox="0 0 24 24"
-  >
-    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-));
-
-const IconTeams = component$((props: { class?: string }) => (
-  <svg
-    class={props.class || "w-6 h-6"}
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    viewBox="0 0 24 24"
-  >
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-));
-
-const IconDotsVertical = component$((props: { class?: string }) => (
-  <svg
-    class={props.class || "w-6 h-6"}
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    viewBox="0 0 24 24"
-  >
-    <circle cx="12" cy="12" r="1" />
-    <circle cx="12" cy="5" r="1" />
-    <circle cx="12" cy="19" r="1" />
-  </svg>
-));
 
 // ============================================================================
 // 3. NAVIGATION TYPES
@@ -225,19 +118,16 @@ export default component$(() => {
           href="/dashboard/"
           class="flex items-center gap-3 text-green-700 font-bold text-xl tracking-tight cursor-pointer"
         >
-          <div class="w-10 h-10 rounded-xl bg-green-200/60 flex items-center justify-center">
-            <IconClipboardList class="w-6 h-6 text-green-700" />
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
+            <img src="/logo.webp" alt="Amend Logo" class="w-full h-full object-cover" />
           </div>
           <span class="text-gray-900 font-extrabold text-xl">
-            CERM by <span class="text-green-600">Amend</span>
+            <span class="text-green-600">Amend</span> Portal
           </span>
         </Link>
 
         {/* Header Actions */}
         <div class="flex items-center gap-2 md:gap-3">
-          <button class="p-2.5 rounded-xl bg-gray-200/70 hover:bg-gray-200 text-gray-700 transition-all">
-            <IconBell class="w-5 h-5" />
-          </button>
           <button
             onClick$={handleSignOut}
             class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-xs font-semibold bg-gray-200/70 hover:bg-red-50 text-gray-700 hover:text-red-600 transition-all"
