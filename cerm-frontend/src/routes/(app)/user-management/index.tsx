@@ -18,6 +18,21 @@ export default component$(() => {
   const teams = teamsSignal.value || [];
   const currentUser = authUserSignal.value;
 
+  // Group users by team_id
+  const teamMap = new Map<number | null, AuthUser[]>();
+  
+  // Initialize map with all available teams so empty teams can be shown if desired, or just map existing
+  teams.forEach((t) => teamMap.set(t.id, []));
+  teamMap.set(null, []); // For users with no team
+
+  users.forEach((user: AuthUser) => {
+    const tid = user.team_id ?? null;
+    if (!teamMap.has(tid)) {
+      teamMap.set(tid, []);
+    }
+    teamMap.get(tid)!.push(user);
+  });
+
   return (
     <div class="space-y-6">
       {/* Top Header Row with Total Count */}
@@ -27,23 +42,76 @@ export default component$(() => {
         </span>
       </div>
 
-      {/* Invisible Scrollable Container for Users list */}
-      <div class="max-h-[550px] overflow-y-auto pr-1 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
+      {/* Invisible Scrollable Container for Teams / Users sections */}
+      <div class="max-h-[550px] overflow-y-auto pr-1 pb-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
         {users.length === 0 ? (
           <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
             No users found
           </div>
         ) : (
-          users.map((user: AuthUser) => (
-            <UserCard
-              key={user.id}
-              user={user}
-              currentUserId={currentUser?.id}
-              teams={teams}
-              roles={ROLES}
-              updateAction={updateAction}
-            />
-          ))
+          <>
+            {/* Render each Team Group */}
+            {teams.map((team: Team) => {
+              const teamUsers = teamMap.get(team.id) || [];
+              if (teamUsers.length === 0) return null; // Optionally skip empty teams or display them
+
+              return (
+                <div key={team.id} class="space-y-3">
+                  <div class="flex items-center justify-between px-2">
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-gray-500">
+                      {team.name}
+                    </h3>
+                    <span class="text-[10px] font-bold text-gray-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                      {teamUsers.length} {teamUsers.length === 1 ? "member" : "members"}
+                    </span>
+                  </div>
+                  <div class="space-y-3">
+                    {teamUsers.map((user: AuthUser) => (
+                      <UserCard
+                        key={user.id}
+                        user={user}
+                        currentUserId={currentUser?.id}
+                        teams={teams}
+                        roles={ROLES}
+                        updateAction={updateAction}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Render Users with No Team Assigned */}
+            {(() => {
+              const unassignedUsers = teamMap.get(null) || [];
+              if (unassignedUsers.length === 0) return null;
+
+              return (
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between px-2">
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-gray-400">
+                      Unassigned (No Team)
+                    </h3>
+                    <span class="text-[10px] font-bold text-gray-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                      {unassignedUsers.length} {unassignedUsers.length === 1 ? "member" : "members"}
+                    </span>
+                  </div>
+                  <div class="space-y-3">
+                    {unassignedUsers.map((user: AuthUser) => (
+                      <UserCard
+                        key={user.id}
+                        user={user}
+                        currentUserId={currentUser?.id}
+                        teams={teams}
+                        roles={ROLES}
+                        updateAction={updateAction}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+          </>
         )}
       </div>
     </div>

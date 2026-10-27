@@ -70,9 +70,6 @@ export const UserCard = component$(({
     <div class="bg-white rounded-2xl p-4 flex flex-col gap-3 transition-all border-none">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-green-100 text-green-700 font-extrabold flex items-center justify-center text-sm flex-shrink-0">
-            {user.name ? user.name.charAt(0).toUpperCase() : "U"}
-          </div>
           <div>
             <div class="flex items-center gap-2">
               <h4 class="text-sm font-bold text-gray-900">{user.name}</h4>
