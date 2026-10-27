@@ -10,7 +10,7 @@ import { IconDashboard, IconIntake, IconSend, IconChecklist, IconUsers, IconTeam
 export { useAuthUser, useUnapprovedProfiles };
 
 // ============================================================================
-// 3. NAVIGATION TYPES
+// 2. NAVIGATION TYPES
 // ============================================================================
 interface NavItem {
   id: string;
@@ -23,7 +23,7 @@ interface NavItem {
 }
 
 // ============================================================================
-// 4. MAIN QWIK LAYOUT COMPONENT
+// 3. MAIN QWIK LAYOUT COMPONENT
 // ============================================================================
 export default component$(() => {
   const userData = useAuthUser();
