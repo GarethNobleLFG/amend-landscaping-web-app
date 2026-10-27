@@ -118,7 +118,7 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "User Management - CERM by Amend",
+  title: "User Management | Amend Portal",
   meta: [
     {
       name: "description",
