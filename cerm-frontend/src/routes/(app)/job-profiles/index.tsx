@@ -38,7 +38,7 @@ export default component$(() => {
   // Tab state: 'residential' (non-commercial) vs 'commercial'
   const activeTab = useSignal<"residential" | "commercial">("residential");
 
-  // Search query signal for prefix filtering
+  // Search query signal for substring filtering
   const searchQuery = useSignal("");
 
   const openCreateModal = $(() => {
@@ -102,21 +102,21 @@ export default component$(() => {
     return !p.is_commercial;
   });
 
-  // 2. Filter profiles by search query prefix (case-insensitive)
+  // 2. Filter profiles by search query present anywhere in the name
   const filteredProfiles = tabFilteredProfiles.filter((p) => {
     if (!query) return true;
-    return (p.name || "").toLowerCase().startsWith(query);
+    return (p.name || "").toLowerCase().includes(query);
   });
 
   return (
     <div class="space-y-6">
       {/* Centered Controls Container: Tabs & Search Bar */}
       <div class="flex flex-col items-center gap-4">
-        {/* Commercial / Non-Commercial Tab Switcher */}
-        <div class="inline-flex bg-slate-200/80 p-1 rounded-full text-xs font-bold text-gray-600">
+        {/* Commercial / Non-Commercial Tab Switcher: Fluid on mobile */}
+        <div class="w-full sm:w-auto flex bg-slate-200/80 p-1 rounded-2xl sm:rounded-full text-xs font-bold text-gray-600">
           <button
             onClick$={() => (activeTab.value = "residential")}
-            class={`px-5 py-2 rounded-full transition-all ${
+            class={`flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 sm:py-2 rounded-xl sm:rounded-full transition-all text-center ${
               activeTab.value === "residential"
                 ? "bg-white text-gray-900 shadow-sm"
                 : "hover:text-gray-900"
@@ -126,7 +126,7 @@ export default component$(() => {
           </button>
           <button
             onClick$={() => (activeTab.value = "commercial")}
-            class={`px-5 py-2 rounded-full transition-all ${
+            class={`flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 sm:py-2 rounded-xl sm:rounded-full transition-all text-center ${
               activeTab.value === "commercial"
                 ? "bg-white text-gray-900 shadow-sm"
                 : "hover:text-gray-900"
@@ -136,10 +136,10 @@ export default component$(() => {
           </button>
         </div>
 
-        {/* Search Row Container with Create Button Positioned Far Right */}
-        <div class="relative flex items-center justify-center w-full">
+        {/* Search Row Container with Create Button Positioned Far Right on Desktop, stacked/fluid on mobile */}
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 w-full relative">
           {/* Smooth Expand Search Bar */}
-          <div class="relative flex items-center bg-slate-300/80 hover:bg-slate-300 rounded-full px-5 py-3.5 w-80 focus-within:w-full max-w-lg transition-all duration-300 ease-in-out">
+          <div class="relative flex items-center bg-slate-300/80 hover:bg-slate-300 rounded-full px-5 py-3.5 w-full sm:w-80 md:w-96 focus-within:sm:w-full max-w-lg transition-all duration-300 ease-in-out">
             <IconSearch class="w-5 h-5 text-gray-600 mr-3.5 flex-shrink-0" />
             <input
               type="text"
@@ -150,18 +150,18 @@ export default component$(() => {
             />
           </div>
 
-          {/* Create Button Positioned Far Right with Search Bar Styling */}
+          {/* Create Button Positioned Far Right on Desktop */}
           <button
             onClick$={openCreateModal}
-            class="absolute right-0 bg-slate-300/80 hover:bg-slate-300 text-gray-900 font-medium text-sm px-5 py-3.5 rounded-full transition-all duration-300 ease-in-out flex items-center gap-2 whitespace-nowrap"
+            class="w-full sm:w-auto sm:absolute sm:right-0 bg-slate-300/80 hover:bg-slate-300 text-gray-900 font-medium text-sm px-5 py-3.5 rounded-full transition-all duration-300 ease-in-out flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
           >
             <span>+ Create Profile</span>
           </button>
         </div>
       </div>
 
-      {/* Invisible Scrollable Container */}
-      <div class="max-h-[550px] overflow-y-auto pr-1 pb-6 space-y-3 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
+      {/* Grid Display Container: Flows naturally with page scroll */}
+      <div class="w-full pb-4 space-y-3">
         {filteredProfiles.length === 0 ? (
           <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
             No job profiles found

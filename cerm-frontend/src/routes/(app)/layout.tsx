@@ -111,7 +111,7 @@ export default component$(() => {
   });
 
   return (
-    <div class="min-h-screen bg-slate-100 text-gray-900 font-sans flex flex-col h-screen overflow-hidden">
+    <div class="min-h-[100dvh] bg-slate-100 text-gray-900 font-sans flex flex-col h-[100dvh] overflow-hidden">
       {/* Top Header Bar */}
       <header class="h-16 px-4 md:px-6 flex items-center justify-between bg-transparent flex-shrink-0 z-30">
         <Link
