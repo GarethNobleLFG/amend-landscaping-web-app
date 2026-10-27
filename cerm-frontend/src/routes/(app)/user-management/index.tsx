@@ -1,5 +1,5 @@
 import { component$ } from "@builder.io/qwik";
-import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
+import { type DocumentHead } from "@builder.io/qwik-city";
 import { useUsers, useUpdateUser, useAuthUser, type AuthUser } from "~/hooks/user-auth";
 import { useTeams, type Team } from "~/hooks/teams-handling";
 import { UserCard } from "./components/user-card";
@@ -21,7 +21,6 @@ export default component$(() => {
   // Group users by team_id
   const teamMap = new Map<number | null, AuthUser[]>();
   
-  // Initialize map with all available teams so empty teams can be shown if desired, or just map existing
   teams.forEach((t) => teamMap.set(t.id, []));
   teamMap.set(null, []); // For users with no team
 
@@ -42,8 +41,8 @@ export default component$(() => {
         </span>
       </div>
 
-      {/* Invisible Scrollable Container for Teams / Users sections */}
-      <div class="max-h-[550px] overflow-y-auto pr-1 pb-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400">
+      {/* Fluid Scrollable Container for Teams / Users sections (Natural flow on mobile, scrollable on desktop) */}
+      <div class="w-full pb-4 space-y-6">
         {users.length === 0 ? (
           <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
             No users found
@@ -53,7 +52,7 @@ export default component$(() => {
             {/* Render each Team Group */}
             {teams.map((team: Team) => {
               const teamUsers = teamMap.get(team.id) || [];
-              if (teamUsers.length === 0) return null; // Optionally skip empty teams or display them
+              if (teamUsers.length === 0) return null;
 
               return (
                 <div key={team.id} class="space-y-3">

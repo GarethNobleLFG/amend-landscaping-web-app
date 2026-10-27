@@ -130,7 +130,7 @@ export default component$(() => {
         <div class="flex items-center gap-2 md:gap-3">
           <button
             onClick$={handleSignOut}
-            class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-xs font-semibold bg-gray-200/70 hover:bg-red-50 text-gray-700 hover:text-red-600 transition-all"
+            class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-xs font-semibold bg-gray-200/70 hover:bg-red-50 text-gray-700 hover:text-red-600 transition-all cursor-pointer"
             title="Sign Out"
           >
             <IconLogOut class="w-4 h-4" />
@@ -144,7 +144,7 @@ export default component$(() => {
         {/* Desktop Fixed Layout Spacer */}
         <div class="hidden md:block w-20 flex-shrink-0" />
 
-        {/* Desktop Expand-on-Hover Left Sidebar: Vertically centered around height midpoint */}
+        {/* Desktop Expand-on-Hover Left Sidebar */}
         <aside class="hidden md:flex group absolute top-0 left-0 bottom-0 z-40 w-20 hover:w-64 transition-all duration-300 ease-in-out py-4 pl-3 pr-3 flex-col justify-center gap-2 overflow-hidden bg-slate-100/95 backdrop-blur-md hover:shadow-2xl border-none">
           {filteredNavConfig.map((item) => {
             const IconComponent = item.icon;
@@ -192,16 +192,69 @@ export default component$(() => {
           })}
         </aside>
 
-        {/* Dynamic Main Workspace Container with Dynamic CSS Calc Padding */}
+        {/* Dynamic Main Workspace Container */}
         <main class="flex-1 overflow-y-auto px-4 md:px-6 py-4 flex flex-col items-center">
-          {/* pb-[calc(4rem+env(safe-area-inset-bottom)+2rem)] dynamically accounts for the 16 (4rem) mobile navbar height plus safe areas */}
           <div class="w-full max-w-5xl pb-[calc(4rem+env(safe-area-inset-bottom)+3rem)] md:pb-6">
             <Slot />
           </div>
         </main>
 
+        {/* Mobile Popup Menu & Backdrop */}
+        {isMobileMenuOpen.value && (
+          <>
+            {/* Backdrop */}
+            <div
+              class="fixed inset-0 z-40 md:hidden"
+              onClick$={() => (isMobileMenuOpen.value = false)}
+            />
+
+            {/* Floating Popover Menu (Restored to original padding, styling, and bottom offset) */}
+            <div class="fixed right-4 bottom-16 z-50 min-w-[190px] bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 md:hidden animate-in fade-in slide-in-from-bottom-2 duration-150">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 py-1 border-b border-slate-100 mb-1">
+                More Options
+              </span>
+
+              {mobileMoreItems.map((item) => {
+                const IconComponent = item.icon;
+                const isActive = location.url.pathname === item.href;
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick$={async () => {
+                      isMobileMenuOpen.value = false;
+                      await nav(item.href);
+                    }}
+                    class={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-green-600 text-white font-bold shadow-sm"
+                        : "text-gray-700 hover:bg-slate-100 active:bg-slate-200"
+                    }`}
+                  >
+                    <div class="relative flex-shrink-0">
+                      <IconComponent class={`w-5 h-5 ${isActive ? "text-white" : "text-gray-600"}`} />
+                      {item.badge !== undefined && item.badge > 0 && (
+                        <span
+                          class={`absolute -top-1 -right-2 px-1.5 py-0.2 min-w-[14px] h-3.5 rounded-full text-[9px] font-bold leading-none flex items-center justify-center ${
+                            item.isRedBadge
+                              ? "bg-rose-500 text-white"
+                              : "bg-slate-200 text-slate-800"
+                          }`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                    <span class="truncate">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
         {/* Mobile Bottom Navigation Bar */}
-        <nav class="fixed bottom-0 left-0 right-0 h-16 pb-[env(safe-area-inset-bottom)] bg-slate-100/95 backdrop-blur-md border-t border-gray-200/80 flex items-center justify-center gap-4 px-4 z-50 md:hidden shadow-lg">
+        <nav class="fixed bottom-0 left-0 right-0 h-16 pb-[env(safe-area-inset-bottom)] bg-slate-100/95 backdrop-blur-md border-t border-gray-200/80 flex items-center justify-center gap-4 px-4 z-30 md:hidden shadow-lg">
           {/* First 4 Navigation Items */}
           {mobileBottomItems.map((item) => {
             const IconComponent = item.icon;
@@ -235,68 +288,15 @@ export default component$(() => {
           })}
 
           {/* Rightmost Action Button: Toggles Floating Nav Popup Space */}
-          <div class="relative">
-            <button
-              onClick$={() => (isMobileMenuOpen.value = !isMobileMenuOpen.value)}
-              class={`flex flex-col items-center justify-center p-2 rounded-xl text-gray-600 transition-all ${
-                isMoreActive || isMobileMenuOpen.value ? "text-green-600 scale-110 font-bold" : ""
-              }`}
-              title="More Navigation Options"
-            >
-              <IconDotsVertical class="w-6 h-6" />
-            </button>
-
-            {/* Floating Popover UI Space for Remaining Actions */}
-            {isMobileMenuOpen.value && (
-              <>
-                {/* Backdrop to dismiss menu when clicking outside */}
-                <div
-                  class="fixed inset-0 z-40"
-                  onClick$={() => (isMobileMenuOpen.value = false)}
-                />
-
-                <div class="absolute right-0 bottom-14 z-50 min-w-[190px] bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-150">
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 py-1 border-b border-slate-100 mb-1">
-                    More Options
-                  </span>
-
-                  {mobileMoreItems.map((item) => {
-                    const IconComponent = item.icon;
-                    const isActive = location.url.pathname === item.href;
-
-                    return (
-                      <Link
-                        key={item.id}
-                        href={item.href}
-                        onClick$={() => (isMobileMenuOpen.value = false)}
-                        class={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                          isActive
-                            ? "bg-green-600 text-white font-bold shadow-sm"
-                            : "text-gray-700 hover:bg-slate-100 active:bg-slate-200"
-                        }`}
-                      >
-                        <div class="relative flex-shrink-0">
-                          <IconComponent class={`w-5 h-5 ${isActive ? "text-white" : "text-gray-600"}`} />
-                          {item.badge !== undefined && item.badge > 0 && (
-                            <span
-                              class={`absolute -top-1 -right-2 px-1.5 py-0.2 min-w-[14px] h-3.5 rounded-full text-[9px] font-bold leading-none flex items-center justify-center ${
-                                item.isRedBadge
-                                  ? "bg-rose-500 text-white"
-                                  : "bg-slate-200 text-slate-800"
-                              }`}
-                            >
-                              {item.badge}
-                            </span>
-                          )}
-                        </div>
-                        <span class="truncate">{item.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
+          <button
+            onClick$={() => (isMobileMenuOpen.value = !isMobileMenuOpen.value)}
+            class={`flex flex-col items-center justify-center p-2 rounded-xl text-gray-600 transition-all cursor-pointer ${
+              isMoreActive || isMobileMenuOpen.value ? "text-green-600 scale-110 font-bold" : ""
+            }`}
+            title="More Navigation Options"
+          >
+            <IconDotsVertical class="w-6 h-6" />
+          </button>
         </nav>
       </div>
     </div>

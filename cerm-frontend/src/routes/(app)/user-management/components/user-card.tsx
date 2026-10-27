@@ -83,12 +83,13 @@ export const UserCard = component$(({
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3">
+        {/* Controls: Full-width stacked controls on mobile, inline flex row on desktop */}
+        <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
           {isSuccess.value && (
-            <span class="text-xs font-semibold text-green-600 animate-fade-in">Saved!</span>
+            <span class="text-xs font-semibold text-green-600 animate-fade-in text-center sm:text-left">Saved!</span>
           )}
           {isSubmitting.value && (
-            <span class="text-xs font-semibold text-gray-400">Saving...</span>
+            <span class="text-xs font-semibold text-gray-400 text-center sm:text-left">Saving...</span>
           )}
 
           {isSelf && (
@@ -96,14 +97,14 @@ export const UserCard = component$(({
               onClick$={() => {
                 isEditingSelf.value = !isEditingSelf.value;
               }}
-              class="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              class="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer text-center"
             >
               {isEditingSelf.value ? "Cancel" : "Edit My Details"}
             </button>
           )}
 
           {/* Role Selector Dropdown */}
-          <div class="w-36">
+          <div class="w-full sm:w-36">
             <select
               value={selectedRole.value}
               onChange$={handleRoleChange}
@@ -119,7 +120,7 @@ export const UserCard = component$(({
           </div>
 
           {/* Team Selector Dropdown */}
-          <div class="w-44">
+          <div class="w-full sm:w-44">
             <select
               value={selectedTeamId.value}
               onChange$={handleTeamChange}
