@@ -1,7 +1,7 @@
 import { component$, useSignal, $ } from "@builder.io/qwik";
 import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
 import { useTeams, useCreateTeam, useUpdateTeam, useDeleteTeam, type Team } from "~/hooks/teams-handling";
-import { IconPlus } from "./components/icons";
+import { IconPlus } from "../../../components/ui/icons";
 import { TeamCard } from "./components/team-card";
 import { CreateModal } from "./components/create-modal";
 import { EditModal } from "./components/edit-modal";

@@ -46,7 +46,7 @@ export const useApprovedProfiles = routeLoader$(async ({ cookie, redirect }) => 
   }
 });
 
-export const useUnapprovedProfiles = routeLoader$(async ({ cookie, redirect }) => {
+export const useUnapprovedProfiles = routeLoader$<JobProfile[]>(async ({ cookie, redirect }) => {
   const token = cookie.get("cerm_token");
 
   if (!token) {
@@ -54,6 +54,19 @@ export const useUnapprovedProfiles = routeLoader$(async ({ cookie, redirect }) =
   }
 
   try {
+    const meRes = await fetch(`${API_BASE}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token.value}` },
+    });
+
+    if (!meRes.ok) return [];
+
+    const user = await meRes.json();
+    const userRole = (user?.role || "").toUpperCase();
+
+    if (userRole !== "ADMIN") {
+      return [];
+    }
+
     const res = await fetch(`${API_BASE}/api/job-profiles/unapproved`, {
       headers: { Authorization: `Bearer ${token.value}` },
     });

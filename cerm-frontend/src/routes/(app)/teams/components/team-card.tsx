@@ -1,6 +1,6 @@
 import { component$, type PropFunction } from "@builder.io/qwik";
 import type { Team } from "~/hooks/teams-handling";
-import { IconEdit, IconTrash } from "./icons";
+import { IconEdit, IconTrash } from "../../../../components/ui/icons";
 
 interface TeamCardProps {
   team: Team;

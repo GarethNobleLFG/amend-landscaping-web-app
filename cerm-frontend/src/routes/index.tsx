@@ -80,12 +80,14 @@ export default component$(() => {
                   password: pw.password,
                 });
 
-                if (res?.value?.success || res?.value?.user) {
-                  const role = res.value.user?.role;
-                  if (role === "ADMIN") {
-                    await nav("/dashboard");
-                  } else if (role === "EMPLOYEE") {
-                    await nav("/job-schedule");
+                const resultData = res?.value;
+                if (resultData?.success || resultData?.user) {
+                  const userRole = (resultData.user?.role || "").toUpperCase();
+
+                  if (userRole === "ADMIN") {
+                    nav("/dashboard");
+                  } else {
+                    nav("/profile");
                   }
                 }
               }}
@@ -134,12 +136,14 @@ export default component$(() => {
                   creationCode: creationCode.value,
                 });
 
-                if (res?.value?.success || res?.value?.user) {
-                  const role = res.value.user?.role;
-                  if (role === "ADMIN") {
-                    await nav("/dashboard");
-                  } else if (role === "EMPLOYEE") {
-                    await nav("/job-schedule");
+                const resultData = res?.value;
+                if (resultData?.success || resultData?.user) {
+                  const userRole = (resultData.user?.role || "").toUpperCase();
+
+                  if (userRole === "ADMIN") {
+                    nav("/dashboard");
+                  } else {
+                    nav("/profile");
                   }
                 }
               }}

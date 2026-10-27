@@ -184,6 +184,13 @@ export default component$(() => {
       roles: ["ADMIN"],
     },
     {
+      id: "profile",
+      label: "Profile",
+      href: "/profile/",
+      icon: IconUsers,
+      roles: ["TEAM LEAD", "EMPLOYEE"],
+    },
+    {
       id: "teams",
       label: "Teams",
       href: "/teams/",

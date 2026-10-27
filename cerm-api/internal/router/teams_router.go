@@ -16,11 +16,10 @@ func RegisterTeamRoutes(app *fiber.App, db *sql.DB) {
 	teamSvc := service.NewTeamService(teamRepo)
 	teamHandler := handler.NewTeamHandler(teamSvc)
 
-	teams := app.Group("/api/teams", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN"))
-
-	teams.Get("/", teamHandler.GetAll)
-	teams.Post("/", teamHandler.Create)
-	teams.Get("/:id", teamHandler.GetByID)
-	teams.Put("/:id", teamHandler.Update)
-	teams.Delete("/:id", teamHandler.Delete)
+	teams := app.Group("/api/teams", middleware.AuthMiddleware())
+	teams.Get("/", middleware.RequireRole("ADMIN", "TEAM LEAD", "EMPLOYEE"), teamHandler.GetAll)
+	teams.Post("/", middleware.RequireRole("ADMIN"), teamHandler.Create)
+	teams.Get("/:id", middleware.RequireRole("ADMIN"), teamHandler.GetByID)
+	teams.Put("/:id", middleware.RequireRole("ADMIN"), teamHandler.Update)
+	teams.Delete("/:id", middleware.RequireRole("ADMIN"), teamHandler.Delete)
 }

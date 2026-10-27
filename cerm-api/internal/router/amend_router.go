@@ -14,6 +14,6 @@ func RegisterAmendApiRoutes(app *fiber.App) {
 	amendApiService := service.NewAmendApiService(amendApiRepo)
 	amendApiHandler := handler.NewAmendApiHandler(amendApiService)
 
-	amendAPI := app.Group("/api/amend")
-	amendAPI.Get("/services", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN", "LEAD", "EMPLOYEE"), amendApiHandler.GetAll)
+	amendAPI := app.Group("/api/amend", middleware.AuthMiddleware())
+	amendAPI.Get("/services", middleware.RequireRole("ADMIN", "TEAM LEAD", "EMPLOYEE"), amendApiHandler.GetAll)
 }

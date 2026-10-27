@@ -1,6 +1,6 @@
 import { component$, useSignal, $, type PropFunction } from "@builder.io/qwik";
 import type { Team } from "~/hooks/teams-handling";
-import { IconX } from "./icons";
+import { IconX } from "../../../../components/ui/icons";
 
 interface EditModalProps {
   team: Team;

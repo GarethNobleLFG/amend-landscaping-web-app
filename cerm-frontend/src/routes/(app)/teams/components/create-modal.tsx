@@ -1,5 +1,5 @@
 import { component$, useSignal, $, type PropFunction } from "@builder.io/qwik";
-import { IconX } from "./icons";
+import { IconX } from "../../../../components/ui/icons";
 
 interface CreateModalProps {
   createAction: any;
