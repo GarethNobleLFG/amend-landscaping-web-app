@@ -1,18 +1,22 @@
 import { component$ } from "@builder.io/qwik";
 import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
-import { useUsers, useUpdateUser, type AuthUser } from "~/hooks/user-auth";
+import { useUsers, useUpdateUser, useAuthUser, type AuthUser } from "~/hooks/user-auth";
 import { useTeams, type Team } from "~/hooks/teams-handling";
 import { UserCard } from "./components/user-card";
 
 export { useUsers, useUpdateUser, useTeams };
 
+export const ROLES = ["ADMIN", "EMPLOYEE", "TEAM LEAD", "INACTIVE"] as const;
+
 export default component$(() => {
   const usersSignal = useUsers();
   const teamsSignal = useTeams();
+  const authUserSignal = useAuthUser();
   const updateAction = useUpdateUser();
 
   const users = usersSignal.value || [];
   const teams = teamsSignal.value || [];
+  const currentUser = authUserSignal.value;
 
   return (
     <div class="space-y-6">
@@ -34,7 +38,9 @@ export default component$(() => {
             <UserCard
               key={user.id}
               user={user}
+              currentUserId={currentUser?.id}
               teams={teams}
+              roles={ROLES}
               updateAction={updateAction}
             />
           ))
@@ -49,7 +55,7 @@ export const head: DocumentHead = {
   meta: [
     {
       name: "description",
-      content: "Manage system users and team assignments",
+      content: "Manage system users, roles, and team assignments",
     },
   ],
 };
