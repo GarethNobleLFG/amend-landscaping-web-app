@@ -1,6 +1,6 @@
 import { component$, type PropFunction } from "@builder.io/qwik";
 import type { JobProfile } from "../../../../hooks/job-profile-handling";
-import { IconX } from "./icons";
+import { IconX } from "../../../../components/ui/icons";
 
 interface ViewModalProps {
     profile: JobProfile;

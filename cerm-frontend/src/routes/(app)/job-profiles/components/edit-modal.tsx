@@ -1,6 +1,7 @@
 import { component$, type Signal, type PropFunction, $, useVisibleTask$, useSignal } from "@builder.io/qwik";
 import type { JobProfile } from "../../../../hooks/job-profile-handling";
-import { IconX } from "./icons";
+import { IconX } from "../../../../components/ui/icons";
+import { formatPhoneNumber } from "../../../../hooks/utils/formatters";
 
 export interface ServiceItem {
     id: number;
@@ -165,9 +166,15 @@ export const EditModal = component$<EditModalProps>(({ formData, availableServic
                             </label>
                             <input
                                 type="text"
+                                maxLength={18}
                                 value={formData.value.phone_number || ""}
-                                placeholder="N/A"
-                                onInput$={(e) => (formData.value = { ...formData.value, phone_number: (e.target as HTMLInputElement).value })}
+                                placeholder="+1 (555) 000-0000"
+                                onInput$={(e) => {
+                                    const target = e.target as HTMLInputElement;
+                                    const formatted = formatPhoneNumber(target.value);
+                                    target.value = formatted;
+                                    formData.value = { ...formData.value, phone_number: formatted };
+                                }}
                                 class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                             />
                         </div>
@@ -208,10 +215,16 @@ export const EditModal = component$<EditModalProps>(({ formData, availableServic
                                 <label class="block text-xs font-semibold text-gray-500 mb-1">State</label>
                                 <input
                                     type="text"
+                                    maxLength={2}
                                     value={formData.value.state || ""}
-                                    placeholder="N/A"
-                                    onInput$={(e) => (formData.value = { ...formData.value, state: (e.target as HTMLInputElement).value })}
-                                    class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    placeholder="ST"
+                                    onInput$={(e) => {
+                                        const target = e.target as HTMLInputElement;
+                                        const cleaned = target.value.replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 2);
+                                        target.value = cleaned;
+                                        formData.value = { ...formData.value, state: cleaned };
+                                    }}
+                                    class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 uppercase"
                                 />
                             </div>
                             <div>
@@ -219,8 +232,13 @@ export const EditModal = component$<EditModalProps>(({ formData, availableServic
                                 <input
                                     type="text"
                                     value={formData.value.zip || ""}
-                                    placeholder="N/A"
-                                    onInput$={(e) => (formData.value = { ...formData.value, zip: (e.target as HTMLInputElement).value })}
+                                    placeholder="Zip"
+                                    onInput$={(e) => {
+                                        const target = e.target as HTMLInputElement;
+                                        const cleaned = target.value.replace(/\D/g, "").slice(0, 10);
+                                        target.value = cleaned;
+                                        formData.value = { ...formData.value, zip: cleaned };
+                                    }}
                                     class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                                 />
                             </div>

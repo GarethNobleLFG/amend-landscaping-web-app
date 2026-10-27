@@ -1,6 +1,6 @@
 import { component$, type PropFunction } from "@builder.io/qwik";
 import type { JobProfile } from "../../../../hooks/job-profile-handling";
-import { IconEye, IconPencil, IconTrash } from "./icons";
+import { IconEye, IconPencil, IconTrash } from "../../../../components/ui/icons";
 
 interface JobCardProps {
   profile: JobProfile;

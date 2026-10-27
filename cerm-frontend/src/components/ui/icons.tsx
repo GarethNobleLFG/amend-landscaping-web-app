@@ -122,3 +122,16 @@ export const IconDotsVertical = component$((props: { class?: string }) => (
     <circle cx="12" cy="19" r="1" />
   </svg>
 ));
+
+export const IconEye = component$((props: { class?: string }) => (
+  <svg class={props.class || "w-4 h-4"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+));
+
+export const IconPencil = component$((props: { class?: string }) => (
+  <svg class={props.class || "w-4 h-4"} fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+  </svg>
+));
