@@ -31,7 +31,7 @@ export const ScheduleJobCard = component$<ScheduleJobCardProps>(({
   return (
     <div
       onClick$={onClick$}
-      class="px-2.5 py-1.5 text-xs font-semibold leading-tight rounded-md transition truncate cursor-pointer hover:opacity-90 shadow-2xs"
+      class="px-1.5 py-1 sm:px-2.5 sm:py-1.5 text-[10px] sm:text-xs font-semibold leading-tight rounded-md transition truncate cursor-pointer hover:opacity-90"
       style={{
         backgroundColor: bgTint,
         color: color,
