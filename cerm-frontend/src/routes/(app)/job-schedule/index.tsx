@@ -1,10 +1,10 @@
 import { component$, useSignal, useComputed$, $ } from "@builder.io/qwik";
 import { useNavigate, useLocation } from "@builder.io/qwik-city";
 import { useJobsByWeekAndTeam } from "~/hooks/job-handling"; 
-import { useTeam } from "~/hooks/teams-handling"; 
+import { useMyTeam } from "~/hooks/teams-handling"; 
 import { ScheduleHeader } from "~/components/ui/schedule-header";
 
-export { useJobsByWeekAndTeam, useTeam };
+export { useJobsByWeekAndTeam, useMyTeam };
 
 const getLocalDateKey = (d: Date) => {
   const y = d.getFullYear();
@@ -25,7 +25,7 @@ export default component$(() => {
   const loc = useLocation();
 
   // Fetches auth/me and the team automatically on the server
-  const teamData = useTeam();
+  const teamData = useMyTeam();
   const weeklyJobs = useJobsByWeekAndTeam();
 
   // If start/end are missing from the URL on first load, set them immediately

@@ -1,14 +1,14 @@
 import { component$ } from "@builder.io/qwik";
 import { type DocumentHead } from "@builder.io/qwik-city";
 import { useAuthUser, useUpdateUser } from "~/hooks/user-auth";
-import { useTeam } from "~/hooks/teams-handling";
+import { useMyTeam } from "~/hooks/teams-handling";
 import { ProfileCard } from "./components/profile-card";
 
-export { useUpdateUser, useTeam };
+export { useUpdateUser, useMyTeam };
 
 export default component$(() => {
   const userSignal = useAuthUser();
-  const teamSignal = useTeam();
+  const teamSignal = useMyTeam();
   const updateAction = useUpdateUser();
 
   const user = userSignal.value;

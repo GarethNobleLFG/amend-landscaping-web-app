@@ -55,17 +55,16 @@ func (h *TeamHandler) GetAll(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(teams)
 }
 
-// GET /api/teams/:id
-func (h *TeamHandler) GetByID(c *fiber.Ctx) error {
-	idParam := c.Params("id")
-	id, err := strconv.Atoi(idParam)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid team ID"})
+// GET /api/teams/my-team (or your team endpoint)
+func (h *TeamHandler) GetMyTeam(c *fiber.Ctx) error {
+	userTeamID, ok := c.Locals("teamID").(*int64)
+	if !ok || *userTeamID <= 0 {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized context"})
 	}
 
-	team, err := h.service.GetByID(c.UserContext(), id)
+	team, err := h.service.GetByID(c.UserContext(), int(*userTeamID))
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Team not found"})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(team)

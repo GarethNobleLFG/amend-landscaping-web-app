@@ -10,7 +10,6 @@ export interface Team {
   updated_at: string;
 }
 
-// Route Loader to fetch all teams
 export const useTeams = routeLoader$(async ({ cookie, redirect }) => {
   const token = cookie.get("cerm_token");
 
@@ -32,7 +31,7 @@ export const useTeams = routeLoader$(async ({ cookie, redirect }) => {
   }
 });
 
-export const useTeam = routeLoader$(async ({ cookie, redirect }) => {
+export const useMyTeam = routeLoader$(async ({ cookie, redirect }) => {
   const token = cookie.get("cerm_token");
 
   if (!token) {
@@ -40,19 +39,7 @@ export const useTeam = routeLoader$(async ({ cookie, redirect }) => {
   }
 
   try {
-    // 1. Fetch current user to get their team_id
-    const userRes = await fetch(`${API_BASE}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${token.value}` },
-    });
-
-    if (!userRes.ok) return null;
-    const user = await userRes.json();
-    
-    const teamId = user?.team_id || user?.team?.id;
-    if (!teamId) return null;
-
-    // 2. Fetch the team details by ID
-    const teamRes = await fetch(`${API_BASE}/api/teams/${teamId}`, {
+    const teamRes = await fetch(`${API_BASE}/api/teams/my-team`, {
       headers: { Authorization: `Bearer ${token.value}` },
     });
 
