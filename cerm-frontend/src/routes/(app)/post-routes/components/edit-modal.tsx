@@ -89,7 +89,7 @@ export const EditModal = component$(({ job, updateAction, onClose$ }: EditModalP
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">Notes</label>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Job Specific Notes (Visible to Employees)</label>
             <textarea
               rows={4}
               value={notesInput.value}
