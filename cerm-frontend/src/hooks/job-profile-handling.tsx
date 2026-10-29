@@ -54,22 +54,13 @@ export const useUnapprovedProfiles = routeLoader$<JobProfile[]>(async ({ cookie,
   }
 
   try {
-    const meRes = await fetch(`${API_BASE}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${token.value}` },
-    });
-
-    if (!meRes.ok) return [];
-
-    const user = await meRes.json();
-    const userRole = (user?.role || "").toUpperCase();
-
-    if (userRole !== "ADMIN") {
-      return [];
-    }
-
     const res = await fetch(`${API_BASE}/api/job-profiles/unapproved`, {
       headers: { Authorization: `Bearer ${token.value}` },
     });
+
+    if (res.status === 401 || res.status === 403) {
+      return [];
+    }
 
     if (!res.ok) throw new Error("Failed to fetch unapproved profiles");
 
