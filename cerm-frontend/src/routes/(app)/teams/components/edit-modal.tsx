@@ -10,6 +10,7 @@ interface EditModalProps {
 
 export const EditModal = component$(({ team, updateAction, onClose$ }: EditModalProps) => {
   const teamNameInput = useSignal(team.name);
+  const teamColorInput = useSignal(team.team_color || "#10B981");
   const isSubmitting = useSignal(false);
   const isSuccess = useSignal(false);
   const errorMessage = useSignal("");
@@ -25,7 +26,11 @@ export const EditModal = component$(({ team, updateAction, onClose$ }: EditModal
     errorMessage.value = "";
 
     try {
-      const res = await updateAction.submit({ id: team.id, name: teamNameInput.value });
+      const res = await updateAction.submit({
+        id: team.id,
+        name: teamNameInput.value,
+        team_color: teamColorInput.value,
+      });
       const isOk = res?.status === 200 || res?.value?.success;
 
       if (isOk) {
@@ -56,7 +61,7 @@ export const EditModal = component$(({ team, updateAction, onClose$ }: EditModal
         </button>
 
         <h3 class="text-xl font-extrabold text-gray-900 mb-1">Edit Team</h3>
-        <p class="text-xs text-gray-500 mb-6">Update the name for team #{team.id}.</p>
+        <p class="text-xs text-gray-500 mb-6">Update the name and color for team #{team.id}.</p>
 
         {errorMessage.value && (
           <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
@@ -75,6 +80,17 @@ export const EditModal = component$(({ team, updateAction, onClose$ }: EditModal
               class="w-full px-3 py-2 bg-slate-50 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Team Color</label>
+            <input
+              type="color"
+              value={teamColorInput.value}
+              onInput$={(e) => (teamColorInput.value = (e.target as HTMLInputElement).value)}
+              class="w-12 h-10 rounded-xl border border-gray-200 cursor-pointer bg-transparent p-1"
+            />
+          </div>
+
           <div class="flex justify-end gap-2 pt-2">
             <button
               type="button"

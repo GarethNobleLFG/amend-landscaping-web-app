@@ -9,10 +9,10 @@ import (
 )
 
 type TeamService interface {
-	Create(ctx context.Context, name string) (*model.Team, error)
+	Create(ctx context.Context, name string, teamColor *string) (*model.Team, error)
 	GetByID(ctx context.Context, id int) (*model.Team, error)
 	GetAll(ctx context.Context) ([]*model.Team, error)
-	Update(ctx context.Context, id int, name string) (*model.Team, error)
+	Update(ctx context.Context, id int, name string, teamColor *string) (*model.Team, error)
 	Delete(ctx context.Context, id int) error
 }
 
@@ -24,13 +24,14 @@ func NewTeamService(repo repository.TeamRepository) TeamService {
 	return &teamService{repo: repo}
 }
 
-func (s *teamService) Create(ctx context.Context, name string) (*model.Team, error) {
+func (s *teamService) Create(ctx context.Context, name string, teamColor *string) (*model.Team, error) {
 	if name == "" {
 		return nil, errors.New("team name is required")
 	}
 
 	team := &model.Team{
-		Name: name,
+		Name:      name,
+		TeamColor: teamColor,
 	}
 
 	if err := s.repo.Create(ctx, team); err != nil {
@@ -52,7 +53,7 @@ func (s *teamService) GetAll(ctx context.Context) ([]*model.Team, error) {
 	return s.repo.FindAll(ctx)
 }
 
-func (s *teamService) Update(ctx context.Context, id int, name string) (*model.Team, error) {
+func (s *teamService) Update(ctx context.Context, id int, name string, teamColor *string) (*model.Team, error) {
 	if name == "" {
 		return nil, errors.New("team name is required")
 	}
@@ -63,6 +64,8 @@ func (s *teamService) Update(ctx context.Context, id int, name string) (*model.T
 	}
 
 	team.Name = name
+	team.TeamColor = teamColor
+
 	if err := s.repo.Update(ctx, team); err != nil {
 		return nil, err
 	}

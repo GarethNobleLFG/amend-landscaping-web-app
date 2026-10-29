@@ -17,11 +17,13 @@ func NewTeamHandler(svc service.TeamService) *TeamHandler {
 }
 
 type createTeamRequest struct {
-	Name string `json:"name" form:"name"`
+	Name      string  `json:"name" form:"name"`
+	TeamColor *string `json:"team_color" form:"team_color"`
 }
 
 type updateTeamRequest struct {
-	Name string `json:"name" form:"name"`
+	Name      string  `json:"name" form:"name"`
+	TeamColor *string `json:"team_color" form:"team_color"`
 }
 
 // POST /api/teams
@@ -35,7 +37,7 @@ func (h *TeamHandler) Create(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Team name is required"})
 	}
 
-	team, err := h.service.Create(c.UserContext(), req.Name)
+	team, err := h.service.Create(c.UserContext(), req.Name, req.TeamColor)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -86,7 +88,7 @@ func (h *TeamHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Team name is required"})
 	}
 
-	team, err := h.service.Update(c.UserContext(), id, req.Name)
+	team, err := h.service.Update(c.UserContext(), id, req.Name, req.TeamColor)
 	if err != nil {
 		if err.Error() == "team not found" {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})

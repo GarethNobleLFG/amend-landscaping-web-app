@@ -5,6 +5,7 @@ const API_BASE = import.meta.env.PUBLIC_CERM_API_URL ?? "http://cerm-api:8080";
 export interface Team {
   id: number;
   name: string;
+  team_color: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -44,7 +45,10 @@ export const useCreateTeam = globalAction$(
           "Content-Type": "application/json",
           Authorization: `Bearer ${token.value}`,
         },
-        body: JSON.stringify({ name: data.name }),
+        body: JSON.stringify({
+          name: data.name,
+          team_color: data.team_color || null,
+        }),
       });
 
       const json = await res.json();
@@ -60,6 +64,7 @@ export const useCreateTeam = globalAction$(
   },
   zod$({
     name: z.string().min(1, "Team name is required"),
+    team_color: z.string().optional().nullable(),
   })
 );
 
@@ -76,7 +81,10 @@ export const useUpdateTeam = globalAction$(
           "Content-Type": "application/json",
           Authorization: `Bearer ${token.value}`,
         },
-        body: JSON.stringify({ name: data.name }),
+        body: JSON.stringify({
+          name: data.name,
+          team_color: data.team_color || null,
+        }),
       });
 
       const json = await res.json();
@@ -93,6 +101,7 @@ export const useUpdateTeam = globalAction$(
   zod$({
     id: z.coerce.number(),
     name: z.string().min(1, "Team name is required"),
+    team_color: z.string().optional().nullable(),
   })
 );
 

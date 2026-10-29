@@ -1,24 +1,24 @@
-import { component$, $, useSignal, useComputed$, useTask$ } from "@builder.io/qwik";
+import { component$, useSignal, useComputed$, useTask$, $ } from "@builder.io/qwik";
 import { useLocation, useNavigate } from "@builder.io/qwik-city";
 import { useJobsByMonth } from "~/hooks/job-handling";
+import { useTeams, type Team } from "~/hooks/teams-handling";
 import { CalendarHeader } from "./components/calendar-header";
 import { CalendarDayCell } from "./components/calendar-day-cell";
 import { buildMonthGrid } from "~/utils/calendar-utils";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export { useJobsByMonth };
+export { useJobsByMonth, useTeams };
 
 export default component$(() => {
   const loc = useLocation();
   const nav = useNavigate();
   const jobsLoader = useJobsByMonth();
+  const teamsLoader = useTeams();
 
-  // 1. Create reactive signals for year and month
   const activeYear = useSignal(Number(loc.url.searchParams.get("year")) || new Date().getFullYear());
   const activeMonth = useSignal(Number(loc.url.searchParams.get("month")) || new Date().getMonth() + 1);
 
-  // 2. Use a task to explicitly track URL search changes and update signals
   useTask$(({ track }) => {
     const search = track(() => loc.url.search);
     const params = new URLSearchParams(search);
@@ -27,12 +27,21 @@ export default component$(() => {
     activeMonth.value = Number(params.get("month")) || new Date().getMonth() + 1;
   });
 
-  // 3. Derived active date for the header
   const activeDate = useComputed$(() => new Date(activeYear.value, activeMonth.value - 1, 1));
 
-  // 4. Month grid automatically recalculates when activeYear.value or activeMonth.value changes
   const monthGrid = useComputed$(() => {
     return buildMonthGrid(activeYear.value, activeMonth.value - 1);
+  });
+
+  const teamsMap = useComputed$(() => {
+    const map = new Map<number, Team>();
+    const rawTeams = teamsLoader.value;
+    if (Array.isArray(rawTeams)) {
+      for (const team of rawTeams) {
+        map.set(team.id, team);
+      }
+    }
+    return map;
   });
 
   const jobsByDate = useComputed$(() => {
@@ -83,17 +92,23 @@ export default component$(() => {
     await nav(`${currentPath}?month=${newMonth}&year=${newYear}`);
   });
 
+  const teamsList = Array.isArray(teamsLoader.value) ? teamsLoader.value : [];
+
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-2 pb-6">
-      {/* Floating Header */}
-      <CalendarHeader currentDate={activeDate.value} onNavigate$={handleNavigate$} />
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 pt-2 pb-6">
+      {/* Calendar Header with embedded Teams key */}
+      <CalendarHeader
+        currentDate={activeDate.value}
+        teams={teamsList}
+        onNavigate$={handleNavigate$}
+      />
 
       {/* Weekday Labels Header */}
-      <div className="grid grid-cols-7 mb-3 px-1">
+      <div class="grid grid-cols-7 mb-3 px-1">
         {WEEKDAYS.map((day) => (
           <div
             key={day}
-            className="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider"
+            class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider"
           >
             {day}
           </div>
@@ -101,9 +116,10 @@ export default component$(() => {
       </div>
 
       {/* Dynamic Month-Only Days Grid */}
-      <div className="grid grid-cols-7 gap-2.5">
+      <div class="grid grid-cols-7 gap-2.5">
         {monthGrid.value.days.map((dayMeta, index) => {
           const gridColumnStart = index === 0 ? monthGrid.value.startingDayOfWeek + 1 : undefined;
+          const dayJobs = jobsByDate.value.get(dayMeta.dateKey) ?? [];
 
           return (
             <CalendarDayCell
@@ -111,7 +127,8 @@ export default component$(() => {
               dayNumber={dayMeta.dayNumber}
               dayOfWeek={dayMeta.dayOfWeek}
               isToday={dayMeta.isToday}
-              jobs={jobsByDate.value.get(dayMeta.dateKey) ?? []}
+              jobs={dayJobs}
+              teamsMap={teamsMap.value}
               gridColumnStart={gridColumnStart}
             />
           );

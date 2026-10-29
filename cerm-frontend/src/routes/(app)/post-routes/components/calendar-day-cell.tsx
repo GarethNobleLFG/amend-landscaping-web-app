@@ -1,16 +1,31 @@
 import { component$ } from "@builder.io/qwik";
 import type { Job } from "~/hooks/job-handling";
+import type { Team } from "~/hooks/teams-handling";
 
 interface CalendarDayCellProps {
   dayNumber: number;
   dayOfWeek: number;
   isToday: boolean;
   jobs: Job[];
+  teamsMap: Map<number, Team>;
   gridColumnStart?: number;
 }
 
+// Helper function to convert hex to rgba for a soft background tint
+function hexToRgba(hex: string, alpha: number): string {
+  let cleanHex = hex.replace("#", "");
+  if (cleanHex.length === 3) {
+    cleanHex = cleanHex.split("").map((c) => c + c).join("");
+  }
+  const num = parseInt(cleanHex, 16);
+  const r = (num >> 16) & 255;
+  const g = (num >> 8) & 255;
+  const b = num & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export const CalendarDayCell = component$<CalendarDayCellProps>(
-  ({ dayNumber, isToday, jobs, gridColumnStart }) => {
+  ({ dayNumber, isToday, jobs, teamsMap, gridColumnStart }) => {
     const style = gridColumnStart ? { gridColumnStart } : undefined;
 
     return (
@@ -33,22 +48,33 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
           )}
         </div>
 
-        {/* Job Event Chips with Customer Profile Name */}
+        {/* Job Event Chips with Team Color Coordination */}
         <div className="space-y-1 overflow-y-auto max-h-[80px] sm:max-h-[120px] flex-1">
           {jobs.map((job) => {
             const customerName = job.job_profile?.name || `Profile #${job.job_profile_id}`;
             const serviceType = job.job_profile?.services_requested;
             const hasValidService = typeof serviceType === "string" && serviceType.trim().length > 0;
 
+            // Resolve team color
+            const team = job.team_id ? teamsMap.get(job.team_id) : null;
+            const teamColor = team?.team_color || "#3B82F6"; // Fallback blue if no team assigned
+            const bgTint = hexToRgba(teamColor, 0.12);
+
             return (
               <div
                 key={job.id}
-                className="px-2 py-1 text-[11px] sm:text-xs font-medium leading-tight rounded bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 transition truncate cursor-pointer"
+                className="px-2 py-1 text-[11px] sm:text-xs font-medium leading-tight rounded border-l-2 transition truncate cursor-pointer hover:opacity-90"
+                style={{
+                  backgroundColor: bgTint,
+                  borderLeftColor: teamColor,
+                }}
                 title={`${customerName}${hasValidService ? ` - ${serviceType}` : ""}`}
               >
-                <span className="font-semibold block truncate">{customerName}</span>
+                <span className="font-semibold block truncate" style={{ color: teamColor }}>
+                  {customerName}
+                </span>
                 {hasValidService && (
-                  <span className="block text-[10px] text-blue-500 truncate">
+                  <span className="block text-[10px] text-gray-500 truncate">
                     {serviceType}
                   </span>
                 )}
