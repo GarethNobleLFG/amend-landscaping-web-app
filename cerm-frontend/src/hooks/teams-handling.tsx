@@ -32,6 +32,39 @@ export const useTeams = routeLoader$(async ({ cookie, redirect }) => {
   }
 });
 
+export const useTeam = routeLoader$(async ({ cookie, redirect }) => {
+  const token = cookie.get("cerm_token");
+
+  if (!token) {
+    throw redirect(302, "/");
+  }
+
+  try {
+    // 1. Fetch current user to get their team_id
+    const userRes = await fetch(`${API_BASE}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token.value}` },
+    });
+
+    if (!userRes.ok) return null;
+    const user = await userRes.json();
+    
+    const teamId = user?.team_id || user?.team?.id;
+    if (!teamId) return null;
+
+    // 2. Fetch the team details by ID
+    const teamRes = await fetch(`${API_BASE}/api/teams/${teamId}`, {
+      headers: { Authorization: `Bearer ${token.value}` },
+    });
+
+    if (!teamRes.ok) return null;
+    const team: Team = await teamRes.json();
+    
+    return team;
+  } catch {
+    return null;
+  }
+});
+
 // Action to create a team
 export const useCreateTeam = globalAction$(
   async (data, { fail, cookie }) => {

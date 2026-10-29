@@ -1,6 +1,7 @@
 import { component$, $ } from "@builder.io/qwik";
 import { IconCalendar } from "~/components/ui/icons";
 import type { Job } from "~/hooks/job-handling";
+import type { Team } from "~/hooks/teams-handling";
 import { ScheduleJobCard } from "./schedule-job-card";
 
 interface ScheduleHeaderProps {
@@ -10,6 +11,8 @@ interface ScheduleHeaderProps {
   jobsByDate?: Map<string, Job[]>;
   onSelectJob$?: (job: Job) => void;
   color?: string; 
+  team?: Team | null;
+  teams?: Team[];
 }
 
 export const ScheduleHeader = component$<ScheduleHeaderProps>(({
@@ -19,6 +22,8 @@ export const ScheduleHeader = component$<ScheduleHeaderProps>(({
   jobsByDate,
   onSelectJob$,
   color = "#059669",
+  team = null,
+  teams = [],
 }) => {
   const getLocalDateKey = (d: Date) => {
     const y = d.getFullYear();
@@ -67,25 +72,72 @@ export const ScheduleHeader = component$<ScheduleHeaderProps>(({
 
   return (
     <div class="w-full flex flex-col gap-4 px-2 sm:px-0">
-      {/* Header & Navigation controls on the exact same line */}
-      <div class="flex items-center justify-between gap-2">
-        <h1 class="text-sm sm:text-xl md:text-2xl font-black tracking-tight text-gray-900 flex items-center gap-1.5 sm:gap-2 truncate">
-          <IconCalendar class="w-4 h-4 sm:w-6 sm:h-6 text-emerald-600 shrink-0" />
-          <span class="block sm:hidden truncate">Week of {dateRangeStrMobile}</span>
-          <span class="hidden sm:block truncate">Week of {dateRangeStrDesktop}</span>
-        </h1>
+      {/* Header & Navigation controls */}
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="flex flex-col items-start gap-1.5 w-full md:w-auto">
+          {/* Single Team Badge above header text in fixed green styling */}
+          {team && (
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+              <span class="w-2 h-2 rounded-full shrink-0 bg-emerald-600" />
+              {team.name}
+            </span>
+          )}
 
-        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Multiple Teams Guide/Legend if `teams` is populated */}
+          {!team && teams.length > 0 && (
+            <div class="flex flex-wrap items-center gap-3 px-1 mb-1">
+              <span class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider">Teams:</span>
+              {teams.map((t) => (
+                <div key={t.id} class="flex items-center gap-1.5">
+                  <div
+                    class="w-3 h-3 rounded-full border border-black/10 shrink-0"
+                    style={{ backgroundColor: t.team_color || "#E5E7EB" }}
+                  />
+                  <span class="text-[11px] sm:text-xs font-semibold text-gray-700">{t.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div class="w-full flex items-center justify-between md:justify-start gap-2">
+            <h1 class="text-sm sm:text-xl md:text-2xl font-black tracking-tight text-gray-900 flex items-center gap-1.5 sm:gap-2 truncate">
+              <IconCalendar class="w-4 h-4 sm:w-6 sm:h-6 text-emerald-600 shrink-0" />
+              <span class="block sm:hidden truncate">Week of {dateRangeStrMobile}</span>
+              <span class="hidden sm:block truncate">Week of {dateRangeStrDesktop}</span>
+            </h1>
+
+            {/* Mobile navigation buttons displayed right next to the title on the same line */}
+            <div class="flex items-center gap-1.5 shrink-0 md:hidden">
+              <button
+                onClick$={() => handleNavigate("prev")}
+                class="bg-slate-300/80 hover:bg-slate-300 text-gray-900 font-medium text-[11px] px-3 py-1.5 rounded-full transition-all duration-300 ease-in-out flex items-center justify-center whitespace-nowrap cursor-pointer border-0"
+                aria-label="Previous Week"
+              >
+                &larr; Prev
+              </button>
+              <button
+                onClick$={() => handleNavigate("next")}
+                class="bg-slate-300/80 hover:bg-slate-300 text-gray-900 font-medium text-[11px] px-3 py-1.5 rounded-full transition-all duration-300 ease-in-out flex items-center justify-center whitespace-nowrap cursor-pointer border-0"
+                aria-label="Next Week"
+              >
+                Next &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop/Tablet navigation buttons */}
+        <div class="hidden md:flex items-center gap-2 shrink-0">
           <button
             onClick$={() => handleNavigate("prev")}
-            class="bg-slate-300/80 hover:bg-slate-300 text-gray-900 font-medium text-[11px] sm:text-xs md:text-sm px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full transition-all duration-300 ease-in-out flex items-center justify-center whitespace-nowrap cursor-pointer border-0"
+            class="bg-slate-300/80 hover:bg-slate-300 text-gray-900 font-medium text-sm px-5 py-2.5 rounded-full transition-all duration-300 ease-in-out flex items-center justify-center whitespace-nowrap cursor-pointer border-0"
             aria-label="Previous Week"
           >
             &larr; Prev
           </button>
           <button
             onClick$={() => handleNavigate("next")}
-            class="bg-slate-300/80 hover:bg-slate-300 text-gray-900 font-medium text-[11px] sm:text-xs md:text-sm px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full transition-all duration-300 ease-in-out flex items-center justify-center whitespace-nowrap cursor-pointer border-0"
+            class="bg-slate-300/80 hover:bg-slate-300 text-gray-900 font-medium text-sm px-5 py-2.5 rounded-full transition-all duration-300 ease-in-out flex items-center justify-center whitespace-nowrap cursor-pointer border-0"
             aria-label="Next Week"
           >
             Next &rarr;
@@ -125,14 +177,27 @@ export const ScheduleHeader = component$<ScheduleHeaderProps>(({
 
               {dayJobs.length > 0 && (
                 <div class="w-full flex flex-col gap-1 mt-1 overflow-y-auto max-h-[140px] sm:max-h-[160px]">
-                  {dayJobs.map((job) => (
-                    <ScheduleJobCard
-                      key={job.id}
-                      job={job}
-                      color={color}
-                      onClick$={() => onSelectJob$?.(job)}
-                    />
-                  ))}
+                  {dayJobs.map((job) => {
+                    let jobColor = color;
+                    const jobTeamId = job.team_id || (job as any).team?.id;
+
+                    // Only apply team colors to job cards if the teams array has values
+                    if (teams.length > 0 && jobTeamId) {
+                      const matchedTeam = teams.find((t) => t.id === jobTeamId);
+                      if (matchedTeam?.team_color) {
+                        jobColor = matchedTeam.team_color;
+                      }
+                    }
+
+                    return (
+                      <ScheduleJobCard
+                        key={job.id}
+                        job={job}
+                        color={jobColor}
+                        onClick$={() => onSelectJob$?.(job)}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>

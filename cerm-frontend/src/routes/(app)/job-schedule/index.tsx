@@ -1,9 +1,10 @@
 import { component$, useSignal, useComputed$, $ } from "@builder.io/qwik";
 import { useNavigate, useLocation } from "@builder.io/qwik-city";
 import { useJobsByWeekAndTeam } from "~/hooks/job-handling"; 
+import { useTeam } from "~/hooks/teams-handling"; 
 import { ScheduleHeader } from "~/components/ui/schedule-header";
 
-export { useJobsByWeekAndTeam };
+export { useJobsByWeekAndTeam, useTeam };
 
 const getLocalDateKey = (d: Date) => {
   const y = d.getFullYear();
@@ -23,6 +24,10 @@ export default component$(() => {
   const nav = useNavigate();
   const loc = useLocation();
 
+  // Fetches auth/me and the team automatically on the server
+  const teamData = useTeam();
+  const weeklyJobs = useJobsByWeekAndTeam();
+
   // If start/end are missing from the URL on first load, set them immediately
   const queryStart = loc.url.searchParams.get("start");
   const queryEnd = loc.url.searchParams.get("end");
@@ -36,11 +41,8 @@ export default component$(() => {
     url.searchParams.set("start", getLocalDateKey(monday));
     url.searchParams.set("end", getLocalDateKey(sunday));
     
-    // Replace URL state silently on initial load
     nav(url.pathname + url.search, { replaceState: true });
   }
-
-  const weeklyJobs = useJobsByWeekAndTeam();
 
   const initialWeekStart = queryStart ? new Date(queryStart) : getMondayOfWeek(new Date());
   const currentWeekStartSig = useSignal<Date>(getMondayOfWeek(initialWeekStart));
@@ -81,6 +83,7 @@ export default component$(() => {
         onWeekChange$={handleWeekChange$}
         selectedDateKey={selectedDateKey}
         jobsByDate={jobsByDate.value}
+        team={teamData.value}
       />
     </div>
   );
