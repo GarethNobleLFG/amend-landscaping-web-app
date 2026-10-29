@@ -1,4 +1,4 @@
-import { component$, $, useComputed$ } from "@builder.io/qwik";
+import { component$, $, useSignal, useComputed$, useTask$ } from "@builder.io/qwik";
 import { useLocation, useNavigate } from "@builder.io/qwik-city";
 import { useJobsByMonth } from "~/hooks/job-handling";
 import { CalendarHeader } from "./components/calendar-header";
@@ -14,13 +14,25 @@ export default component$(() => {
   const nav = useNavigate();
   const jobsLoader = useJobsByMonth();
 
-  const activeYear = Number(loc.url.searchParams.get("year")) || new Date().getFullYear();
-  const activeMonth = Number(loc.url.searchParams.get("month")) || new Date().getMonth() + 1;
+  // 1. Create reactive signals for year and month
+  const activeYear = useSignal(Number(loc.url.searchParams.get("year")) || new Date().getFullYear());
+  const activeMonth = useSignal(Number(loc.url.searchParams.get("month")) || new Date().getMonth() + 1);
 
-  const activeDate = new Date(activeYear, activeMonth - 1, 1);
+  // 2. Use a task to explicitly track URL search changes and update signals
+  useTask$(({ track }) => {
+    const search = track(() => loc.url.search);
+    const params = new URLSearchParams(search);
+    
+    activeYear.value = Number(params.get("year")) || new Date().getFullYear();
+    activeMonth.value = Number(params.get("month")) || new Date().getMonth() + 1;
+  });
 
+  // 3. Derived active date for the header
+  const activeDate = useComputed$(() => new Date(activeYear.value, activeMonth.value - 1, 1));
+
+  // 4. Month grid automatically recalculates when activeYear.value or activeMonth.value changes
   const monthGrid = useComputed$(() => {
-    return buildMonthGrid(activeYear, activeMonth - 1);
+    return buildMonthGrid(activeYear.value, activeMonth.value - 1);
   });
 
   const jobsByDate = useComputed$(() => {
@@ -41,22 +53,25 @@ export default component$(() => {
   });
 
   const handleNavigate$ = $(async (direction: "prev" | "next" | "today") => {
-    let newYear = activeYear;
-    let newMonth = activeMonth;
+    const currentYear = activeYear.value;
+    const currentMonth = activeMonth.value;
+
+    let newYear = currentYear;
+    let newMonth = currentMonth;
 
     if (direction === "today") {
       const now = new Date();
       newYear = now.getFullYear();
       newMonth = now.getMonth() + 1;
     } else if (direction === "prev") {
-      if (activeMonth === 1) {
+      if (currentMonth === 1) {
         newMonth = 12;
         newYear -= 1;
       } else {
         newMonth -= 1;
       }
     } else if (direction === "next") {
-      if (activeMonth === 12) {
+      if (currentMonth === 12) {
         newMonth = 1;
         newYear += 1;
       } else {
@@ -64,13 +79,14 @@ export default component$(() => {
       }
     }
 
-    await nav(`?month=${newMonth}&year=${newYear}`);
+    const currentPath = loc.url.pathname;
+    await nav(`${currentPath}?month=${newMonth}&year=${newYear}`);
   });
 
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-2 pb-6">
       {/* Floating Header */}
-      <CalendarHeader currentDate={activeDate} onNavigate$={handleNavigate$} />
+      <CalendarHeader currentDate={activeDate.value} onNavigate$={handleNavigate$} />
 
       {/* Weekday Labels Header */}
       <div className="grid grid-cols-7 mb-3 px-1">
@@ -84,7 +100,7 @@ export default component$(() => {
         ))}
       </div>
 
-      {/* Strict Month-Only Days Grid */}
+      {/* Dynamic Month-Only Days Grid */}
       <div className="grid grid-cols-7 gap-2.5">
         {monthGrid.value.days.map((dayMeta, index) => {
           const gridColumnStart = index === 0 ? monthGrid.value.startingDayOfWeek + 1 : undefined;

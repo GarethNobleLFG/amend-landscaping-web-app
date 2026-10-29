@@ -2,12 +2,36 @@ import { globalAction$, routeLoader$, z, zod$ } from "@builder.io/qwik-city";
 
 const API_BASE = import.meta.env.PUBLIC_CERM_API_URL ?? "http://cerm-api:8080";
 
+export interface JobProfile {
+  id: number;
+  name: string;
+  email: string;
+  phone_number: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  services_requested: string;
+  scheduled_date: string;
+  description?: string | null;
+  approved: boolean;
+  is_commercial: boolean;
+  is_seen: boolean;
+  referral_info?: string | null;
+  schedule?: string | null;
+  admin_notes?: string | null;
+  job_payout?: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Job {
   id: number;
   job_profile_id: number;
   team_id?: number | null;
   scheduled_day: string;
   notes?: string | null;
+  job_profile?: JobProfile | null;
 }
 
 export const useJobs = routeLoader$<Job[]>(async ({ cookie, redirect }) => {
@@ -47,13 +71,23 @@ export const useJobsByMonth = routeLoader$<Job[]>(async ({ cookie, redirect, url
       headers: { Authorization: `Bearer ${token.value}` },
     });
 
+    if (res.status === 404) {
+      return [];
+    }
+
     if (!res.ok) throw new Error("Failed to fetch jobs by month");
 
     const json = await res.json();
-    const jobs: Job[] = json.data ?? json;
-    return jobs ?? [];
-  } catch {
-    throw redirect(302, "/");
+    
+    const jobs = json.data ?? json;
+    if (!Array.isArray(jobs)) {
+      return [];
+    }
+
+    return jobs;
+  } catch (err) {
+    console.error("Error fetching monthly jobs:", err);
+    return []; 
   }
 });
 

@@ -11,9 +11,9 @@ import (
 
 type JobService interface {
 	CreateJob(ctx context.Context, jobProfileID int64, teamID *int64, scheduledDay time.Time, notes *string) (int64, error)
-	GetJobByID(ctx context.Context, id int64) (*model.Job, error)
-	GetAllJobs(ctx context.Context) ([]model.Job, error)
-	GetJobsByMonthAndYear(ctx context.Context, month int, year int) ([]model.Job, error)
+	GetJobByID(ctx context.Context, id int64) (*repository.JobWithProfile, error)
+	GetAllJobs(ctx context.Context) ([]repository.JobWithProfile, error)
+	GetByMonthAndYear(ctx context.Context, month int, year int) ([]repository.JobWithProfile, error)
 	UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, notes *string) error
 	DeleteJob(ctx context.Context, id int64) error
 }
@@ -47,8 +47,8 @@ func (s *jobService) CreateJob(ctx context.Context, jobProfileID int64, teamID *
 	return id, nil
 }
 
-// GetJobByID retrieves a single job by ID
-func (s *jobService) GetJobByID(ctx context.Context, id int64) (*model.Job, error) {
+// GetJobByID retrieves a single job by ID along with its profile
+func (s *jobService) GetJobByID(ctx context.Context, id int64) (*repository.JobWithProfile, error) {
 	if id <= 0 {
 		return nil, fmt.Errorf("invalid job ID")
 	}
@@ -61,8 +61,8 @@ func (s *jobService) GetJobByID(ctx context.Context, id int64) (*model.Job, erro
 	return job, nil
 }
 
-// GetAllJobs retrieves all scheduled jobs
-func (s *jobService) GetAllJobs(ctx context.Context) ([]model.Job, error) {
+// GetAllJobs retrieves all scheduled jobs along with their profiles
+func (s *jobService) GetAllJobs(ctx context.Context) ([]repository.JobWithProfile, error) {
 	jobs, err := s.jobRepo.GetAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("service failed to get all jobs: %w", err)
@@ -71,8 +71,8 @@ func (s *jobService) GetAllJobs(ctx context.Context) ([]model.Job, error) {
 	return jobs, nil
 }
 
-// GetJobsByMonthAndYear retrieves all jobs for a given month and year with validation
-func (s *jobService) GetJobsByMonthAndYear(ctx context.Context, month int, year int) ([]model.Job, error) {
+// GetJobsByMonthAndYear retrieves all jobs for a given month and year with validation and profiles
+func (s *jobService) GetByMonthAndYear(ctx context.Context, month int, year int) ([]repository.JobWithProfile, error) {
 	if month < 1 || month > 12 {
 		return nil, fmt.Errorf("invalid month: must be between 1 and 12")
 	}

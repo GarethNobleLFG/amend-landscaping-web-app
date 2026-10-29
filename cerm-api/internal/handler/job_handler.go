@@ -10,206 +10,146 @@ import (
 )
 
 type JobHandler struct {
-	jobService service.JobService
+	service service.JobService
 }
 
-func NewJobHandler(jobService service.JobService) *JobHandler {
-	return &JobHandler{jobService: jobService}
+func NewJobHandler(svc service.JobService) *JobHandler {
+	return &JobHandler{service: svc}
 }
 
-type CreateJobDTO struct {
-	JobProfileID int64   `json:"job_profile_id"`
-	TeamID       *int64  `json:"team_id"`
-	ScheduledDay string  `json:"scheduled_day"` // Expected format: "YYYY-MM-DD"
-	Notes        *string `json:"notes"`
+type createJobRequest struct {
+	JobProfileID int64   `json:"job_profile_id" form:"job_profile_id"`
+	TeamID       *int64  `json:"team_id" form:"team_id"`
+	ScheduledDay string  `json:"scheduled_day" form:"scheduled_day"` // Expected format: "YYYY-MM-DD"
+	Notes        *string `json:"notes" form:"notes"`
 }
 
-type UpdateJobDTO struct {
-	JobProfileID int64   `json:"job_profile_id"`
-	TeamID       *int64  `json:"team_id"`
-	ScheduledDay string  `json:"scheduled_day"` // Expected format: "YYYY-MM-DD"
-	Notes        *string `json:"notes"`
+type updateJobRequest struct {
+	JobProfileID int64   `json:"job_profile_id" form:"job_profile_id"`
+	TeamID       *int64  `json:"team_id" form:"team_id"`
+	ScheduledDay string  `json:"scheduled_day" form:"scheduled_day"` // Expected format: "YYYY-MM-DD"
+	Notes        *string `json:"notes" form:"notes"`
 }
 
-// Create handles POST /jobs
+// POST /api/jobs
 func (h *JobHandler) Create(c *fiber.Ctx) error {
-	var dto CreateJobDTO
-	if err := c.BodyParser(&dto); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"success": false,
-			"message": "Invalid request body",
-		})
+	var req createJobRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
-	scheduledDay, err := time.Parse("2006-01-02", dto.ScheduledDay)
+	if req.JobProfileID <= 0 || req.ScheduledDay == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Job profile ID and scheduled day are required"})
+	}
+
+	scheduledDay, err := time.Parse("2006-01-02", req.ScheduledDay)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"success": false,
-			"message": "Invalid scheduled_day format. Use YYYY-MM-DD",
-		})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid date format. Use YYYY-MM-DD"})
 	}
 
-	id, err := h.jobService.CreateJob(c.Context(), dto.JobProfileID, dto.TeamID, scheduledDay, dto.Notes)
+	id, err := h.service.CreateJob(c.UserContext(), req.JobProfileID, req.TeamID, scheduledDay, req.Notes)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"success": false,
-			"message": err.Error(),
-		})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"success": true,
-		"id":      id,
-	})
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"id": id, "success": true})
 }
 
-// GetAll handles GET /jobs
-func (h *JobHandler) GetAll(c *fiber.Ctx) error {
-	jobs, err := h.jobService.GetAllJobs(c.Context())
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"success": false,
-			"message": err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"success": true,
-		"data":    jobs,
-	})
-}
-
-// GetByMonthAndYear handles GET /jobs/month?month=X&year=YYYY
-func (h *JobHandler) GetByMonthAndYear(c *fiber.Ctx) error {
-	now := time.Now()
-
-	// Parse or default month
-	monthParam := c.Query("month")
-	month := int(now.Month())
-	if monthParam != "" {
-		parsedMonth, err := strconv.Atoi(monthParam)
-		if err != nil || parsedMonth < 1 || parsedMonth > 12 {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"success": false,
-				"message": "Invalid month query parameter. Must be 1-12",
-			})
-		}
-		month = parsedMonth
-	}
-
-	// Parse or default year
-	yearParam := c.Query("year")
-	year := now.Year()
-	if yearParam != "" {
-		parsedYear, err := strconv.Atoi(yearParam)
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"success": false,
-				"message": "Invalid year query parameter",
-			})
-		}
-		year = parsedYear
-	}
-
-	jobs, err := h.jobService.GetJobsByMonthAndYear(c.Context(), month, year)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"success": false,
-			"message": err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"success": true,
-		"data":    jobs,
-	})
-}
-
-// GetByID handles GET /jobs/:id
+// GET /api/jobs/:id
 func (h *JobHandler) GetByID(c *fiber.Ctx) error {
 	idParam := c.Params("id")
 	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"success": false,
-			"message": "Invalid job ID",
-		})
+	if err != nil || id <= 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid job ID"})
 	}
 
-	job, err := h.jobService.GetJobByID(c.Context(), id)
+	job, err := h.service.GetJobByID(c.UserContext(), id)
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"success": false,
-			"message": "Job not found",
-		})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Job not found"})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"success": true,
-		"data":    job,
-	})
+	return c.Status(fiber.StatusOK).JSON(job)
 }
 
-// Update handles PUT /jobs/:id
+// GET /api/jobs
+func (h *JobHandler) GetAll(c *fiber.Ctx) error {
+	jobs, err := h.service.GetAllJobs(c.UserContext())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(jobs)
+}
+
+// GET /api/jobs/month?month=X&year=YYYY
+func (h *JobHandler) GetByMonthAndYear(c *fiber.Ctx) error {
+	monthStr := c.Query("month")
+	yearStr := c.Query("year")
+
+	if monthStr == "" || yearStr == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Month and year query parameters are required"})
+	}
+
+	month, err := strconv.Atoi(monthStr)
+	if err != nil || month < 1 || month > 12 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid month parameter"})
+	}
+
+	year, err := strconv.Atoi(yearStr)
+	if err != nil || year < 2000 || year > 2100 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid year parameter"})
+	}
+
+	jobs, err := h.service.GetByMonthAndYear(c.UserContext(), month, year)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(jobs)
+}
+
+// PUT /api/jobs/:id
 func (h *JobHandler) Update(c *fiber.Ctx) error {
 	idParam := c.Params("id")
 	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil || id <= 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid job ID"})
+	}
+
+	var req updateJobRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	if req.JobProfileID <= 0 || req.ScheduledDay == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Job profile ID and scheduled day are required"})
+	}
+
+	scheduledDay, err := time.Parse("2006-01-02", req.ScheduledDay)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"success": false,
-			"message": "Invalid job ID",
-		})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid date format. Use YYYY-MM-DD"})
 	}
 
-	var dto UpdateJobDTO
-	if err := c.BodyParser(&dto); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"success": false,
-			"message": "Invalid request body",
-		})
-	}
-
-	scheduledDay, err := time.Parse("2006-01-02", dto.ScheduledDay)
+	err = h.service.UpdateJob(c.UserContext(), id, req.JobProfileID, req.TeamID, scheduledDay, req.Notes)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"success": false,
-			"message": "Invalid scheduled_day format. Use YYYY-MM-DD",
-		})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	err = h.jobService.UpdateJob(c.Context(), id, dto.JobProfileID, dto.TeamID, scheduledDay, dto.Notes)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"success": false,
-			"message": err.Error(),
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"success": true,
-	})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true})
 }
 
-// Delete handles DELETE /jobs/:id
+// DELETE /api/jobs/:id
 func (h *JobHandler) Delete(c *fiber.Ctx) error {
 	idParam := c.Params("id")
 	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"success": false,
-			"message": "Invalid job ID",
-		})
+	if err != nil || id <= 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid job ID"})
 	}
 
-	err = h.jobService.DeleteJob(c.Context(), id)
+	err = h.service.DeleteJob(c.UserContext(), id)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"success": false,
-			"message": err.Error(),
-		})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"success": true,
-	})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true})
 }

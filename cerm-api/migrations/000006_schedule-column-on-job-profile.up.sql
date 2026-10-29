@@ -1,0 +1,2 @@
+ALTER TABLE job_profiles 
+ADD COLUMN IF NOT EXISTS schedule TEXT;

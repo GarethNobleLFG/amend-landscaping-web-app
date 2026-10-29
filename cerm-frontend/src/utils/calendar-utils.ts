@@ -6,13 +6,27 @@ export interface CalendarDayMeta {
   dateKey: string; // "YYYY-MM-DD"
 }
 
-export function buildMonthGrid(year: number, monthZeroBased: number): { startingDayOfWeek: number; days: CalendarDayMeta[] } {
-  const today = new Date();
-  const firstDayOfMonth = new Date(year, monthZeroBased, 1);
-  const lastDayOfMonth = new Date(year, monthZeroBased + 1, 0);
+/**
+ * Returns the total number of days in a given month and year (zero-based month).
+ */
+export function getDaysInMonth(year: number, monthZeroBased: number): number {
+  return new Date(year, monthZeroBased + 1, 0).getDate();
+}
 
-  const startingDayOfWeek = firstDayOfMonth.getDay(); // 0 = Sun, 1 = Mon...
-  const daysInMonth = lastDayOfMonth.getDate();
+/**
+ * Returns the starting day of the week (0-6) for the first day of the month.
+ */
+export function getFirstDayOfMonth(year: number, monthZeroBased: number): number {
+  return new Date(year, monthZeroBased, 1).getDay();
+}
+
+export function buildMonthGrid(
+  year: number,
+  monthZeroBased: number
+): { startingDayOfWeek: number; days: CalendarDayMeta[] } {
+  const today = new Date();
+  const startingDayOfWeek = getFirstDayOfMonth(year, monthZeroBased);
+  const daysInMonth = getDaysInMonth(year, monthZeroBased);
 
   const days: CalendarDayMeta[] = [];
 
