@@ -14,6 +14,7 @@ type JobRepository interface {
 	GetByID(ctx context.Context, id int64) (*JobWithProfile, error)
 	GetAll(ctx context.Context) ([]JobWithProfile, error)
 	GetByMonthAndYear(ctx context.Context, month int, year int) ([]JobWithProfile, error)
+	GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]JobWithProfile, error)
 	Update(ctx context.Context, job *model.Job) error
 	Delete(ctx context.Context, id int64) error
 }
@@ -196,6 +197,71 @@ func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([
 	rows, err := r.db.QueryContext(ctx, query, month, year)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query jobs by month and year: %w", err)
+	}
+	defer rows.Close()
+
+	var jobs []JobWithProfile
+	for rows.Next() {
+		var res JobWithProfile
+		var profile model.JobProfile
+
+		if err := rows.Scan(
+			&res.ID,
+			&res.JobProfileID,
+			&res.TeamID,
+			&res.ScheduledDay,
+			&res.Notes,
+			&profile.ID,
+			&profile.Name,
+			&profile.Email,
+			&profile.PhoneNumber,
+			&profile.Address,
+			&profile.City,
+			&profile.State,
+			&profile.Zip,
+			&profile.ServicesRequested,
+			&profile.ScheduledDate,
+			&profile.Description,
+			&profile.Approved,
+			&profile.IsCommercial,
+			&profile.IsSeen,
+			&profile.ReferralInfo,
+			&profile.Schedule,
+			&profile.AdminNotes,
+			&profile.JobPayout,
+			&profile.CreatedAt,
+			&profile.UpdatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("failed to scan job row: %w", err)
+		}
+
+		res.JobProfile = &profile
+		jobs = append(jobs, res)
+	}
+
+	return jobs, nil
+}
+
+// GetByWeekAndTeam retrieves jobs assigned to a specific team within a given date range (week)
+func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]JobWithProfile, error) {
+	query := `
+        SELECT 
+            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.notes,
+            p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
+            p.services_requested, p.scheduled_date, p.description, p.approved, 
+            p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
+            p.job_payout, p.created_at, p.updated_at
+        FROM jobs j
+        LEFT JOIN job_profiles p ON j.job_profile_id = p.id
+        WHERE j.team_id = $1 
+          AND j.scheduled_day >= $2 
+          AND j.scheduled_day <= $3
+        ORDER BY j.scheduled_day ASC
+    `
+
+	rows, err := r.db.QueryContext(ctx, query, teamID, startDate, endDate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query jobs by week and team: %w", err)
 	}
 	defer rows.Close()
 

@@ -124,10 +124,11 @@ func generateJWT(user *model.User) (string, error) {
 	}
 
 	claims := jwt.MapClaims{
-		"sub":   user.ID,
-		"email": user.Email,
-		"role":  user.Role,
-		"exp":   time.Now().Add(24 * time.Hour).Unix(),
+		"sub":     user.ID,
+		"email":   user.Email,
+		"role":    user.Role,
+		"team_id": user.TeamID,
+		"exp":     time.Now().Add(24 * time.Hour).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

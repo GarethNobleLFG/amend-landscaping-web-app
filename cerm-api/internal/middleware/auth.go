@@ -49,8 +49,19 @@ func AuthMiddleware() fiber.Handler {
 
 		role, _ := claims["role"].(string)
 
+		var teamID *int64
+		if val, exists := claims["team_id"]; exists && val != nil {
+			if id, ok := val.(int64); ok {
+				teamID = &id
+			} else if fVal, ok := val.(float64); ok {
+				id := int64(fVal)
+				teamID = &id
+			}
+		}
+
 		c.Locals("userID", userID)
 		c.Locals("userRole", role)
+		c.Locals("teamID", teamID)
 
 		return c.Next()
 	}

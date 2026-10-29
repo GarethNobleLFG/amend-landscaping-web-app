@@ -91,6 +91,44 @@ export const useJobsByMonth = routeLoader$<Job[]>(async ({ cookie, redirect, url
   }
 });
 
+export const useJobsByWeekAndTeam = routeLoader$<Job[]>(async ({ cookie, redirect, url }) => {
+  const token = cookie.get("cerm_token");
+
+  if (!token) {
+    throw redirect(302, "/");
+  }
+
+  const start = url.searchParams.get("start");
+  const end = url.searchParams.get("end");
+
+  if (!start || !end) {
+    return [];
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/jobs/team/week?start=${start}&end=${end}`, {
+      headers: { Authorization: `Bearer ${token.value}` },
+    });
+
+    if (res.status === 404) {
+      return [];
+    }
+
+    if (!res.ok) throw new Error("Failed to fetch weekly team jobs");
+
+    const json = await res.json();
+    const jobs = json.data ?? json;
+    if (!Array.isArray(jobs)) {
+      return [];
+    }
+
+    return jobs;
+  } catch (err) {
+    console.error("Error fetching weekly team jobs:", err);
+    return [];
+  }
+});
+
 export const useJobById = routeLoader$<Job | null>(async ({ cookie, redirect, params }) => {
   const token = cookie.get("cerm_token");
 

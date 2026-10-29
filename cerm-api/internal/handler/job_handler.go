@@ -108,6 +108,39 @@ func (h *JobHandler) GetByMonthAndYear(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(jobs)
 }
 
+// GET /api/jobs/week?start=YYYY-MM-DD&end=YYYY-MM-DD
+func (h *JobHandler) GetByWeekAndTeam(c *fiber.Ctx) error {
+	startStr := c.Query("start")
+	endStr := c.Query("end")
+
+	if startStr == "" || endStr == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Start and end date query parameters are required (YYYY-MM-DD)"})
+	}
+
+	startDate, err := time.Parse("2006-01-02", startStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid start date format. Use YYYY-MM-DD"})
+	}
+
+	endDate, err := time.Parse("2006-01-02", endStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid end date format. Use YYYY-MM-DD"})
+	}
+
+	// Extract team ID strictly from the auth middleware context (`c.Locals`)
+	userTeamID, ok := c.Locals("teamID").(*int64)
+	if !ok || userTeamID == nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Team ID is missing from user session"})
+	}
+
+	jobs, err := h.service.GetByWeekAndTeam(c.UserContext(), *userTeamID, startDate, endDate)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(jobs)
+}
+
 // PUT /api/jobs/:id
 func (h *JobHandler) Update(c *fiber.Ctx) error {
 	idParam := c.Params("id")

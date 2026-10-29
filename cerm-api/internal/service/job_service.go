@@ -14,6 +14,7 @@ type JobService interface {
 	GetJobByID(ctx context.Context, id int64) (*repository.JobWithProfile, error)
 	GetAllJobs(ctx context.Context) ([]repository.JobWithProfile, error)
 	GetByMonthAndYear(ctx context.Context, month int, year int) ([]repository.JobWithProfile, error)
+	GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]repository.JobWithProfile, error)
 	UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, notes *string) error
 	DeleteJob(ctx context.Context, id int64) error
 }
@@ -83,6 +84,20 @@ func (s *jobService) GetByMonthAndYear(ctx context.Context, month int, year int)
 	jobs, err := s.jobRepo.GetByMonthAndYear(ctx, month, year)
 	if err != nil {
 		return nil, fmt.Errorf("service failed to get jobs by month and year: %w", err)
+	}
+
+	return jobs, nil
+}
+
+// GetByWeekAndTeam retrieves jobs for a specific team within the given week date range
+func (s *jobService) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]repository.JobWithProfile, error) {
+	// Optional: Add validation or normalization for dates (e.g., setting start to 00:00:00 and end to 23:59:59)
+	normalizedStart := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, startDate.Location())
+	normalizedEnd := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 999999999, endDate.Location())
+
+	jobs, err := s.jobRepo.GetByWeekAndTeam(ctx, teamID, normalizedStart, normalizedEnd)
+	if err != nil {
+		return nil, fmt.Errorf("service failed to get jobs by week and team: %w", err)
 	}
 
 	return jobs, nil
