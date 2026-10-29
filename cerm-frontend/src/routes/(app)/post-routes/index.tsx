@@ -1,20 +1,26 @@
 import { component$, useSignal, useComputed$, useTask$, $ } from "@builder.io/qwik";
 import { useLocation, useNavigate } from "@builder.io/qwik-city";
-import { useJobsByMonth } from "~/hooks/job-handling";
+import { useJobsByMonth, useDeleteJob, useUpdateJob, type Job } from "~/hooks/job-handling"; // Ensure useUpdateJob is imported
 import { useTeams, type Team } from "~/hooks/teams-handling";
 import { CalendarHeader } from "./components/calendar-header";
 import { CalendarDayCell } from "./components/calendar-day-cell";
+import { EditModal } from "./components/edit-modal"; // Import your EditModal
 import { buildMonthGrid } from "~/utils/calendar-utils";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export { useJobsByMonth, useTeams };
+export { useJobsByMonth, useTeams, useDeleteJob, useUpdateJob }; // Export actions
 
 export default component$(() => {
   const loc = useLocation();
   const nav = useNavigate();
   const jobsLoader = useJobsByMonth();
   const teamsLoader = useTeams();
+  const deleteAction = useDeleteJob();
+  const updateAction = useUpdateJob(); // Instantiate update action
+
+  // State to track which job is currently being edited
+  const editingJob = useSignal<Job | null>(null);
 
   const activeYear = useSignal(Number(loc.url.searchParams.get("year")) || new Date().getFullYear());
   const activeMonth = useSignal(Number(loc.url.searchParams.get("month")) || new Date().getMonth() + 1);
@@ -96,26 +102,20 @@ export default component$(() => {
 
   return (
     <div class="max-w-7xl mx-auto px-3 sm:px-6 pt-2 pb-6">
-      {/* Calendar Header with embedded Teams key */}
       <CalendarHeader
         currentDate={activeDate.value}
         teams={teamsList}
         onNavigate$={handleNavigate$}
       />
 
-      {/* Weekday Labels Header */}
       <div class="grid grid-cols-7 mb-3 px-1">
         {WEEKDAYS.map((day) => (
-          <div
-            key={day}
-            class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider"
-          >
+          <div key={day} class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">
             {day}
           </div>
         ))}
       </div>
 
-      {/* Dynamic Month-Only Days Grid */}
       <div class="grid grid-cols-7 gap-2.5">
         {monthGrid.value.days.map((dayMeta, index) => {
           const gridColumnStart = index === 0 ? monthGrid.value.startingDayOfWeek + 1 : undefined;
@@ -129,11 +129,24 @@ export default component$(() => {
               isToday={dayMeta.isToday}
               jobs={dayJobs}
               teamsMap={teamsMap.value}
+              deleteAction={deleteAction}
+              onEditJob$={(job) => {
+                editingJob.value = job; // Sets the job state to trigger EditModal
+              }}
               gridColumnStart={gridColumnStart}
             />
           );
         })}
       </div>
+
+      {/* Render EditModal when editingJob.value is set */}
+      {editingJob.value && (
+        <EditModal
+          job={editingJob.value}
+          updateAction={updateAction}
+          onClose$={() => (editingJob.value = null)}
+        />
+      )}
     </div>
   );
 });

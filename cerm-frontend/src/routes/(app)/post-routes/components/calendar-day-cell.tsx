@@ -1,6 +1,7 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useSignal } from "@builder.io/qwik";
 import type { Job } from "~/hooks/job-handling";
 import type { Team } from "~/hooks/teams-handling";
+import { ViewModal } from "./view-modal"; // Adjust import path as needed
 
 interface CalendarDayCellProps {
   dayNumber: number;
@@ -8,10 +9,11 @@ interface CalendarDayCellProps {
   isToday: boolean;
   jobs: Job[];
   teamsMap: Map<number, Team>;
+  deleteAction: any;
+  onEditJob$: (job: Job) => void;
   gridColumnStart?: number;
 }
 
-// Helper function to convert hex to rgba for a soft background tint
 function hexToRgba(hex: string, alpha: number): string {
   let cleanHex = hex.replace("#", "");
   if (cleanHex.length === 3) {
@@ -25,64 +27,77 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 export const CalendarDayCell = component$<CalendarDayCellProps>(
-  ({ dayNumber, isToday, jobs, teamsMap, gridColumnStart }) => {
+  ({ dayNumber, isToday, jobs, teamsMap, deleteAction, onEditJob$, gridColumnStart }) => {
+    const selectedJobForView = useSignal<Job | null>(null);
     const style = gridColumnStart ? { gridColumnStart } : undefined;
 
     return (
-      <div
-        style={style}
-        className="min-h-[110px] sm:min-h-[140px] lg:min-h-[170px] p-2 sm:p-3 bg-white rounded-lg border border-gray-100 transition flex flex-col"
-      >
-        <div className="flex items-center justify-between mb-1.5">
-          <span
-            className={`text-xs font-semibold inline-flex items-center justify-center w-6 h-6 rounded-full ${
-              isToday ? "bg-emerald-600 text-white" : "text-gray-700"
-            }`}
-          >
-            {dayNumber}
-          </span>
-          {jobs.length > 0 && (
-            <span className="text-[10px] sm:text-xs font-medium text-gray-400">
-              {jobs.length} {jobs.length === 1 ? "job" : "jobs"}
+      <>
+        <div
+          style={style}
+          className="min-h-[110px] sm:min-h-[140px] lg:min-h-[170px] p-2 sm:p-3 bg-white rounded-lg border border-gray-100 transition flex flex-col"
+        >
+          <div className="flex items-center justify-between mb-1.5">
+            <span
+              className={`text-xs font-semibold inline-flex items-center justify-center w-6 h-6 rounded-full ${
+                isToday ? "bg-emerald-600 text-white" : "text-gray-700"
+              }`}
+            >
+              {dayNumber}
             </span>
-          )}
-        </div>
+            {jobs.length > 0 && (
+              <span className="text-[10px] sm:text-xs font-medium text-gray-400">
+                {jobs.length} {jobs.length === 1 ? "job" : "jobs"}
+              </span>
+            )}
+          </div>
 
-        {/* Job Event Chips with Team Color Coordination */}
-        <div className="space-y-1 overflow-y-auto max-h-[80px] sm:max-h-[120px] flex-1">
-          {jobs.map((job) => {
-            const customerName = job.job_profile?.name || `Profile #${job.job_profile_id}`;
-            const serviceType = job.job_profile?.services_requested;
-            const hasValidService = typeof serviceType === "string" && serviceType.trim().length > 0;
+          <div className="space-y-1 overflow-y-auto max-h-[80px] sm:max-h-[120px] flex-1">
+            {jobs.map((job) => {
+              const customerName = job.job_profile?.name || `Profile #${job.job_profile_id}`;
+              const serviceType = job.job_profile?.services_requested;
+              const hasValidService = typeof serviceType === "string" && serviceType.trim().length > 0;
 
-            // Resolve team color
-            const team = job.team_id ? teamsMap.get(job.team_id) : null;
-            const teamColor = team?.team_color || "#3B82F6"; // Fallback blue if no team assigned
-            const bgTint = hexToRgba(teamColor, 0.12);
+              const team = job.team_id ? teamsMap.get(job.team_id) : null;
+              const teamColor = team?.team_color || "#3B82F6";
+              const bgTint = hexToRgba(teamColor, 0.12);
 
-            return (
-              <div
-                key={job.id}
-                className="px-2 py-1 text-[11px] sm:text-xs font-medium leading-tight rounded border-l-2 transition truncate cursor-pointer hover:opacity-90"
-                style={{
-                  backgroundColor: bgTint,
-                  borderLeftColor: teamColor,
-                }}
-                title={`${customerName}${hasValidService ? ` - ${serviceType}` : ""}`}
-              >
-                <span className="font-semibold block truncate" style={{ color: teamColor }}>
-                  {customerName}
-                </span>
-                {hasValidService && (
-                  <span className="block text-[10px] text-gray-500 truncate">
-                    {serviceType}
+              return (
+                <div
+                  key={job.id}
+                  onClick$={() => (selectedJobForView.value = job)}
+                  className="px-2 py-1 text-[11px] sm:text-xs font-medium leading-tight rounded border-l-2 transition truncate cursor-pointer hover:opacity-90"
+                  style={{
+                    backgroundColor: bgTint,
+                    borderLeftColor: teamColor,
+                  }}
+                  title={`${customerName}${hasValidService ? ` - ${serviceType}` : ""}`}
+                >
+                  <span className="font-semibold block truncate" style={{ color: teamColor }}>
+                    {customerName}
                   </span>
-                )}
-              </div>
-            );
-          })}
+                  {hasValidService && (
+                    <span className="block text-[10px] text-gray-500 truncate">
+                      {serviceType}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+
+        {/* View Modal */}
+        {selectedJobForView.value && (
+          <ViewModal
+            job={selectedJobForView.value}
+            teamsMap={teamsMap}
+            deleteAction={deleteAction}
+            onClose$={() => (selectedJobForView.value = null)}
+            onEdit$={(job) => onEditJob$(job)}
+          />
+        )}
+      </>
     );
   }
 );
