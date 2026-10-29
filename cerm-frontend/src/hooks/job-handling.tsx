@@ -42,7 +42,7 @@ export const useJobs = routeLoader$<Job[]>(async ({ cookie, redirect }) => {
   }
 
   try {
-    const res = await fetch(`${API_BASE}/api/jobs`, {
+    const res = await fetch(`${API_BASE}/api/jobs/admin`, {
       headers: { Authorization: `Bearer ${token.value}` },
     });
 
@@ -67,7 +67,7 @@ export const useJobsByMonth = routeLoader$<Job[]>(async ({ cookie, redirect, url
   const year = url.searchParams.get("year") ?? new Date().getFullYear();
 
   try {
-    const res = await fetch(`${API_BASE}/api/jobs/month?month=${month}&year=${year}`, {
+    const res = await fetch(`${API_BASE}/api/jobs/admin/month?month=${month}&year=${year}`, {
       headers: { Authorization: `Bearer ${token.value}` },
     });
 
@@ -140,7 +140,7 @@ export const useJobById = routeLoader$<Job | null>(async ({ cookie, redirect, pa
   if (!id) return null;
 
   try {
-    const res = await fetch(`${API_BASE}/api/jobs/${id}`, {
+    const res = await fetch(`${API_BASE}/api/jobs/admin/${id}`, {
       headers: { Authorization: `Bearer ${token.value}` },
     });
 
@@ -160,7 +160,7 @@ export const useCreateJob = globalAction$(
     if (!token) return fail(401, { message: "Unauthorized" });
 
     try {
-      const res = await fetch(`${API_BASE}/api/jobs`, {
+      const res = await fetch(`${API_BASE}/api/jobs/admin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -196,7 +196,7 @@ export const useUpdateJob = globalAction$(
     const { id, ...payload } = data;
 
     try {
-      const res = await fetch(`${API_BASE}/api/jobs/${id}`, {
+      const res = await fetch(`${API_BASE}/api/jobs/admin/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -231,7 +231,7 @@ export const useDeleteJob = globalAction$(
     if (!token) return fail(401, { message: "Unauthorized" });
 
     try {
-      const res = await fetch(`${API_BASE}/api/jobs/${data.id}`, {
+      const res = await fetch(`${API_BASE}/api/jobs/admin/${data.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token.value}`,

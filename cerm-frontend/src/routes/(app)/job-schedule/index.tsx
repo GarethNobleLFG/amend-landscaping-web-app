@@ -1,4 +1,5 @@
 import { component$, useSignal, useComputed$, $ } from "@builder.io/qwik";
+import { useNavigate, useLocation } from "@builder.io/qwik-city";
 import { useJobsByWeekAndTeam } from "~/hooks/job-handling"; 
 import { ScheduleHeader } from "~/components/ui/schedule-header";
 
@@ -19,16 +20,48 @@ const getMondayOfWeek = (d: Date) => {
 };
 
 export default component$(() => {
+  const nav = useNavigate();
+  const loc = useLocation();
+
+  // If start/end are missing from the URL on first load, set them immediately
+  const queryStart = loc.url.searchParams.get("start");
+  const queryEnd = loc.url.searchParams.get("end");
+
+  if (!queryStart || !queryEnd) {
+    const monday = getMondayOfWeek(new Date());
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    const url = new URL(loc.url);
+    url.searchParams.set("start", getLocalDateKey(monday));
+    url.searchParams.set("end", getLocalDateKey(sunday));
+    
+    // Replace URL state silently on initial load
+    nav(url.pathname + url.search, { replaceState: true });
+  }
+
   const weeklyJobs = useJobsByWeekAndTeam();
 
-  const currentWeekStartSig = useSignal<Date>(getMondayOfWeek(new Date()));
+  const initialWeekStart = queryStart ? new Date(queryStart) : getMondayOfWeek(new Date());
+  const currentWeekStartSig = useSignal<Date>(getMondayOfWeek(initialWeekStart));
   const selectedDateKey = useSignal<string>(getLocalDateKey(new Date()));
 
   const handleWeekChange$ = $((newStart: Date) => {
-    currentWeekStartSig.value = getMondayOfWeek(newStart);
+    const monday = getMondayOfWeek(newStart);
+    currentWeekStartSig.value = monday;
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    const startStr = getLocalDateKey(monday);
+    const endStr = getLocalDateKey(sunday);
+
+    const url = new URL(loc.url);
+    url.searchParams.set("start", startStr);
+    url.searchParams.set("end", endStr);
+    nav(url.pathname + url.search);
   });
 
-  // Group jobs by their scheduled date key
   const jobsByDate = useComputed$(() => {
     const jobs = Array.isArray(weeklyJobs.value) ? weeklyJobs.value : [];
     const map = new Map<string, typeof jobs>();
@@ -47,7 +80,6 @@ export default component$(() => {
         currentWeekStart={currentWeekStartSig.value}
         onWeekChange$={handleWeekChange$}
         selectedDateKey={selectedDateKey}
-        jobCount={weeklyJobs.value?.length ?? 0}
         jobsByDate={jobsByDate.value}
       />
     </div>

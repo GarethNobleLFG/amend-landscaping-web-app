@@ -30,10 +30,10 @@ export default component$(() => {
   const activeYear = useSignal(Number(loc.url.searchParams.get("year")) || new Date().getFullYear());
   const activeMonth = useSignal(Number(loc.url.searchParams.get("month")) || new Date().getMonth() + 1);
 
-useTask$(({ track }) => {
+  useTask$(({ track }) => {
     const search = track(() => loc.url.search);
     const params = new URLSearchParams(search);
-    
+
     const yearParam = params.get("year");
     const monthParam = params.get("month");
 

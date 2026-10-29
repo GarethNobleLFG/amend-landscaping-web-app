@@ -7,7 +7,6 @@ interface ScheduleHeaderProps {
   currentWeekStart: Date;
   onWeekChange$: (newStart: Date) => void;
   selectedDateKey: { value: string };
-  jobCount?: number;
   jobsByDate?: Map<string, Job[]>;
   onSelectJob$?: (job: Job) => void;
   color?: string; 
@@ -17,19 +16,10 @@ export const ScheduleHeader = component$<ScheduleHeaderProps>(({
   currentWeekStart,
   onWeekChange$,
   selectedDateKey,
-  jobCount = 0,
   jobsByDate,
   onSelectJob$,
   color = "#059669",
 }) => {
-  const monthNames = [
-    "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
-    "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
-  ];
-
-  const currentMonthName = monthNames[currentWeekStart.getMonth()];
-  const currentYear = currentWeekStart.getFullYear();
-
   const getLocalDateKey = (d: Date) => {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -49,17 +39,25 @@ export const ScheduleHeader = component$<ScheduleHeaderProps>(({
 
   const todayKey = getLocalDateKey(new Date());
 
-  const handlePrevWeek = $(() => {
-    const prev = new Date(currentWeekStart);
-    prev.setDate(prev.getDate() - 7);
-    onWeekChange$(prev);
+  const handleNavigate = $((direction: "prev" | "next") => {
+    const target = new Date(currentWeekStart);
+    target.setDate(target.getDate() + (direction === "next" ? 7 : -7));
+    onWeekChange$(target);
   });
 
-  const handleNextWeek = $(() => {
-    const next = new Date(currentWeekStart);
-    next.setDate(next.getDate() + 7);
-    onWeekChange$(next);
-  });
+  // Compute Week Date Range string (e.g. "Week of October 26 - November 1, 2026")
+  const sunday = new Date(currentWeekStart);
+  sunday.setDate(sunday.getDate() + 6);
+
+  const startMonth = currentWeekStart.toLocaleString("en-US", { month: "long" });
+  const startDay = currentWeekStart.getDate();
+  const endMonth = sunday.toLocaleString("en-US", { month: "long" });
+  const endDay = sunday.getDate();
+  const year = sunday.getFullYear();
+
+  const dateRangeStr = startMonth === endMonth
+    ? `${startMonth} ${startDay} - ${endDay}, ${year}`
+    : `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
 
   return (
     <div class="w-full flex flex-col gap-4">
@@ -67,27 +65,24 @@ export const ScheduleHeader = component$<ScheduleHeaderProps>(({
         <div>
           <h1 class="text-xl md:text-2xl font-black tracking-tight text-gray-900 flex items-center gap-2">
             <IconCalendar class="w-6 h-6 text-emerald-600" />
-            <span>SCHEDULE - {currentMonthName} {currentYear}</span>
+            <span>Week of {dateRangeStr}</span>
           </h1>
-          <p class="text-xs md:text-sm text-gray-600 mt-0.5 font-medium">
-            Active Team Schedule ({jobCount} jobs loaded)
-          </p>
         </div>
 
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-2">
           <button
-            onClick$={handlePrevWeek}
-            class="p-2 rounded-lg text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 transition cursor-pointer font-bold"
-            title="Previous Week"
+            onClick$={() => handleNavigate("prev")}
+            class="bg-slate-300/80 hover:bg-slate-300 text-gray-900 font-medium text-xs md:text-sm px-4 py-2 md:px-5 md:py-2.5 rounded-full transition-all duration-300 ease-in-out flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
+            aria-label="Previous Week"
           >
-            ‹
+            &larr; Prev
           </button>
           <button
-            onClick$={handleNextWeek}
-            class="p-2 rounded-lg text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 transition cursor-pointer font-bold"
-            title="Next Week"
+            onClick$={() => handleNavigate("next")}
+            class="bg-slate-300/80 hover:bg-slate-300 text-gray-900 font-medium text-xs md:text-sm px-4 py-2 md:px-5 md:py-2.5 rounded-full transition-all duration-300 ease-in-out flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer"
+            aria-label="Next Week"
           >
-            ›
+            Next &rarr;
           </button>
         </div>
       </div>
