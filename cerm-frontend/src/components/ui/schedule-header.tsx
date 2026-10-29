@@ -75,17 +75,17 @@ export const ScheduleHeader = component$<ScheduleHeaderProps>(({
           <span class="hidden sm:block truncate">Week of {dateRangeStrDesktop}</span>
         </h1>
 
-        <div class="flex items-center gap-1.5 shrink-0">
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             onClick$={() => handleNavigate("prev")}
-            class="bg-slate-200 hover:bg-slate-300 text-gray-900 font-medium text-xs px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full transition-all duration-200 flex items-center justify-center whitespace-nowrap cursor-pointer border-0"
+            class="bg-slate-300/80 hover:bg-slate-300 text-gray-900 font-medium text-[11px] sm:text-xs md:text-sm px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full transition-all duration-300 ease-in-out flex items-center justify-center whitespace-nowrap cursor-pointer border-0"
             aria-label="Previous Week"
           >
             &larr; Prev
           </button>
           <button
             onClick$={() => handleNavigate("next")}
-            class="bg-slate-200 hover:bg-slate-300 text-gray-900 font-medium text-xs px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full transition-all duration-200 flex items-center justify-center whitespace-nowrap cursor-pointer border-0"
+            class="bg-slate-300/80 hover:bg-slate-300 text-gray-900 font-medium text-[11px] sm:text-xs md:text-sm px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-full transition-all duration-300 ease-in-out flex items-center justify-center whitespace-nowrap cursor-pointer border-0"
             aria-label="Next Week"
           >
             Next &rarr;
