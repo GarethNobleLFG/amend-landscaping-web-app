@@ -58,6 +58,10 @@ export const useUnapprovedProfiles = routeLoader$<JobProfile[]>(async ({ cookie,
       headers: { Authorization: `Bearer ${token.value}` },
     });
 
+    /* 
+     * TODO: This is not the best practice approach to handling an issue like this. Flagging this for now until
+     * I can figure out how to handle it cleanly within the current codebase.
+     */ 
     if (res.status === 401 || res.status === 403) {
       return [];
     }
