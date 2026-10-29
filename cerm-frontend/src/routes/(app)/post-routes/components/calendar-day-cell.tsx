@@ -36,6 +36,22 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
     const isPopoverOpen = useSignal(false);
     const style = gridColumnStart ? { gridColumnStart } : undefined;
 
+    // Group jobs by team ID for mobile counts
+    const teamCounts = (() => {
+      const countsMap = new Map<number | string, { count: number; color: string }>();
+      for (const job of jobs) {
+        const teamKey = job.team_id ?? "unassigned";
+        const team = job.team_id ? teamsMap.get(job.team_id) : null;
+        const color = team?.team_color || "#6B7280"; // Default gray for unassigned
+
+        if (!countsMap.has(teamKey)) {
+          countsMap.set(teamKey, { count: 0, color });
+        }
+        countsMap.get(teamKey)!.count += 1;
+      }
+      return Array.from(countsMap.values());
+    })();
+
     return (
       <>
         {/* ================= MOBILE VIEW (Visible on max-sm, hidden on sm+) ================= */}
@@ -48,37 +64,35 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
                 onCreateJob$(dateKey);
               }
             }}
-            class="min-h-[70px] p-2 bg-white rounded-xl border border-gray-200/70 shadow-2xs transition flex flex-col justify-between cursor-pointer active:bg-slate-50"
+            class="min-h-[75px] p-2 bg-white rounded-xl border border-gray-200/70 shadow-2xs transition flex flex-col items-center justify-center gap-1.5 cursor-pointer active:bg-slate-50"
           >
-            <div class="flex items-center justify-between">
-              <span
-                class={`text-xs font-bold inline-flex items-center justify-center w-5 h-5 rounded-full ${
-                  isToday ? "bg-emerald-600 text-white shadow-xs" : "text-gray-700 bg-slate-100"
+            {/* Perfectly centered day number */}
+            <span
+              class={`text-xs font-bold inline-flex items-center justify-center w-6 h-6 rounded-full leading-none ${isToday ? "bg-emerald-600 text-white shadow-xs" : "text-gray-700 bg-slate-100"
                 }`}
-              >
-                {dayNumber}
-              </span>
-            </div>
+            >
+              {dayNumber}
+            </span>
 
-            {/* Color Dots Row for Mobile (Keeps cell size uniform) */}
-            {jobs.length > 0 && (
-              <div class="flex items-center gap-1 flex-wrap mt-1">
-                {jobs.map((job) => {
-                  const team = job.team_id ? teamsMap.get(job.team_id) : null;
-                  const teamColor = team?.team_color || "#3B82F6";
-                  return (
-                    <span
-                      key={job.id}
-                      class="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: teamColor }}
-                    />
-                  );
-                })}
+            {/* Perfectly centered team counts container */}
+            {jobs.length > 0 ? (
+              <div class="flex items-center justify-center gap-1 flex-wrap">
+                {teamCounts.map((tc, idx) => (
+                  <span
+                    key={idx}
+                    class="text-[10px] font-bold px-1.5 py-0.5 rounded-md text-white min-w-[18px] text-center leading-none shadow-2xs"
+                    style={{ backgroundColor: tc.color }}
+                  >
+                    {tc.count}
+                  </span>
+                ))}
               </div>
+            ) : (
+              <div class="h-3" /> /* Maintains uniform cell vertical alignment */
             )}
           </div>
 
-          {/* Centered Modal Popover */}
+          {/* Centered Popover Card */}
           {isPopoverOpen.value && (
             <DayJobsPopover
               dateKey={dateKey}
@@ -101,9 +115,8 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
         >
           <div class="flex items-center justify-between mb-1.5">
             <span
-              class={`text-xs font-semibold inline-flex items-center justify-center w-6 h-6 rounded-full ${
-                isToday ? "bg-emerald-600 text-white" : "text-gray-700"
-              }`}
+              class={`text-xs font-semibold inline-flex items-center justify-center w-6 h-6 rounded-full ${isToday ? "bg-emerald-600 text-white" : "text-gray-700"
+                }`}
             >
               {dayNumber}
             </span>
