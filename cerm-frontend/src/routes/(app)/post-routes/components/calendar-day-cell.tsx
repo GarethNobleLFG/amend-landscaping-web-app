@@ -1,19 +1,22 @@
 import { component$, useSignal } from "@builder.io/qwik";
 import type { Job } from "~/hooks/job-handling";
 import type { Team } from "~/hooks/teams-handling";
-import { ViewModal } from "./view-modal"; // Adjust import path as needed
+import { ViewModal } from "./view-modal";
 
 interface CalendarDayCellProps {
   dayNumber: number;
   dayOfWeek: number;
+  dateKey: string; // e.g., "2026-10-29"
   isToday: boolean;
   jobs: Job[];
   teamsMap: Map<number, Team>;
   deleteAction: any;
   onEditJob$: (job: Job) => void;
+  onCreateJob$: (dateKey: string) => void; // Handler to trigger create modal
   gridColumnStart?: number;
 }
 
+// Helper converter
 function hexToRgba(hex: string, alpha: number): string {
   let cleanHex = hex.replace("#", "");
   if (cleanHex.length === 3) {
@@ -27,7 +30,7 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 export const CalendarDayCell = component$<CalendarDayCellProps>(
-  ({ dayNumber, isToday, jobs, teamsMap, deleteAction, onEditJob$, gridColumnStart }) => {
+  ({ dayNumber, dateKey, isToday, jobs, teamsMap, deleteAction, onEditJob$, onCreateJob$, gridColumnStart }) => {
     const selectedJobForView = useSignal<Job | null>(null);
     const style = gridColumnStart ? { gridColumnStart } : undefined;
 
@@ -35,7 +38,8 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
       <>
         <div
           style={style}
-          className="min-h-[110px] sm:min-h-[140px] lg:min-h-[170px] p-2 sm:p-3 bg-white rounded-lg border border-gray-100 transition flex flex-col"
+          onClick$={() => onCreateJob$(dateKey)} // Click cell background to open Create modal
+          className="min-h-[110px] sm:min-h-[140px] lg:min-h-[170px] p-2 sm:p-3 bg-white rounded-lg border border-gray-100 transition flex flex-col cursor-pointer hover:border-green-300 hover:shadow-xs"
         >
           <div className="flex items-center justify-between mb-1.5">
             <span
@@ -65,7 +69,10 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
               return (
                 <div
                   key={job.id}
-                  onClick$={() => (selectedJobForView.value = job)}
+                  onClick$={(e) => {
+                    e.stopPropagation(); // Prevent cell click from firing when clicking a job chip
+                    selectedJobForView.value = job;
+                  }}
                   className="px-2 py-1 text-[11px] sm:text-xs font-medium leading-tight rounded border-l-2 transition truncate cursor-pointer hover:opacity-90"
                   style={{
                     backgroundColor: bgTint,
@@ -87,7 +94,6 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
           </div>
         </div>
 
-        {/* View Modal */}
         {selectedJobForView.value && (
           <ViewModal
             job={selectedJobForView.value}

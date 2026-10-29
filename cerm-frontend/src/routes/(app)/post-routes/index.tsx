@@ -1,51 +1,58 @@
 import { component$, useSignal, useComputed$, useTask$, $ } from "@builder.io/qwik";
 import { useLocation, useNavigate } from "@builder.io/qwik-city";
-import { useJobsByMonth, useDeleteJob, useUpdateJob, type Job } from "~/hooks/job-handling"; // Ensure useUpdateJob is imported
+import { useJobsByMonth, useDeleteJob, useCreateJob, useUpdateJob, type Job } from "~/hooks/job-handling";
 import { useTeams, type Team } from "~/hooks/teams-handling";
+import { useApprovedProfiles } from "~/hooks/job-profile-handling";
 import { CalendarHeader } from "./components/calendar-header";
 import { CalendarDayCell } from "./components/calendar-day-cell";
-import { EditModal } from "./components/edit-modal"; // Import your EditModal
+import { CreateModal } from "./components/create-modal";
+import { EditModal } from "./components/edit-modal";
 import { buildMonthGrid } from "~/utils/calendar-utils";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export { useJobsByMonth, useTeams, useDeleteJob, useUpdateJob }; // Export actions
+export { useJobsByMonth, useTeams, useApprovedProfiles, useDeleteJob, useCreateJob, useUpdateJob };
 
 export default component$(() => {
   const loc = useLocation();
   const nav = useNavigate();
   const jobsLoader = useJobsByMonth();
   const teamsLoader = useTeams();
+  const profilesLoader = useApprovedProfiles();
   const deleteAction = useDeleteJob();
-  const updateAction = useUpdateJob(); // Instantiate update action
+  const createAction = useCreateJob();
+  const updateAction = useUpdateJob();
 
-  // State to track which job is currently being edited
+  // Modal states
+  const creatingDateStr = useSignal<string | null>(null);
   const editingJob = useSignal<Job | null>(null);
 
   const activeYear = useSignal(Number(loc.url.searchParams.get("year")) || new Date().getFullYear());
   const activeMonth = useSignal(Number(loc.url.searchParams.get("month")) || new Date().getMonth() + 1);
 
-  useTask$(({ track }) => {
+useTask$(({ track }) => {
     const search = track(() => loc.url.search);
     const params = new URLSearchParams(search);
     
-    activeYear.value = Number(params.get("year")) || new Date().getFullYear();
-    activeMonth.value = Number(params.get("month")) || new Date().getMonth() + 1;
+    const yearParam = params.get("year");
+    const monthParam = params.get("month");
+
+    if (yearParam) {
+      activeYear.value = Number(yearParam);
+    }
+    if (monthParam) {
+      activeMonth.value = Number(monthParam);
+    }
   });
 
   const activeDate = useComputed$(() => new Date(activeYear.value, activeMonth.value - 1, 1));
-
-  const monthGrid = useComputed$(() => {
-    return buildMonthGrid(activeYear.value, activeMonth.value - 1);
-  });
+  const monthGrid = useComputed$(() => buildMonthGrid(activeYear.value, activeMonth.value - 1));
 
   const teamsMap = useComputed$(() => {
     const map = new Map<number, Team>();
     const rawTeams = teamsLoader.value;
     if (Array.isArray(rawTeams)) {
-      for (const team of rawTeams) {
-        map.set(team.id, team);
-      }
+      for (const team of rawTeams) map.set(team.id, team);
     }
     return map;
   });
@@ -54,16 +61,12 @@ export default component$(() => {
     const rawValue = jobsLoader.value;
     const jobs = Array.isArray(rawValue) ? rawValue : [];
     const map = new Map<string, typeof jobs>();
-
     for (const job of jobs) {
       if (!job?.scheduled_day) continue;
       const dateKey = job.scheduled_day.split("T")[0];
-      if (!map.has(dateKey)) {
-        map.set(dateKey, []);
-      }
+      if (!map.has(dateKey)) map.set(dateKey, []);
       map.get(dateKey)!.push(job);
     }
-
     return map;
   });
 
@@ -99,14 +102,11 @@ export default component$(() => {
   });
 
   const teamsList = Array.isArray(teamsLoader.value) ? teamsLoader.value : [];
+  const profilesList = Array.isArray(profilesLoader.value) ? profilesLoader.value : [];
 
   return (
     <div class="max-w-7xl mx-auto px-3 sm:px-6 pt-2 pb-6">
-      <CalendarHeader
-        currentDate={activeDate.value}
-        teams={teamsList}
-        onNavigate$={handleNavigate$}
-      />
+      <CalendarHeader currentDate={activeDate.value} teams={teamsList} onNavigate$={handleNavigate$} />
 
       <div class="grid grid-cols-7 mb-3 px-1">
         {WEEKDAYS.map((day) => (
@@ -126,20 +126,33 @@ export default component$(() => {
               key={dayMeta.dateKey}
               dayNumber={dayMeta.dayNumber}
               dayOfWeek={dayMeta.dayOfWeek}
+              dateKey={dayMeta.dateKey}
               isToday={dayMeta.isToday}
               jobs={dayJobs}
               teamsMap={teamsMap.value}
               deleteAction={deleteAction}
               onEditJob$={(job) => {
-                editingJob.value = job; // Sets the job state to trigger EditModal
+                editingJob.value = job;
               }}
+              onCreateJob$={(dateKey) => (creatingDateStr.value = dateKey)}
               gridColumnStart={gridColumnStart}
             />
           );
         })}
       </div>
 
-      {/* Render EditModal when editingJob.value is set */}
+      {/* Render CreateModal when a date is selected */}
+      {creatingDateStr.value && (
+        <CreateModal
+          selectedDateStr={creatingDateStr.value}
+          profiles={profilesList}
+          teams={teamsList}
+          createAction={createAction}
+          onClose$={() => (creatingDateStr.value = null)}
+        />
+      )}
+
+      {/* Render EditModal when editingJob is set */}
       {editingJob.value && (
         <EditModal
           job={editingJob.value}

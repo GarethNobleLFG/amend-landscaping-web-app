@@ -31,6 +31,8 @@ export const EditModal = component$(({ job, updateAction, onClose$ }: EditModalP
     try {
       const res = await updateAction.submit({
         id: job.id,
+        job_profile_id: job.job_profile_id,
+        team_id: job.team_id,
         scheduled_day: scheduledDayInput.value,
         notes: notesInput.value,
       });
