@@ -26,9 +26,9 @@ export const WeeklyDayCell = component$(({ dayDate, isToday, isSelected, jobs, o
       <div class={[
         "w-9 h-9 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center font-bold text-xs sm:text-lg md:text-xl transition-all shrink-0 mb-2 sm:mb-3",
         isToday && isSelected
-          ? "bg-emerald-600 text-white border-4 border-white ring-4 ring-emerald-500 shadow-md scale-105"
+          ? "bg-green-600 text-white border-4 border-white ring-4 ring-green-500 shadow-md scale-105"
           : isToday
-          ? "bg-emerald-600 text-white border-2 border-emerald-600 ring-4 ring-emerald-500/20"
+          ? "bg-green-600 text-white border-2 border-emerald-600 ring-4 ring-green-500/20"
           : isSelected
           ? "bg-slate-100 text-slate-900 border-2 border-emerald-500 ring-4 ring-emerald-500/30"
           : "bg-slate-100 text-slate-700 border border-slate-200 hover:border-slate-300"
