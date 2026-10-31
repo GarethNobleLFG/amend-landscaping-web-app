@@ -29,7 +29,7 @@ export const DayJobsPopover = component$<DayJobsPopoverProps>(({
   return (
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
       {/* Container with pointer-events enabled for the card itself */}
-      <div class="bg-white rounded-3xl max-w-sm w-full p-5 border border-slate-200 relative max-h-[80vh] overflow-y-auto pointer-events-auto">
+      <div class="bg-white rounded-3xl max-w-sm w-full p-5 border border-slate-200 relative max-h-[80vh] overflow-y-auto pointer-events-auto shadow-2xl">
         <button
           onClick$={onClose$}
           class="absolute top-4 right-4 p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-slate-100 transition-all cursor-pointer"
@@ -55,6 +55,7 @@ export const DayJobsPopover = component$<DayJobsPopoverProps>(({
               const hasValidService = typeof serviceType === "string" && serviceType.trim().length > 0;
               const team = job.team_id ? teamsMap.get(job.team_id) : null;
               const teamColor = team?.team_color || "#3B82F6";
+              const isCompleted = Boolean(job.completed);
 
               return (
                 <div
@@ -63,21 +64,50 @@ export const DayJobsPopover = component$<DayJobsPopoverProps>(({
                     onClose$();
                     onSelectJob$(job);
                   }}
-                  class="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200/60 transition cursor-pointer flex items-center justify-between gap-3"
+                  class={`p-3 rounded-xl border transition cursor-pointer flex items-center justify-between gap-3 ${
+                    isCompleted
+                      ? "bg-slate-100/60 border-slate-200/80 opacity-75"
+                      : "bg-slate-50 hover:bg-slate-100/80 border-slate-200/60"
+                  }`}
                 >
                   <div class="flex items-center gap-2.5 min-w-0">
                     <div
-                      class="w-3.5 h-3.5 rounded-full flex-shrink-0"
+                      class={`w-3.5 h-3.5 rounded-full flex-shrink-0 ${isCompleted ? "opacity-50" : ""}`}
                       style={{ backgroundColor: teamColor }}
                     />
                     <div class="min-w-0">
-                      <span class="text-xs font-bold text-gray-900 truncate block">{customerName}</span>
+                      <div class="flex items-center gap-1.5">
+                        <span
+                          class={`text-xs font-bold truncate block ${
+                            isCompleted ? "line-through text-gray-400" : "text-gray-900"
+                          }`}
+                        >
+                          {customerName}
+                        </span>
+                        {isCompleted && (
+                          <span class="px-1.5 py-0.2 text-[9px] font-bold uppercase rounded bg-emerald-100 text-emerald-800 tracking-wider flex-shrink-0">
+                            Done
+                          </span>
+                        )}
+                      </div>
                       {hasValidService && (
-                        <p class="text-[11px] text-gray-500 truncate">{serviceType}</p>
+                        <p
+                          class={`text-[11px] truncate ${
+                            isCompleted ? "line-through text-gray-400" : "text-gray-500"
+                          }`}
+                        >
+                          {serviceType}
+                        </p>
                       )}
                     </div>
                   </div>
-                  <span class="text-xs font-semibold text-green-600 flex-shrink-0">View</span>
+                  <span
+                    class={`text-xs font-semibold flex-shrink-0 ${
+                      isCompleted ? "text-gray-500 hover:text-gray-700" : "text-green-600"
+                    }`}
+                  >
+                    View
+                  </span>
                 </div>
               );
             })
@@ -98,7 +128,7 @@ export const DayJobsPopover = component$<DayJobsPopoverProps>(({
           class="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
         >
           <IconPlus class="w-4 h-4" />
-          <span>Add Job Here</span>
+          <span>Add Job to this Day</span>
         </button>
       </div>
     </div>

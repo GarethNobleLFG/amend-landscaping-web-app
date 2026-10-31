@@ -12,6 +12,7 @@ interface CalendarDayCellProps {
   jobs: Job[];
   teamsMap: Map<number, Team>;
   deleteAction: any;
+  updateAction?: any;
   onEditJob$: (job: Job) => void;
   onCreateJob$: (dateKey: string) => void;
   gridColumnStart?: number;
@@ -31,7 +32,7 @@ function hexToRgba(hex: string, alpha: number): string {
 }
 
 export const CalendarDayCell = component$<CalendarDayCellProps>(
-  ({ dayNumber, dateKey, isToday, jobs, teamsMap, deleteAction, onEditJob$, onCreateJob$, gridColumnStart }) => {
+  ({ dayNumber, dateKey, isToday, jobs, teamsMap, deleteAction, updateAction, onEditJob$, onCreateJob$, gridColumnStart }) => {
     const selectedJobForView = useSignal<Job | null>(null);
     const isPopoverOpen = useSignal(false);
     const style = gridColumnStart ? { gridColumnStart } : undefined;
@@ -66,15 +67,16 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
             }}
             class="min-h-[75px] p-2 bg-white rounded-xl border border-gray-200/70 shadow-2xs transition flex flex-col items-center justify-center gap-1.5 cursor-pointer active:bg-slate-50"
           >
-            {/* Perfectly centered day number */}
+            {/* Centered day number */}
             <span
-              class={`text-xs font-bold inline-flex items-center justify-center w-6 h-6 rounded-full leading-none ${isToday ? "bg-emerald-600 text-white shadow-xs" : "text-gray-700 bg-slate-100"
-                }`}
+              class={`text-xs font-bold inline-flex items-center justify-center w-6 h-6 rounded-full leading-none ${
+                isToday ? "bg-emerald-600 text-white shadow-xs" : "text-gray-700 bg-slate-100"
+              }`}
             >
               {dayNumber}
             </span>
 
-            {/* Perfectly centered team counts container */}
+            {/* Team counts */}
             {jobs.length > 0 ? (
               <div class="flex items-center justify-center gap-1 flex-wrap">
                 {teamCounts.map((tc, idx) => (
@@ -88,7 +90,7 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
                 ))}
               </div>
             ) : (
-              <div class="h-3" /> /* Maintains uniform cell vertical alignment */
+              <div class="h-3" />
             )}
           </div>
 
@@ -115,8 +117,9 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
         >
           <div class="flex items-center justify-between mb-1.5">
             <span
-              class={`text-xs font-semibold inline-flex items-center justify-center w-6 h-6 rounded-full ${isToday ? "bg-emerald-600 text-white" : "text-gray-700"
-                }`}
+              class={`text-xs font-semibold inline-flex items-center justify-center w-6 h-6 rounded-full ${
+                isToday ? "bg-emerald-600 text-white" : "text-gray-700"
+              }`}
             >
               {dayNumber}
             </span>
@@ -136,6 +139,7 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
               const team = job.team_id ? teamsMap.get(job.team_id) : null;
               const teamColor = team?.team_color || "#3B82F6";
               const bgTint = hexToRgba(teamColor, 0.12);
+              const isCompleted = Boolean(job.completed);
 
               return (
                 <div
@@ -144,18 +148,27 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
                     e.stopPropagation();
                     selectedJobForView.value = job;
                   }}
-                  class="px-2 py-1 text-xs font-medium leading-tight rounded border-l-2 transition truncate cursor-pointer hover:opacity-90"
+                  class={`px-2 py-1 text-xs font-medium leading-tight rounded border-l-2 transition truncate cursor-pointer hover:opacity-90 ${
+                    isCompleted ? "opacity-60 bg-slate-50" : ""
+                  }`}
                   style={{
-                    backgroundColor: bgTint,
+                    backgroundColor: isCompleted ? undefined : bgTint,
                     borderLeftColor: teamColor,
                   }}
-                  title={`${customerName}${hasValidService ? ` - ${serviceType}` : ""}`}
+                  title={`${customerName}${hasValidService ? ` - ${serviceType}` : ""}${isCompleted ? " (Completed)" : ""}`}
                 >
-                  <span class="font-semibold block truncate" style={{ color: teamColor }}>
+                  <span
+                    class={`font-semibold block truncate ${isCompleted ? "line-through text-gray-400" : ""}`}
+                    style={isCompleted ? undefined : { color: teamColor }}
+                  >
                     {customerName}
                   </span>
                   {hasValidService && (
-                    <span class="block text-[10px] text-gray-500 truncate">
+                    <span
+                      class={`block text-[10px] text-gray-500 truncate ${
+                        isCompleted ? "line-through text-gray-300" : ""
+                      }`}
+                    >
                       {serviceType}
                     </span>
                   )}
@@ -171,6 +184,7 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
             job={selectedJobForView.value}
             teamsMap={teamsMap}
             deleteAction={deleteAction}
+            updateAction={updateAction}
             onClose$={() => (selectedJobForView.value = null)}
             onEdit$={(job) => onEditJob$(job)}
           />

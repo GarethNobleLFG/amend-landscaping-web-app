@@ -131,6 +131,7 @@ export default component$(() => {
               jobs={dayJobs}
               teamsMap={teamsMap.value}
               deleteAction={deleteAction}
+              updateAction={updateAction}
               onEditJob$={(job) => {
                 editingJob.value = job;
               }}

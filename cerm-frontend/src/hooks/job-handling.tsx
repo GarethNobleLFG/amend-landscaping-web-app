@@ -35,6 +35,7 @@ export interface Job {
   end_time?: string | null;
   completed: boolean;
   notes?: string | null;
+  completed_notes?: string | null;
   job_profile?: JobProfile | null;
 }
 
@@ -229,6 +230,7 @@ export const useUpdateJob = globalAction$(
     end_time: z.string().optional().nullable(),
     completed: z.boolean().optional().default(false),
     notes: z.string().optional().nullable(),
+    completed_notes: z.string().optional().nullable(),
   })
 );
 
