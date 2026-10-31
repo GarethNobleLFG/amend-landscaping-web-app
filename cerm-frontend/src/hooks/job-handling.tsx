@@ -31,6 +31,9 @@ export interface Job {
   job_profile_id: number;
   team_id?: number | null;
   scheduled_day: string;
+  start_time?: string | null;
+  end_time?: string | null;
+  completed: boolean;
   notes?: string | null;
   job_profile?: JobProfile | null;
 }
@@ -182,6 +185,9 @@ export const useCreateJob = globalAction$(
     job_profile_id: z.coerce.number().min(1, "Job profile ID is required"),
     team_id: z.coerce.number().optional().nullable(),
     scheduled_day: z.string().min(1, "Scheduled day is required"),
+    start_time: z.string().optional().nullable(),
+    end_time: z.string().optional().nullable(),
+    completed: z.boolean().optional().default(false),
     notes: z.string().optional().nullable(),
   })
 );
@@ -219,6 +225,9 @@ export const useUpdateJob = globalAction$(
     job_profile_id: z.coerce.number().min(1, "Job profile ID is required"),
     team_id: z.coerce.number().optional().nullable(),
     scheduled_day: z.string().min(1, "Scheduled day is required"),
+    start_time: z.string().optional().nullable(),
+    end_time: z.string().optional().nullable(),
+    completed: z.boolean().optional().default(false),
     notes: z.string().optional().nullable(),
   })
 );
