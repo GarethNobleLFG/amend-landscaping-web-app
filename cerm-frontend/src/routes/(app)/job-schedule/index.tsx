@@ -25,16 +25,6 @@ export default component$(() => {
     return day;
   });
 
-  const startMonth = daysOfWeek[0].toLocaleString("en-US", { month: "long" });
-  const startDayNum = daysOfWeek[0].getDate();
-  const endMonth = daysOfWeek[6].toLocaleString("en-US", { month: "long" });
-  const endDayNum = daysOfWeek[6].getDate();
-
-  const dateRangeLabel =
-    startMonth === endMonth
-      ? `Week of ${startMonth} ${startDayNum} - ${endDayNum}`
-      : `Week of ${startMonth} ${startDayNum} - ${endMonth} ${endDayNum}`;
-
   const todayStr = formatDateISO(getESTDate());
 
   const jobsByDate = useComputed$(() => {
@@ -63,7 +53,6 @@ export default component$(() => {
     }
 
     const startDate = formatDateISO(targetDate);
-    
     const endDateObj = new Date(targetDate);
     endDateObj.setDate(targetDate.getDate() + 6);
     const endDate = formatDateISO(endDateObj);
@@ -72,18 +61,19 @@ export default component$(() => {
   });
 
   return (
-    <div class="min-h-screen bg-[#f3f6f9] p-6 text-slate-800 font-sans">
-      <div class="max-w-7xl mx-auto space-y-8">
+    <div class="min-h-screen bg-[#f3f6f9] px-2 py-3 sm:p-6 text-slate-800 font-sans">
+      <div class="max-w-7xl mx-auto space-y-4 sm:space-y-8">
         
-        {/* Modular Header */}
+        {/* Modular Header with passed Date objects */}
         <WeeklyHeader
           teamName={myTeamSignal.value?.name}
-          dateRangeLabel={dateRangeLabel}
+          startDate={daysOfWeek[0]}
+          endDate={daysOfWeek[6]}
           onNavigate$={handleNavigate$}
         />
 
-        {/* 7-Day Grid Layout */}
-        <div class="grid grid-cols-7 gap-2 sm:gap-4 pt-4">
+        {/* 7-Day Grid Layout (Fits screen fully, no scroll container) */}
+        <div class="grid grid-cols-7 gap-1 sm:gap-4 pt-2">
           {daysOfWeek.map((dayDate) => {
             const dateISO = formatDateISO(dayDate);
             const isToday = dateISO === todayStr;
