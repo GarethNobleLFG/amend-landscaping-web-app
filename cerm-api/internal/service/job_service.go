@@ -10,12 +10,12 @@ import (
 )
 
 type JobService interface {
-	CreateJob(ctx context.Context, jobProfileID int64, teamID *int64, scheduledDay time.Time, notes *string) (int64, error)
+	CreateJob(ctx context.Context, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string) (int64, error)
 	GetJobByID(ctx context.Context, id int64) (*repository.JobWithProfile, error)
 	GetAllJobs(ctx context.Context) ([]repository.JobWithProfile, error)
 	GetByMonthAndYear(ctx context.Context, month int, year int) ([]repository.JobWithProfile, error)
 	GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]repository.JobWithProfile, error)
-	UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, notes *string) error
+	UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string) error
 	DeleteJob(ctx context.Context, id int64) error
 }
 
@@ -28,7 +28,7 @@ func NewJobService(jobRepo repository.JobRepository) JobService {
 }
 
 // CreateJob validates and creates a new job record
-func (s *jobService) CreateJob(ctx context.Context, jobProfileID int64, teamID *int64, scheduledDay time.Time, notes *string) (int64, error) {
+func (s *jobService) CreateJob(ctx context.Context, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string) (int64, error) {
 	if jobProfileID <= 0 {
 		return 0, fmt.Errorf("invalid job profile ID")
 	}
@@ -37,6 +37,9 @@ func (s *jobService) CreateJob(ctx context.Context, jobProfileID int64, teamID *
 		JobProfileID: jobProfileID,
 		TeamID:       teamID,
 		ScheduledDay: scheduledDay,
+		StartTime:    startTime,
+		EndTime:      endTime,
+		Completed:    completed,
 		Notes:        notes,
 	}
 
@@ -91,7 +94,6 @@ func (s *jobService) GetByMonthAndYear(ctx context.Context, month int, year int)
 
 // GetByWeekAndTeam retrieves jobs for a specific team within the given week date range
 func (s *jobService) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]repository.JobWithProfile, error) {
-	// Optional: Add validation or normalization for dates (e.g., setting start to 00:00:00 and end to 23:59:59)
 	normalizedStart := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, startDate.Location())
 	normalizedEnd := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 999999999, endDate.Location())
 
@@ -104,7 +106,7 @@ func (s *jobService) GetByWeekAndTeam(ctx context.Context, teamID int64, startDa
 }
 
 // UpdateJob updates an existing job record
-func (s *jobService) UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, notes *string) error {
+func (s *jobService) UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string) error {
 	if id <= 0 {
 		return fmt.Errorf("invalid job ID")
 	}
@@ -117,6 +119,9 @@ func (s *jobService) UpdateJob(ctx context.Context, id int64, jobProfileID int64
 		JobProfileID: jobProfileID,
 		TeamID:       teamID,
 		ScheduledDay: scheduledDay,
+		StartTime:    startTime,
+		EndTime:      endTime,
+		Completed:    completed,
 		Notes:        notes,
 	}
 

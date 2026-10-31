@@ -21,9 +21,9 @@ func RegisterJobRoutes(app *fiber.App, db *sql.DB) {
 	jobs.Get("/", jobHandler.GetAll)
 	jobs.Get("/month", jobHandler.GetByMonthAndYear)
 	jobs.Get("/:id", jobHandler.GetByID)
-	jobs.Put("/:id", jobHandler.Update)
 	jobs.Delete("/:id", jobHandler.Delete)
 
 	teamJobs := app.Group("/api/jobs/team", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN", "TEAM LEAD", "EMPLOYEE"))
 	teamJobs.Get("/week", jobHandler.GetByWeekAndTeam)
+	teamJobs.Put("/:id", jobHandler.Update)
 }

@@ -21,6 +21,9 @@ type createJobRequest struct {
 	JobProfileID int64   `json:"job_profile_id" form:"job_profile_id"`
 	TeamID       *int64  `json:"team_id" form:"team_id"`
 	ScheduledDay string  `json:"scheduled_day" form:"scheduled_day"` // Expected format: "YYYY-MM-DD"
+	StartTime    *string `json:"start_time" form:"start_time"`       // Expected format: RFC3339
+	EndTime      *string `json:"end_time" form:"end_time"`           // Expected format: RFC3339
+	Completed    bool    `json:"completed" form:"completed"`
 	Notes        *string `json:"notes" form:"notes"`
 }
 
@@ -28,6 +31,9 @@ type updateJobRequest struct {
 	JobProfileID int64   `json:"job_profile_id" form:"job_profile_id"`
 	TeamID       *int64  `json:"team_id" form:"team_id"`
 	ScheduledDay string  `json:"scheduled_day" form:"scheduled_day"` // Expected format: "YYYY-MM-DD"
+	StartTime    *string `json:"start_time" form:"start_time"`       // Expected format: RFC3339
+	EndTime      *string `json:"end_time" form:"end_time"`           // Expected format: RFC3339
+	Completed    bool    `json:"completed" form:"completed"`
 	Notes        *string `json:"notes" form:"notes"`
 }
 
@@ -47,7 +53,25 @@ func (h *JobHandler) Create(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid date format. Use YYYY-MM-DD"})
 	}
 
-	id, err := h.service.CreateJob(c.UserContext(), req.JobProfileID, req.TeamID, scheduledDay, req.Notes)
+	var startTime *time.Time
+	if req.StartTime != nil && *req.StartTime != "" {
+		parsedStart, err := time.Parse(time.RFC3339, *req.StartTime)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid start time format. Use RFC3339"})
+		}
+		startTime = &parsedStart
+	}
+
+	var endTime *time.Time
+	if req.EndTime != nil && *req.EndTime != "" {
+		parsedEnd, err := time.Parse(time.RFC3339, *req.EndTime)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid end time format. Use RFC3339"})
+		}
+		endTime = &parsedEnd
+	}
+
+	id, err := h.service.CreateJob(c.UserContext(), req.JobProfileID, req.TeamID, scheduledDay, startTime, endTime, req.Completed, req.Notes)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -163,7 +187,25 @@ func (h *JobHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid date format. Use YYYY-MM-DD"})
 	}
 
-	err = h.service.UpdateJob(c.UserContext(), id, req.JobProfileID, req.TeamID, scheduledDay, req.Notes)
+	var startTime *time.Time
+	if req.StartTime != nil && *req.StartTime != "" {
+		parsedStart, err := time.Parse(time.RFC3339, *req.StartTime)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid start time format. Use RFC3339"})
+		}
+		startTime = &parsedStart
+	}
+
+	var endTime *time.Time
+	if req.EndTime != nil && *req.EndTime != "" {
+		parsedEnd, err := time.Parse(time.RFC3339, *req.EndTime)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid end time format. Use RFC3339"})
+		}
+		endTime = &parsedEnd
+	}
+
+	err = h.service.UpdateJob(c.UserContext(), id, req.JobProfileID, req.TeamID, scheduledDay, startTime, endTime, req.Completed, req.Notes)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

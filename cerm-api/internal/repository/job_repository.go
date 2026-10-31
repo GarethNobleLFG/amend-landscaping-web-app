@@ -28,6 +28,9 @@ type JobWithProfile struct {
 	JobProfileID int64             `json:"job_profile_id"`
 	TeamID       *int64            `json:"team_id"`
 	ScheduledDay time.Time         `json:"scheduled_day"`
+	StartTime    *time.Time        `json:"start_time"`
+	EndTime      *time.Time        `json:"end_time"`
+	Completed    bool              `json:"completed"`
 	Notes        *string           `json:"notes"`
 	JobProfile   *model.JobProfile `json:"job_profile,omitempty"`
 }
@@ -39,10 +42,10 @@ func NewJobRepository(db *sql.DB) JobRepository {
 // Create inserts a new job record and returns its generated ID
 func (r *jobRepo) Create(ctx context.Context, job *model.Job) (int64, error) {
 	query := `
-		INSERT INTO jobs (job_profile_id, team_id, scheduled_day, notes)
-		VALUES ($1, $2, $3, $4)
-		RETURNING id
-	`
+        INSERT INTO jobs (job_profile_id, team_id, scheduled_day, start_time, end_time, completed, notes)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id
+    `
 	var id int64
 	err := r.db.QueryRowContext(
 		ctx,
@@ -50,6 +53,9 @@ func (r *jobRepo) Create(ctx context.Context, job *model.Job) (int64, error) {
 		job.JobProfileID,
 		job.TeamID,
 		job.ScheduledDay,
+		job.StartTime,
+		job.EndTime,
+		job.Completed,
 		job.Notes,
 	).Scan(&id)
 
@@ -63,16 +69,16 @@ func (r *jobRepo) Create(ctx context.Context, job *model.Job) (int64, error) {
 // GetByID retrieves a single job by its primary key ID
 func (r *jobRepo) GetByID(ctx context.Context, id int64) (*JobWithProfile, error) {
 	query := `
-		SELECT 
-			j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.notes,
-			p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
-			p.services_requested, p.scheduled_date, p.description, p.approved, 
-			p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
-			p.job_payout, p.created_at, p.updated_at
-		FROM jobs j
-		LEFT JOIN job_profiles p ON j.job_profile_id = p.id
-		WHERE j.id = $1
-	`
+        SELECT 
+            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes,
+            p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
+            p.services_requested, p.scheduled_date, p.description, p.approved, 
+            p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
+            p.job_payout, p.created_at, p.updated_at
+        FROM jobs j
+        LEFT JOIN job_profiles p ON j.job_profile_id = p.id
+        WHERE j.id = $1
+    `
 
 	var res JobWithProfile
 	var profile model.JobProfile
@@ -82,6 +88,9 @@ func (r *jobRepo) GetByID(ctx context.Context, id int64) (*JobWithProfile, error
 		&res.JobProfileID,
 		&res.TeamID,
 		&res.ScheduledDay,
+		&res.StartTime,
+		&res.EndTime,
+		&res.Completed,
 		&res.Notes,
 		&profile.ID,
 		&profile.Name,
@@ -119,16 +128,16 @@ func (r *jobRepo) GetByID(ctx context.Context, id int64) (*JobWithProfile, error
 // GetAll retrieves all jobs ordered by scheduled date along with associated job profile fields
 func (r *jobRepo) GetAll(ctx context.Context) ([]JobWithProfile, error) {
 	query := `
-		SELECT 
-			j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.notes,
-			p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
-			p.services_requested, p.scheduled_date, p.description, p.approved, 
-			p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
-			p.job_payout, p.created_at, p.updated_at
-		FROM jobs j
-		LEFT JOIN job_profiles p ON j.job_profile_id = p.id
-		ORDER BY j.scheduled_day ASC
-	`
+        SELECT 
+            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes,
+            p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
+            p.services_requested, p.scheduled_date, p.description, p.approved, 
+            p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
+            p.job_payout, p.created_at, p.updated_at
+        FROM jobs j
+        LEFT JOIN job_profiles p ON j.job_profile_id = p.id
+        ORDER BY j.scheduled_day ASC
+    `
 
 	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
@@ -146,6 +155,9 @@ func (r *jobRepo) GetAll(ctx context.Context) ([]JobWithProfile, error) {
 			&res.JobProfileID,
 			&res.TeamID,
 			&res.ScheduledDay,
+			&res.StartTime,
+			&res.EndTime,
+			&res.Completed,
 			&res.Notes,
 			&profile.ID,
 			&profile.Name,
@@ -181,18 +193,18 @@ func (r *jobRepo) GetAll(ctx context.Context) ([]JobWithProfile, error) {
 // GetByMonthAndYear retrieves all jobs scheduled in a specific month and year with job profile fields
 func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([]JobWithProfile, error) {
 	query := `
-		SELECT 
-			j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.notes,
-			p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
-			p.services_requested, p.scheduled_date, p.description, p.approved, 
-			p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
-			p.job_payout, p.created_at, p.updated_at
-		FROM jobs j
-		LEFT JOIN job_profiles p ON j.job_profile_id = p.id
-		WHERE EXTRACT(MONTH FROM j.scheduled_day) = $1 
-		  AND EXTRACT(YEAR FROM j.scheduled_day) = $2
-		ORDER BY j.scheduled_day ASC
-	`
+        SELECT 
+            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes,
+            p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
+            p.services_requested, p.scheduled_date, p.description, p.approved, 
+            p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
+            p.job_payout, p.created_at, p.updated_at
+        FROM jobs j
+        LEFT JOIN job_profiles p ON j.job_profile_id = p.id
+        WHERE EXTRACT(MONTH FROM j.scheduled_day) = $1 
+          AND EXTRACT(YEAR FROM j.scheduled_day) = $2
+        ORDER BY j.scheduled_day ASC
+    `
 
 	rows, err := r.db.QueryContext(ctx, query, month, year)
 	if err != nil {
@@ -210,6 +222,9 @@ func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([
 			&res.JobProfileID,
 			&res.TeamID,
 			&res.ScheduledDay,
+			&res.StartTime,
+			&res.EndTime,
+			&res.Completed,
 			&res.Notes,
 			&profile.ID,
 			&profile.Name,
@@ -246,7 +261,7 @@ func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([
 func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]JobWithProfile, error) {
 	query := `
         SELECT 
-            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.notes,
+            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes,
             p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
             p.services_requested, p.scheduled_date, p.description, p.approved, 
             p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
@@ -275,6 +290,9 @@ func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate 
 			&res.JobProfileID,
 			&res.TeamID,
 			&res.ScheduledDay,
+			&res.StartTime,
+			&res.EndTime,
+			&res.Completed,
 			&res.Notes,
 			&profile.ID,
 			&profile.Name,
@@ -310,16 +328,19 @@ func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate 
 // Update modifies an existing job record by ID
 func (r *jobRepo) Update(ctx context.Context, job *model.Job) error {
 	query := `
-		UPDATE jobs
-		SET job_profile_id = $1, team_id = $2, scheduled_day = $3, notes = $4
-		WHERE id = $5
-	`
+        UPDATE jobs
+        SET job_profile_id = $1, team_id = $2, scheduled_day = $3, start_time = $4, end_time = $5, completed = $6, notes = $7
+        WHERE id = $8
+    `
 	result, err := r.db.ExecContext(
 		ctx,
 		query,
 		job.JobProfileID,
 		job.TeamID,
 		job.ScheduledDay,
+		job.StartTime,
+		job.EndTime,
+		job.Completed,
 		job.Notes,
 		job.ID,
 	)
