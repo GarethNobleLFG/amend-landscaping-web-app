@@ -28,13 +28,14 @@ type createJobRequest struct {
 }
 
 type updateJobRequest struct {
-	JobProfileID int64   `json:"job_profile_id" form:"job_profile_id"`
-	TeamID       *int64  `json:"team_id" form:"team_id"`
-	ScheduledDay string  `json:"scheduled_day" form:"scheduled_day"` // Expected format: "YYYY-MM-DD"
-	StartTime    *string `json:"start_time" form:"start_time"`       // Expected format: RFC3339
-	EndTime      *string `json:"end_time" form:"end_time"`           // Expected format: RFC3339
-	Completed    bool    `json:"completed" form:"completed"`
-	Notes        *string `json:"notes" form:"notes"`
+	JobProfileID   int64   `json:"job_profile_id" form:"job_profile_id"`
+	TeamID         *int64  `json:"team_id" form:"team_id"`
+	ScheduledDay   string  `json:"scheduled_day" form:"scheduled_day"` // Expected format: "YYYY-MM-DD"
+	StartTime      *string `json:"start_time" form:"start_time"`       // Expected format: RFC3339
+	EndTime        *string `json:"end_time" form:"end_time"`           // Expected format: RFC3339
+	Completed      bool    `json:"completed" form:"completed"`
+	Notes          *string `json:"notes" form:"notes"`
+	CompletedNotes *string `json:"completed_notes" form:"completed_notes"`
 }
 
 // POST /api/jobs
@@ -76,23 +77,10 @@ func (h *JobHandler) Create(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"id": id, "success": true})
-}
-
-// GET /api/jobs/:id
-func (h *JobHandler) GetByID(c *fiber.Ctx) error {
-	idParam := c.Params("id")
-	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil || id <= 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid job ID"})
-	}
-
-	job, err := h.service.GetJobByID(c.UserContext(), id)
-	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Job not found"})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(job)
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"id":      id,
+		"message": "Job successfully created",
+	})
 }
 
 // GET /api/jobs
@@ -105,23 +93,23 @@ func (h *JobHandler) GetAll(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(jobs)
 }
 
-// GET /api/jobs/month?month=X&year=YYYY
+// GET /api/jobs/month?month=X&year=Y
 func (h *JobHandler) GetByMonthAndYear(c *fiber.Ctx) error {
 	monthStr := c.Query("month")
 	yearStr := c.Query("year")
 
 	if monthStr == "" || yearStr == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Month and year query parameters are required"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Query parameters 'month' and 'year' are required"})
 	}
 
 	month, err := strconv.Atoi(monthStr)
-	if err != nil || month < 1 || month > 12 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid month parameter"})
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid month format"})
 	}
 
 	year, err := strconv.Atoi(yearStr)
-	if err != nil || year < 2000 || year > 2100 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid year parameter"})
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid year format"})
 	}
 
 	jobs, err := h.service.GetByMonthAndYear(c.UserContext(), month, year)
@@ -132,13 +120,29 @@ func (h *JobHandler) GetByMonthAndYear(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(jobs)
 }
 
-// GET /api/jobs/week?start=YYYY-MM-DD&end=YYYY-MM-DD
+// GET /api/jobs/:id
+func (h *JobHandler) GetByID(c *fiber.Ctx) error {
+	idParam := c.Params("id")
+	id, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil || id <= 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid job ID"})
+	}
+
+	job, err := h.service.GetJobByID(c.UserContext(), id)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(job)
+}
+
+// GET /api/jobs/team/week?start=YYYY-MM-DD&end=YYYY-MM-DD
 func (h *JobHandler) GetByWeekAndTeam(c *fiber.Ctx) error {
 	startStr := c.Query("start")
 	endStr := c.Query("end")
 
 	if startStr == "" || endStr == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Start and end date query parameters are required (YYYY-MM-DD)"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Query parameters 'start' and 'end' are required"})
 	}
 
 	startDate, err := time.Parse("2006-01-02", startStr)
@@ -151,7 +155,6 @@ func (h *JobHandler) GetByWeekAndTeam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid end date format. Use YYYY-MM-DD"})
 	}
 
-	// Extract team ID strictly from the auth middleware context (`c.Locals`)
 	userTeamID, ok := c.Locals("teamID").(*int64)
 	if !ok || userTeamID == nil {
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Team ID is missing from user session"})
@@ -205,7 +208,18 @@ func (h *JobHandler) Update(c *fiber.Ctx) error {
 		endTime = &parsedEnd
 	}
 
-	err = h.service.UpdateJob(c.UserContext(), id, req.JobProfileID, req.TeamID, scheduledDay, startTime, endTime, req.Completed, req.Notes)
+	err = h.service.UpdateJob(
+		c.UserContext(),
+		id,
+		req.JobProfileID,
+		req.TeamID,
+		scheduledDay,
+		startTime,
+		endTime,
+		req.Completed,
+		req.Notes,
+		req.CompletedNotes,
+	)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

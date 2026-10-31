@@ -15,7 +15,7 @@ type JobService interface {
 	GetAllJobs(ctx context.Context) ([]repository.JobWithProfile, error)
 	GetByMonthAndYear(ctx context.Context, month int, year int) ([]repository.JobWithProfile, error)
 	GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]repository.JobWithProfile, error)
-	UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string) error
+	UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, completedNotes *string) error
 	DeleteJob(ctx context.Context, id int64) error
 }
 
@@ -106,7 +106,7 @@ func (s *jobService) GetByWeekAndTeam(ctx context.Context, teamID int64, startDa
 }
 
 // UpdateJob updates an existing job record
-func (s *jobService) UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string) error {
+func (s *jobService) UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, completedNotes *string) error {
 	if id <= 0 {
 		return fmt.Errorf("invalid job ID")
 	}
@@ -115,14 +115,15 @@ func (s *jobService) UpdateJob(ctx context.Context, id int64, jobProfileID int64
 	}
 
 	job := &model.Job{
-		ID:           id,
-		JobProfileID: jobProfileID,
-		TeamID:       teamID,
-		ScheduledDay: scheduledDay,
-		StartTime:    startTime,
-		EndTime:      endTime,
-		Completed:    completed,
-		Notes:        notes,
+		ID:             id,
+		JobProfileID:   jobProfileID,
+		TeamID:         teamID,
+		ScheduledDay:   scheduledDay,
+		StartTime:      startTime,
+		EndTime:        endTime,
+		Completed:      completed,
+		Notes:          notes,
+		CompletedNotes: completedNotes,
 	}
 
 	err := s.jobRepo.Update(ctx, job)

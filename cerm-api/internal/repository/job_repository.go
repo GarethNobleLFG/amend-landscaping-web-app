@@ -24,15 +24,16 @@ type jobRepo struct {
 }
 
 type JobWithProfile struct {
-	ID           int64             `json:"id"`
-	JobProfileID int64             `json:"job_profile_id"`
-	TeamID       *int64            `json:"team_id"`
-	ScheduledDay time.Time         `json:"scheduled_day"`
-	StartTime    *time.Time        `json:"start_time"`
-	EndTime      *time.Time        `json:"end_time"`
-	Completed    bool              `json:"completed"`
-	Notes        *string           `json:"notes"`
-	JobProfile   *model.JobProfile `json:"job_profile,omitempty"`
+	ID             int64             `json:"id"`
+	JobProfileID   int64             `json:"job_profile_id"`
+	TeamID         *int64            `json:"team_id"`
+	ScheduledDay   time.Time         `json:"scheduled_day"`
+	StartTime      *time.Time        `json:"start_time"`
+	EndTime        *time.Time        `json:"end_time"`
+	Completed      bool              `json:"completed"`
+	Notes          *string           `json:"notes"`
+	CompletedNotes *string           `json:"completed_notes,omitempty"`
+	JobProfile     *model.JobProfile `json:"job_profile,omitempty"`
 }
 
 func NewJobRepository(db *sql.DB) JobRepository {
@@ -194,7 +195,7 @@ func (r *jobRepo) GetAll(ctx context.Context) ([]JobWithProfile, error) {
 func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([]JobWithProfile, error) {
 	query := `
         SELECT 
-            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes,
+            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes, j.completed_notes,
             p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
             p.services_requested, p.scheduled_date, p.description, p.approved, 
             p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
@@ -226,6 +227,7 @@ func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([
 			&res.EndTime,
 			&res.Completed,
 			&res.Notes,
+			&res.CompletedNotes,
 			&profile.ID,
 			&profile.Name,
 			&profile.Email,
@@ -257,7 +259,7 @@ func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([
 	return jobs, nil
 }
 
-// GetByWeekAndTeam retrieves jobs assigned to a specific team within a given date range (week)
+// GetByWeekAndTeam fetches jobs scheduled for a specific team within an inclusive date range [startDate, endDate]
 func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]JobWithProfile, error) {
 	query := `
         SELECT 
@@ -276,7 +278,7 @@ func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate 
 
 	rows, err := r.db.QueryContext(ctx, query, teamID, startDate, endDate)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query jobs by week and team: %w", err)
+		return nil, fmt.Errorf("failed to query weekly jobs by team: %w", err)
 	}
 	defer rows.Close()
 
@@ -315,7 +317,7 @@ func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate 
 			&profile.CreatedAt,
 			&profile.UpdatedAt,
 		); err != nil {
-			return nil, fmt.Errorf("failed to scan job row: %w", err)
+			return nil, fmt.Errorf("failed to scan weekly job row: %w", err)
 		}
 
 		res.JobProfile = &profile
@@ -329,8 +331,8 @@ func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate 
 func (r *jobRepo) Update(ctx context.Context, job *model.Job) error {
 	query := `
         UPDATE jobs
-        SET job_profile_id = $1, team_id = $2, scheduled_day = $3, start_time = $4, end_time = $5, completed = $6, notes = $7
-        WHERE id = $8
+        SET job_profile_id = $1, team_id = $2, scheduled_day = $3, start_time = $4, end_time = $5, completed = $6, notes = $7, completed_notes = $8
+        WHERE id = $9
     `
 	result, err := r.db.ExecContext(
 		ctx,
@@ -342,6 +344,7 @@ func (r *jobRepo) Update(ctx context.Context, job *model.Job) error {
 		job.EndTime,
 		job.Completed,
 		job.Notes,
+		job.CompletedNotes,
 		job.ID,
 	)
 	if err != nil {
