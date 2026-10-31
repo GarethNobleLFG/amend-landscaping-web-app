@@ -89,33 +89,33 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
     <div class="w-full bg-white rounded-xl overflow-hidden border-0 shadow-none">
       {/* Unexpanded Header Bar */}
       <div
-        class="flex items-center justify-between p-3.5 cursor-pointer select-none"
+        class="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 cursor-pointer select-none gap-2 sm:gap-4"
         onClick$={() => (isExpanded.value = !isExpanded.value)}
       >
-        <div class="flex items-center gap-4 min-w-0 pr-2">
-          <span class="font-semibold text-gray-900 text-sm truncate">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 min-w-0 w-full">
+          <span class="font-bold sm:font-semibold text-gray-900 text-sm sm:text-base truncate">
             {profile?.name || "Unnamed Job"}
           </span>
 
           {fullAddress && (
-            <div class="flex items-center gap-2">
-              <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-gray-300 bg-white shadow-none">
-                <span class="text-sm text-gray-600 truncate max-w-xs sm:max-w-sm">
+            <div class="flex items-center gap-2 flex-wrap">
+              <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-200 bg-slate-50/60 sm:bg-white shadow-none max-w-full">
+                <span class="text-xs sm:text-sm text-gray-600 truncate max-w-[220px] xs:max-w-xs sm:max-w-sm">
                   {fullAddress}
                 </span>
 
                 <button
                   type="button"
-                  class="p-1 text-gray-400 hover:text-gray-700 transition-colors rounded flex items-center justify-center flex-shrink-0"
+                  class="p-1.5 text-gray-400 hover:text-gray-700 transition-colors rounded flex items-center justify-center flex-shrink-0"
                   onClick$={copyAddress$}
                   title="Copy address"
                 >
                   {copied.value ? (
-                    <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                   )}
@@ -123,7 +123,7 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
               </div>
 
               {copied.value && (
-                <span class="text-xs font-medium text-emerald-600 whitespace-nowrap animate-fade-in">
+                <span class="text-xs font-semibold text-emerald-600 whitespace-nowrap animate-fade-in">
                   Address copied!
                 </span>
               )}
@@ -131,7 +131,10 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
           )}
         </div>
 
-        <div class="flex items-center gap-2 flex-shrink-0">
+        <div class="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pt-1 sm:pt-0 border-t sm:border-0 border-gray-100">
+          <span class="text-xs text-gray-400 sm:hidden font-medium">
+            {isExpanded.value ? "Collapse details" : "Tap to view details"}
+          </span>
           <div
             class={`transform transition-transform duration-200 text-gray-400 p-1 ${
               isExpanded.value ? "rotate-180" : ""
@@ -144,18 +147,18 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
 
       {/* Expanded Detailed Content Area */}
       {isExpanded.value && (
-        <div class="p-4 bg-slate-50/50 flex flex-col gap-6 text-sm text-gray-700">
+        <div class="p-3 sm:p-4 bg-slate-50/50 flex flex-col gap-4 sm:gap-6 text-sm text-gray-700 border-t border-slate-100">
           {/* Personal / Company Information Section */}
           <div>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5 sm:mb-3">
               {isCommercial ? "Company Information" : "Personal Information"}
             </h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60 text-sm">
               <div>
                 <span class="block text-xs font-semibold text-gray-500 mb-0.5">
                   {isCommercial ? "Company Contact Email" : "Email"}
                 </span>
-                <span class="text-gray-900 font-medium">{profile?.email || "N/A"}</span>
+                <span class="text-gray-900 font-medium break-all">{profile?.email || "N/A"}</span>
               </div>
               <div>
                 <span class="block text-xs font-semibold text-gray-500 mb-0.5">
@@ -174,16 +177,16 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
 
           {/* Requested Services Bullet Points Section */}
           <div>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5 sm:mb-3">
               Requested Services
             </h4>
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
+            <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60 text-sm">
               {activeServices.length > 0 ? (
                 <ul class="space-y-2">
                   {activeServices.map((service, idx) => (
                     <li key={idx} class="flex items-center gap-2.5 text-gray-900 font-medium">
                       <span class="w-1.5 h-1.5 rounded-full bg-green-600 flex-shrink-0" />
-                      <span>{service}</span>
+                      <span class="break-words">{service}</span>
                     </li>
                   ))}
                 </ul>
@@ -194,18 +197,18 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
           </div>
 
           {/* Vertical Notes Sections */}
-          <div class="flex flex-col gap-4">
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+          <div class="flex flex-col gap-3 sm:gap-4">
+            <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60">
               <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
                 Job Notes
               </h4>
-              <p class="text-sm text-gray-700 whitespace-pre-wrap">{job.notes || "N/A"}</p>
+              <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{job.notes || "N/A"}</p>
             </div>
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+            <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60">
               <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
                 {isCommercial ? "Commercial Client Notes" : "Customer Submitted Notes"}
               </h4>
-              <p class="text-sm text-gray-700 whitespace-pre-wrap">{profile?.description || "N/A"}</p>
+              <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{profile?.description || "N/A"}</p>
             </div>
           </div>
         </div>
