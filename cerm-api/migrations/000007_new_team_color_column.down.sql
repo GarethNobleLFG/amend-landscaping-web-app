@@ -1,0 +1,2 @@
+ALTER TABLE teams
+DROP COLUMN IF EXISTS team_color;

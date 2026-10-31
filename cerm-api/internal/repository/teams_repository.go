@@ -25,11 +25,11 @@ func NewTeamRepository(db *sql.DB) TeamRepository {
 
 func (r *teamRepository) Create(ctx context.Context, team *model.Team) error {
 	query := `
-        INSERT INTO teams (name)
-        VALUES ($1)
-        RETURNING id, created_at, updated_at
-    `
-	return r.db.QueryRowContext(ctx, query, team.Name).Scan(
+		INSERT INTO teams (name, team_color)
+		VALUES ($1, $2)
+		RETURNING id, created_at, updated_at
+	`
+	return r.db.QueryRowContext(ctx, query, team.Name, team.TeamColor).Scan(
 		&team.ID,
 		&team.CreatedAt,
 		&team.UpdatedAt,
@@ -37,11 +37,12 @@ func (r *teamRepository) Create(ctx context.Context, team *model.Team) error {
 }
 
 func (r *teamRepository) FindByID(ctx context.Context, id int) (*model.Team, error) {
-	query := `SELECT id, name, created_at, updated_at FROM teams WHERE id = $1`
+	query := `SELECT id, name, team_color, created_at, updated_at FROM teams WHERE id = $1`
 	team := &model.Team{}
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&team.ID,
 		&team.Name,
+		&team.TeamColor,
 		&team.CreatedAt,
 		&team.UpdatedAt,
 	)
@@ -52,7 +53,7 @@ func (r *teamRepository) FindByID(ctx context.Context, id int) (*model.Team, err
 }
 
 func (r *teamRepository) FindAll(ctx context.Context) ([]*model.Team, error) {
-	query := `SELECT id, name, created_at, updated_at FROM teams`
+	query := `SELECT id, name, team_color, created_at, updated_at FROM teams`
 	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -65,6 +66,7 @@ func (r *teamRepository) FindAll(ctx context.Context) ([]*model.Team, error) {
 		err := rows.Scan(
 			&team.ID,
 			&team.Name,
+			&team.TeamColor,
 			&team.CreatedAt,
 			&team.UpdatedAt,
 		)
@@ -83,12 +85,12 @@ func (r *teamRepository) FindAll(ctx context.Context) ([]*model.Team, error) {
 
 func (r *teamRepository) Update(ctx context.Context, team *model.Team) error {
 	query := `
-        UPDATE teams 
-        SET name = $1, updated_at = CURRENT_TIMESTAMP 
-        WHERE id = $2
-        RETURNING updated_at
-    `
-	return r.db.QueryRowContext(ctx, query, team.Name, team.ID).Scan(&team.UpdatedAt)
+		UPDATE teams 
+		SET name = $1, team_color = $2, updated_at = CURRENT_TIMESTAMP 
+		WHERE id = $3
+		RETURNING updated_at
+	`
+	return r.db.QueryRowContext(ctx, query, team.Name, team.TeamColor, team.ID).Scan(&team.UpdatedAt)
 }
 
 func (r *teamRepository) Delete(ctx context.Context, id int) error {

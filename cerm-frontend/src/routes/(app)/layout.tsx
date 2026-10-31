@@ -2,7 +2,7 @@ import { component$, Slot, $, useSignal } from "@builder.io/qwik";
 import { Link, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { useAuthUser } from "~/hooks/user-auth";
 import { useUnapprovedProfiles } from "~/hooks/job-profile-handling";
-import { IconDashboard, IconIntake, IconSend, IconChecklist, IconUsers, IconTeams, IconDotsVertical, IconLogOut } from "~/components/ui/icons";
+import { IconDashboard, IconIntake, IconSend, IconChecklist, IconUsers, IconTeams, IconDotsVertical, IconLogOut, IconCalendar } from "~/components/ui/icons";
 
 // ============================================================================
 // 1. RE-EXPORT ROUTE LOADERS
@@ -44,7 +44,14 @@ export default component$(() => {
       label: "Dashboard",
       href: "/dashboard/",
       icon: IconDashboard,
-      roles: ["ADMIN"],
+      roles: ["ADMIN", "TEAM LEAD", "EMPLOYEE"],
+    },
+    {
+      id: "job-schedule",
+      label: "Job Schedule",
+      href: "/job-schedule/",
+      icon: IconCalendar,
+      roles: ["TEAM LEAD", "EMPLOYEE"],
     },
     {
       id: "intake",
@@ -154,11 +161,10 @@ export default component$(() => {
               <Link
                 key={item.id}
                 href={item.href}
-                class={`w-full flex items-center gap-4 p-3.5 text-base font-semibold rounded-2xl ${
-                  isActive
+                class={`w-full flex items-center gap-4 p-3.5 text-base font-semibold rounded-2xl ${isActive
                     ? "bg-green-600 text-white font-bold shadow-md shadow-green-600/20"
                     : "text-gray-700 hover:bg-gray-200/80 hover:text-gray-900"
-                }`}
+                  }`}
               >
                 {/* Nav Icon with Badge Overlay */}
                 <div class="flex-shrink-0 flex items-center justify-center relative">
@@ -166,13 +172,12 @@ export default component$(() => {
 
                   {item.badge !== undefined && item.badge > 0 && (
                     <span
-                      class={`absolute -top-2 -right-3 px-2 py-0.5 min-w-[22px] h-5 rounded-full text-xs font-bold leading-none flex items-center justify-center transition-all ${
-                        item.isRedBadge
+                      class={`absolute -top-2 -right-3 px-2 py-0.5 min-w-[22px] h-5 rounded-full text-xs font-bold leading-none flex items-center justify-center transition-all ${item.isRedBadge
                           ? "bg-rose-500 text-white shadow-lg shadow-rose-500/50 animate-pulse"
                           : isActive
-                          ? "bg-white text-green-800 shadow-sm"
-                          : "bg-slate-200/90 text-slate-700 shadow-sm"
-                      }`}
+                            ? "bg-white text-green-800 shadow-sm"
+                            : "bg-slate-200/90 text-slate-700 shadow-sm"
+                        }`}
                     >
                       {item.badge}
                     </span>
@@ -181,9 +186,8 @@ export default component$(() => {
 
                 {/* Label Revealed on Sidebar Hover */}
                 <span
-                  class={`opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-xs whitespace-nowrap overflow-hidden text-sm ${
-                    isActive ? "text-white" : "text-gray-700"
-                  }`}
+                  class={`opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-xs whitespace-nowrap overflow-hidden text-sm ${isActive ? "text-white" : "text-gray-700"
+                    }`}
                 >
                   {item.label}
                 </span>
@@ -225,21 +229,19 @@ export default component$(() => {
                       isMobileMenuOpen.value = false;
                       await nav(item.href);
                     }}
-                    class={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-                      isActive
+                    class={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${isActive
                         ? "bg-green-600 text-white font-bold shadow-sm"
                         : "text-gray-700 hover:bg-slate-100 active:bg-slate-200"
-                    }`}
+                      }`}
                   >
                     <div class="relative flex-shrink-0">
                       <IconComponent class={`w-5 h-5 ${isActive ? "text-white" : "text-gray-600"}`} />
                       {item.badge !== undefined && item.badge > 0 && (
                         <span
-                          class={`absolute -top-1 -right-2 px-1.5 py-0.2 min-w-[14px] h-3.5 rounded-full text-[9px] font-bold leading-none flex items-center justify-center ${
-                            item.isRedBadge
+                          class={`absolute -top-1 -right-2 px-1.5 py-0.2 min-w-[14px] h-3.5 rounded-full text-[9px] font-bold leading-none flex items-center justify-center ${item.isRedBadge
                               ? "bg-rose-500 text-white"
                               : "bg-slate-200 text-slate-800"
-                          }`}
+                            }`}
                         >
                           {item.badge}
                         </span>
@@ -265,19 +267,17 @@ export default component$(() => {
                 key={item.id}
                 href={item.href}
                 onClick$={() => (isMobileMenuOpen.value = false)}
-                class={`flex flex-col items-center justify-center p-2 rounded-xl relative ${
-                  isActive ? "text-green-600 scale-110 font-bold" : "text-gray-600"
-                }`}
+                class={`flex flex-col items-center justify-center p-2 rounded-xl relative ${isActive ? "text-green-600 scale-110 font-bold" : "text-gray-600"
+                  }`}
               >
                 <div class="relative">
                   <IconComponent class="w-6 h-6" />
                   {item.badge !== undefined && item.badge > 0 && (
                     <span
-                      class={`absolute -top-1.5 -right-2 px-1.5 py-0.2 min-w-[16px] h-4 rounded-full text-[10px] font-bold leading-none flex items-center justify-center transition-all ${
-                        item.isRedBadge 
-                          ? "bg-rose-500 text-white shadow-md shadow-rose-500/50 animate-pulse" 
+                      class={`absolute -top-1.5 -right-2 px-1.5 py-0.2 min-w-[16px] h-4 rounded-full text-[10px] font-bold leading-none flex items-center justify-center transition-all ${item.isRedBadge
+                          ? "bg-rose-500 text-white shadow-md shadow-rose-500/50 animate-pulse"
                           : "bg-slate-300 text-slate-800 shadow-sm"
-                      }`}
+                        }`}
                     >
                       {item.badge}
                     </span>
@@ -287,16 +287,17 @@ export default component$(() => {
             );
           })}
 
-          {/* Rightmost Action Button: Toggles Floating Nav Popup Space */}
-          <button
-            onClick$={() => (isMobileMenuOpen.value = !isMobileMenuOpen.value)}
-            class={`flex flex-col items-center justify-center p-2 rounded-xl text-gray-600 transition-all cursor-pointer ${
-              isMoreActive || isMobileMenuOpen.value ? "text-green-600 scale-110 font-bold" : ""
-            }`}
-            title="More Navigation Options"
-          >
-            <IconDotsVertical class="w-6 h-6" />
-          </button>
+          {/* Rightmost Action Button: Toggles Floating Nav Popup Space (Shown only if there are overflow items / 5+ total items) */}
+          {mobileMoreItems.length > 0 && (
+            <button
+              onClick$={() => (isMobileMenuOpen.value = !isMobileMenuOpen.value)}
+              class={`flex flex-col items-center justify-center p-2 rounded-xl text-gray-600 transition-all cursor-pointer ${isMoreActive || isMobileMenuOpen.value ? "text-green-600 scale-110 font-bold" : ""
+                }`}
+              title="More Navigation Options"
+            >
+              <IconDotsVertical class="w-6 h-6" />
+            </button>
+          )}
         </nav>
       </div>
     </div>

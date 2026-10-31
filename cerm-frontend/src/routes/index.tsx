@@ -87,7 +87,7 @@ export default component$(() => {
                   if (userRole === "ADMIN") {
                     nav("/dashboard");
                   } else {
-                    nav("/profile");
+                    nav("/job-schedule");
                   }
                 }
               }}
@@ -143,7 +143,7 @@ export default component$(() => {
                   if (userRole === "ADMIN") {
                     nav("/dashboard");
                   } else {
-                    nav("/profile");
+                    nav("/job-schedule");
                   }
                 }
               }}

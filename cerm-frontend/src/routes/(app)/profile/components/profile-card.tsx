@@ -4,12 +4,12 @@ import type { Team } from "~/hooks/teams-handling";
 import { IconEdit } from "../../../../components/ui/icons";
 
 interface ProfileCardProps {
-  user: AuthUser;
-  teams: Team[];
+  user: AuthUser & { team?: Team | null };
+  team: Team | null;
   updateAction: any;
 }
 
-export const ProfileCard = component$(({ user, teams, updateAction }: ProfileCardProps) => {
+export const ProfileCard = component$(({ user, team, updateAction }: ProfileCardProps) => {
   // Field-level edit toggle signals
   const isEditingName = useSignal(false);
   const isEditingEmail = useSignal(false);
@@ -26,9 +26,8 @@ export const ProfileCard = component$(({ user, teams, updateAction }: ProfileCar
   const successMessage = useSignal("");
   const errorMessage = useSignal("");
 
-  // Resolve assigned team name from loaded teams
-  const userTeam = teams.find((t) => t.id === user.team_id);
-  const teamName = userTeam ? userTeam.name : "No Team";
+  // Resolve assigned team name from the loaded team object
+  const teamName = team ? team.name : "No Team";
 
   const isAdmin = user.role === "ADMIN";
   const isLead = user.role === "TEAM LEAD";

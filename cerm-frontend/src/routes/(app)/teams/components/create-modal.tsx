@@ -8,6 +8,7 @@ interface CreateModalProps {
 
 export const CreateModal = component$(({ createAction, onClose$ }: CreateModalProps) => {
   const teamNameInput = useSignal("");
+  const teamColorInput = useSignal("#10B981"); // Default emerald green
   const isSubmitting = useSignal(false);
   const isSuccess = useSignal(false);
   const errorMessage = useSignal("");
@@ -23,7 +24,10 @@ export const CreateModal = component$(({ createAction, onClose$ }: CreateModalPr
     errorMessage.value = "";
 
     try {
-      const res = await createAction.submit({ name: teamNameInput.value });
+      const res = await createAction.submit({
+        name: teamNameInput.value,
+        team_color: teamColorInput.value,
+      });
       const isOk = res?.status === 201 || res?.status === 200 || res?.value?.success;
 
       if (isOk) {
@@ -54,7 +58,7 @@ export const CreateModal = component$(({ createAction, onClose$ }: CreateModalPr
         </button>
 
         <h3 class="text-xl font-extrabold text-gray-900 mb-1">Create New Team</h3>
-        <p class="text-xs text-gray-500 mb-6">Enter a name for the new operational team.</p>
+        <p class="text-xs text-gray-500 mb-6">Enter a name and choose a color for the new operational team.</p>
 
         {errorMessage.value && (
           <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
@@ -74,6 +78,17 @@ export const CreateModal = component$(({ createAction, onClose$ }: CreateModalPr
               class="w-full px-3 py-2 bg-slate-50 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Team Color</label>
+            <input
+              type="color"
+              value={teamColorInput.value}
+              onInput$={(e) => (teamColorInput.value = (e.target as HTMLInputElement).value)}
+              class="w-12 h-10 rounded-xl border border-gray-200 cursor-pointer bg-transparent p-1"
+            />
+          </div>
+
           <div class="flex justify-end gap-2 pt-2">
             <button
               type="button"

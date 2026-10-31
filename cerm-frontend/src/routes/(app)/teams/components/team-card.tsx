@@ -12,6 +12,11 @@ export const TeamCard = component$(({ team, onEdit$, onDelete$ }: TeamCardProps)
   return (
     <div class="bg-white rounded-2xl p-4 flex items-center justify-between transition-all">
       <div class="flex items-center gap-3.5">
+        <div
+          class="w-5 h-5 rounded-full border border-gray-200 shrink-0"
+          style={{ backgroundColor: team.team_color || "#E5E7EB" }}
+          title={team.team_color ? `Color: ${team.team_color}` : "No color assigned"}
+        />
         <div>
           <h4 class="text-sm font-bold text-gray-900">{team.name}</h4>
           <p class="text-xs text-gray-400 mt-0.5">

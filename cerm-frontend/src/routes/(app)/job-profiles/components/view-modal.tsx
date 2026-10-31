@@ -18,7 +18,7 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
     const servicesObj = (profile as any).services_requested || (profile as any).services || (profile as any).requested_services || {};
     const activeServices: string[] = typeof servicesObj === "object" && servicesObj !== null
         ? Object.entries(servicesObj)
-            .filter(([enabled]) => Boolean(enabled))
+            .filter(([_, enabled]) => Boolean(enabled))
             .map(([serviceName]) => serviceName)
         : [];
 
@@ -27,14 +27,14 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
             <div class="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
                 <button
                     onClick$={onClose$}
-                    class="absolute top-3.5 right-3.5 p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-slate-100 transition-all"
+                    class="absolute top-3.5 right-3.5 p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-slate-100 transition-all cursor-pointer"
                     title="Close Modal"
                 >
                     <IconX class="w-5 h-5" />
                 </button>
 
                 {/* Header with Name/Company Name & Schedule Badge */}
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100 pr-8">
                     <div>
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-400">
                             {isCommercial ? "Commercial Profile" : "Job Profile"}
@@ -56,11 +56,12 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                         {isCommercial ? "Company Information" : "Personal Information"}
                     </h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
+                        {/* Row 1: Email & Phone Number */}
                         <div>
                             <span class="block text-xs font-semibold text-gray-500 mb-0.5">
                                 {isCommercial ? "Company Contact Email" : "Email"}
                             </span>
-                            <span class="text-gray-900 font-medium">{profile.email || "N/A"}</span>
+                            <span class="text-gray-900 font-medium break-all">{profile.email || "N/A"}</span>
                         </div>
                         <div>
                             <span class="block text-xs font-semibold text-gray-500 mb-0.5">
@@ -68,16 +69,30 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                             </span>
                             <span class="text-gray-900 font-medium">{profile.phone_number || "N/A"}</span>
                         </div>
-                        <div class="sm:col-span-2">
+
+                        {/* Row 2: Address (Left) & Schedule Frequency (Right) */}
+                        <div>
                             <span class="block text-xs font-semibold text-gray-500 mb-0.5">
                                 {isCommercial ? "Facility / Service Address" : "Address"}
                             </span>
                             <span class="text-gray-900 font-medium">{fullAddress}</span>
                         </div>
+                        <div>
+                            <span class="block text-xs font-semibold text-gray-500 mb-0.5">
+                                Schedule Frequency
+                            </span>
+                            <span class="text-gray-900 font-medium">{profile.schedule || "N/A"}</span>
+                        </div>
+
+                        {/* Row 3: Referral Info */}
                         <div class="sm:col-span-2">
-                            <span class="block text-xs font-semibold text-gray-500 mb-0.5">Referral Info</span>
+                            <span class="block text-xs font-semibold text-gray-500 mb-0.5">
+                                Referral Info
+                            </span>
                             <span class="text-gray-900 font-medium">{profile.referral_info || "N/A"}</span>
                         </div>
+
+                        {/* Row 4: Value / Payout */}
                         <div class="sm:col-span-2">
                             <span class="block text-xs font-semibold text-gray-500 mb-0.5">
                                 {isCommercial ? "Contract / Service Value" : "Average Job Payout"}
@@ -132,7 +147,7 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                 <div class="flex justify-end">
                     <button
                         onClick$={onClose$}
-                        class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-sm font-semibold rounded-xl transition-all"
+                        class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-sm font-semibold rounded-xl transition-all cursor-pointer"
                     >
                         Close
                     </button>

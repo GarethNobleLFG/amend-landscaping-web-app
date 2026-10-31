@@ -1,0 +1,2 @@
+ALTER TABLE teams
+ADD COLUMN IF NOT EXISTS team_color VARCHAR(7);
