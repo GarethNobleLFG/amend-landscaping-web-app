@@ -11,7 +11,7 @@ export interface JobProfile {
   city: string;
   state: string;
   zip: string;
-  services_requested: string;
+  services_requested: Record<string, boolean> | string;
   scheduled_date: string;
   description?: string | null;
   approved: boolean;
@@ -98,11 +98,45 @@ export const useJobsByWeekAndTeam = routeLoader$<Job[]>(async ({ cookie, redirec
     throw redirect(302, "/");
   }
 
-  const start = url.searchParams.get("start");
-  const end = url.searchParams.get("end");
+  // Helper to pin current date strictly to America/New_York (EST/EDT)
+  const getESTDate = (date = new Date()) => {
+    const options: Intl.DateTimeFormatOptions = {
+      timeZone: "America/New_York",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+    };
+    const formatter = new Intl.DateTimeFormat("en-US", options);
+    const parts = formatter.formatToParts(date);
+    const year = parseInt(parts.find((p) => p.type === "year")!.value, 10);
+    const month = parseInt(parts.find((p) => p.type === "month")!.value, 10) - 1;
+    const day = parseInt(parts.find((p) => p.type === "day")!.value, 10);
+    return new Date(year, month, day);
+  };
+
+  const getMonday = (d: Date) => {
+    const estDate = getESTDate(d);
+    const day = estDate.getDay();
+    const diff = estDate.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(estDate.setDate(diff));
+  };
+
+  const formatDateISO = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  let start = url.searchParams.get("start");
+  let end = url.searchParams.get("end");
 
   if (!start || !end) {
-    return [];
+    const monday = getMonday(new Date());
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    start = formatDateISO(monday);
+    end = formatDateISO(sunday);
   }
 
   try {

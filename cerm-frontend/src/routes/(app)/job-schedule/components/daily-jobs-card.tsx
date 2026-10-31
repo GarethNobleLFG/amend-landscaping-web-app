@@ -1,0 +1,215 @@
+import { component$, useSignal, $ } from "@builder.io/qwik";
+
+export interface JobProfile {
+  id?: number | null;
+  name?: string | null;
+  email?: string | null;
+  phone_number?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip?: string | null;
+  services_requested?: Record<string, boolean> | string | null;
+  is_commercial?: boolean | null;
+  description?: string | null;
+  [key: string]: any;
+}
+
+export interface JobRecord {
+  id?: number | string | null;
+  job_profile_id?: number | null;
+  team_id?: number | null;
+  scheduled_day?: string | null;
+  notes?: string | null;
+  job_profile?: JobProfile | null;
+  [key: string]: any;
+}
+
+export interface DailyJobsCardProps {
+  job: JobRecord;
+}
+
+export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
+  const isExpanded = useSignal(false);
+  const copied = useSignal(false);
+
+  const profile = job.job_profile;
+  const isCommercial = Boolean(profile?.is_commercial);
+
+  const getFullAddress = (p?: JobProfile | null) => {
+    if (!p) return "";
+    const parts = [p.address, p.city, p.state, p.zip].filter(
+      (val): val is string => Boolean(val && typeof val === "string" && val.trim() !== "")
+    );
+    return parts.join(", ");
+  };
+
+  const fullAddress = getFullAddress(profile);
+
+  const copyAddress$ = $(async (e: Event) => {
+    e.stopPropagation();
+    if (!fullAddress) return;
+    try {
+      await navigator.clipboard.writeText(fullAddress);
+      copied.value = true;
+      setTimeout(() => {
+        copied.value = false;
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy address:", err);
+    }
+  });
+
+  const servicesObj =
+    profile?.services_requested ||
+    (profile as any)?.services ||
+    (profile as any)?.requested_services ||
+    {};
+
+  const activeServices: string[] = typeof servicesObj === "object" && servicesObj !== null
+    ? Object.entries(servicesObj)
+        .filter(([, enabled]) => Boolean(enabled))
+        .map(([serviceName]) => serviceName)
+    : typeof servicesObj === "string"
+      ? (() => {
+          try {
+            const parsed = JSON.parse(servicesObj);
+            return typeof parsed === "object" && parsed !== null
+              ? Object.entries(parsed)
+                  .filter(([, enabled]) => Boolean(enabled))
+                  .map(([serviceName]) => serviceName)
+              : [servicesObj];
+          } catch {
+            return [servicesObj];
+          }
+        })()
+      : [];
+
+  return (
+    <div class="w-full bg-white rounded-xl overflow-hidden border-0 shadow-none">
+      {/* Unexpanded Header Bar */}
+      <div
+        class="flex items-center justify-between p-3.5 cursor-pointer select-none"
+        onClick$={() => (isExpanded.value = !isExpanded.value)}
+      >
+        <div class="flex items-center gap-4 min-w-0 pr-2">
+          <span class="font-semibold text-gray-900 text-sm truncate">
+            {profile?.name || "Unnamed Job"}
+          </span>
+
+          {fullAddress && (
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-gray-300 bg-white shadow-none">
+                <span class="text-sm text-gray-600 truncate max-w-xs sm:max-w-sm">
+                  {fullAddress}
+                </span>
+
+                <button
+                  type="button"
+                  class="p-1 text-gray-400 hover:text-gray-700 transition-colors rounded flex items-center justify-center flex-shrink-0"
+                  onClick$={copyAddress$}
+                  title="Copy address"
+                >
+                  {copied.value ? (
+                    <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+
+              {copied.value && (
+                <span class="text-xs font-medium text-emerald-600 whitespace-nowrap animate-fade-in">
+                  Address copied!
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <div
+            class={`transform transition-transform duration-200 text-gray-400 p-1 ${
+              isExpanded.value ? "rotate-180" : ""
+            }`}
+          >
+            ▼
+          </div>
+        </div>
+      </div>
+
+      {/* Expanded Detailed Content Area */}
+      {isExpanded.value && (
+        <div class="p-4 bg-slate-50/50 flex flex-col gap-6 text-sm text-gray-700">
+          {/* Personal / Company Information Section */}
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
+              {isCommercial ? "Company Information" : "Personal Information"}
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
+              <div>
+                <span class="block text-xs font-semibold text-gray-500 mb-0.5">
+                  {isCommercial ? "Company Contact Email" : "Email"}
+                </span>
+                <span class="text-gray-900 font-medium">{profile?.email || "N/A"}</span>
+              </div>
+              <div>
+                <span class="block text-xs font-semibold text-gray-500 mb-0.5">
+                  {isCommercial ? "Business Phone" : "Phone Number"}
+                </span>
+                <span class="text-gray-900 font-medium">{profile?.phone_number || "N/A"}</span>
+              </div>
+              <div class="sm:col-span-2">
+                <span class="block text-xs font-semibold text-gray-500 mb-0.5">Property Type</span>
+                <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-gray-200/80 text-gray-800">
+                  {isCommercial ? "Commercial" : "Residential"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Requested Services Bullet Points Section */}
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
+              Requested Services
+            </h4>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
+              {activeServices.length > 0 ? (
+                <ul class="space-y-2">
+                  {activeServices.map((service, idx) => (
+                    <li key={idx} class="flex items-center gap-2.5 text-gray-900 font-medium">
+                      <span class="w-1.5 h-1.5 rounded-full bg-green-600 flex-shrink-0" />
+                      <span>{service}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <span class="text-gray-500 italic">No services selected</span>
+              )}
+            </div>
+          </div>
+
+          {/* Vertical Notes Sections */}
+          <div class="flex flex-col gap-4">
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+                Job Notes
+              </h4>
+              <p class="text-sm text-gray-700 whitespace-pre-wrap">{job.notes || "N/A"}</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+                {isCommercial ? "Commercial Client Notes" : "Customer Submitted Notes"}
+              </h4>
+              <p class="text-sm text-gray-700 whitespace-pre-wrap">{profile?.description || "N/A"}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
