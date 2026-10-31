@@ -1,4 +1,7 @@
 import { component$, useSignal, $ } from "@builder.io/qwik";
+import { useUpdateJob } from "~/hooks/job-handling";
+import { CardHeader } from "./card-header";
+import { CardDetails } from "./card-details";
 
 export interface JobProfile {
   id?: number | null;
@@ -30,22 +33,28 @@ export interface JobRecord {
 
 export interface DailyJobsCardProps {
   job: JobRecord;
+  isTeamLead?: boolean;
 }
 
-export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
+export const DailyJobsCard = component$<DailyJobsCardProps>(({ job, isTeamLead = false }) => {
   const isExpanded = useSignal(false);
   const copied = useSignal(false);
+  const isSubmitting = useSignal(false);
+
+  const localStartTime = useSignal<string | null>(job.start_time ?? null);
+  const localEndTime = useSignal<string | null>(job.end_time ?? null);
+  const localCompleted = useSignal<boolean>(Boolean(job.completed));
+
+  const updateJobAction = useUpdateJob();
 
   const profile = job.job_profile;
   const isCommercial = Boolean(profile?.is_commercial);
-  const isCompleted = Boolean(job.completed);
+  const isCompleted = localCompleted.value;
+  const isJobRunning = Boolean(localStartTime.value && !isCompleted);
 
-  // Calculate elapsed time if start_time and end_time are provided
   const getDurationString = (start?: string | null, end?: string | null) => {
     if (!start || !end) return null;
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const diffMs = endDate.getTime() - startDate.getTime();
+    const diffMs = new Date(end).getTime() - new Date(start).getTime();
     if (isNaN(diffMs) || diffMs < 0) return null;
 
     const diffMins = Math.floor(diffMs / (1000 * 60));
@@ -57,14 +66,13 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
     return `${hours}h ${mins}m`;
   };
 
-  const durationStr = getDurationString(job.start_time, job.end_time);
+  const durationStr = getDurationString(localStartTime.value, localEndTime.value);
 
   const getFullAddress = (p?: JobProfile | null) => {
     if (!p) return "";
-    const parts = [p.address, p.city, p.state, p.zip].filter(
-      (val): val is string => Boolean(val && typeof val === "string" && val.trim() !== "")
-    );
-    return parts.join(", ");
+    return [p.address, p.city, p.state, p.zip]
+      .filter((v): v is string => Boolean(v && typeof v === "string" && v.trim() !== ""))
+      .join(", ");
   };
 
   const fullAddress = getFullAddress(profile);
@@ -75,11 +83,66 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
     try {
       await navigator.clipboard.writeText(fullAddress);
       copied.value = true;
-      setTimeout(() => {
-        copied.value = false;
-      }, 2000);
+      setTimeout(() => (copied.value = false), 2000);
     } catch (err) {
       console.error("Failed to copy address:", err);
+    }
+  });
+
+  const handleStartJob$ = $(async (e: Event) => {
+    e.stopPropagation();
+    if (!job.id || !job.job_profile_id || !job.scheduled_day || isSubmitting.value) return;
+
+    const cleanDay = job.scheduled_day.split("T")[0];
+    const nowIso = new Date().toISOString();
+
+    isSubmitting.value = true;
+    try {
+      const res = await updateJobAction.submit({
+        id: Number(job.id),
+        job_profile_id: Number(job.job_profile_id),
+        team_id: job.team_id ? Number(job.team_id) : null,
+        scheduled_day: cleanDay,
+        start_time: nowIso,
+        end_time: localEndTime.value ?? null,
+        completed: false,
+        notes: job.notes ?? null,
+      });
+
+      if (res.status === 200 || res.value?.success) {
+        localStartTime.value = nowIso;
+      }
+    } finally {
+      isSubmitting.value = false;
+    }
+  });
+
+  const handleEndJob$ = $(async (e: Event) => {
+    e.stopPropagation();
+    if (!job.id || !job.job_profile_id || !job.scheduled_day || isSubmitting.value) return;
+
+    const cleanDay = job.scheduled_day.split("T")[0];
+    const nowIso = new Date().toISOString();
+
+    isSubmitting.value = true;
+    try {
+      const res = await updateJobAction.submit({
+        id: Number(job.id),
+        job_profile_id: Number(job.job_profile_id),
+        team_id: job.team_id ? Number(job.team_id) : null,
+        scheduled_day: cleanDay,
+        start_time: localStartTime.value ?? nowIso,
+        end_time: nowIso,
+        completed: true,
+        notes: job.notes ?? null,
+      });
+
+      if (res.status === 200 || res.value?.success) {
+        localEndTime.value = nowIso;
+        localCompleted.value = true;
+      }
+    } finally {
+      isSubmitting.value = false;
     }
   });
 
@@ -89,18 +152,15 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
     (profile as any)?.requested_services ||
     {};
 
-  const activeServices: string[] = typeof servicesObj === "object" && servicesObj !== null
-    ? Object.entries(servicesObj)
-        .filter(([, enabled]) => Boolean(enabled))
-        .map(([serviceName]) => serviceName)
-    : typeof servicesObj === "string"
+  const activeServices: string[] =
+    typeof servicesObj === "object" && servicesObj !== null
+      ? Object.entries(servicesObj).filter(([, v]) => Boolean(v)).map(([k]) => k)
+      : typeof servicesObj === "string"
       ? (() => {
           try {
             const parsed = JSON.parse(servicesObj);
             return typeof parsed === "object" && parsed !== null
-              ? Object.entries(parsed)
-                  .filter(([, enabled]) => Boolean(enabled))
-                  .map(([serviceName]) => serviceName)
+              ? Object.entries(parsed).filter(([, v]) => Boolean(v)).map(([k]) => k)
               : [servicesObj];
           } catch {
             return [servicesObj];
@@ -110,168 +170,33 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
 
   return (
     <div class={`w-full bg-white rounded-xl overflow-hidden border-0 shadow-none transition-opacity ${isCompleted ? "opacity-75" : ""}`}>
-      {/* Unexpanded Header Bar */}
-      <div
-        class="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 cursor-pointer select-none gap-2 sm:gap-4"
-        onClick$={() => (isExpanded.value = !isExpanded.value)}
-      >
-        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 min-w-0 w-full">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class={`font-bold sm:font-semibold text-gray-900 text-sm sm:text-base truncate ${isCompleted ? "line-through text-gray-400" : ""}`}>
-              {profile?.name || "Unnamed Job"}
-            </span>
+      <CardHeader
+        title={profile?.name || "Unnamed Job"}
+        isCompleted={isCompleted}
+        isJobRunning={isJobRunning}
+        durationStr={durationStr}
+        fullAddress={fullAddress}
+        isExpanded={isExpanded}
+        copied={copied}
+        isTeamLead={isTeamLead}
+        hasStartTime={Boolean(localStartTime.value)}
+        isSubmitting={isSubmitting}
+        onCopyAddress$={copyAddress$}
+        onStartJob$={handleStartJob$}
+        onEndJob$={handleEndJob$}
+      />
 
-            {isCompleted && (
-              <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-emerald-100 text-emerald-800 tracking-wider flex-shrink-0">
-                Completed
-              </span>
-            )}
-
-            {durationStr && (
-              <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-100 text-slate-600 flex-shrink-0">
-                ⏱ {durationStr}
-              </span>
-            )}
-          </div>
-
-          {fullAddress && (
-            <div class="flex items-center gap-2 flex-wrap">
-              <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-200 bg-slate-50/60 sm:bg-white shadow-none max-w-full">
-                <span class="text-xs sm:text-sm text-gray-600 truncate max-w-[220px] xs:max-w-xs sm:max-w-sm">
-                  {fullAddress}
-                </span>
-
-                <button
-                  type="button"
-                  class="p-1.5 text-gray-400 hover:text-gray-700 transition-colors rounded flex items-center justify-center flex-shrink-0"
-                  onClick$={copyAddress$}
-                  title="Copy address"
-                >
-                  {copied.value ? (
-                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-
-              {copied.value && (
-                <span class="text-xs font-semibold text-emerald-600 whitespace-nowrap animate-fade-in">
-                  Address copied!
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div class="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pt-1 sm:pt-0 border-t sm:border-0 border-gray-100">
-          <span class="text-xs text-gray-400 sm:hidden font-medium">
-            {isExpanded.value ? "Collapse details" : "Tap to view details"}
-          </span>
-          <div
-            class={`transform transition-transform duration-200 text-gray-400 p-1 ${
-              isExpanded.value ? "rotate-180" : ""
-            }`}
-          >
-            ▼
-          </div>
-        </div>
-      </div>
-
-      {/* Expanded Detailed Content Area */}
       {isExpanded.value && (
-        <div class="p-3 sm:p-4 bg-slate-50/50 flex flex-col gap-4 sm:gap-6 text-sm text-gray-700 border-t border-slate-100">
-          {/* Time Tracking & Status Info */}
-          {(job.start_time || job.end_time) && (
-            <div>
-              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5 sm:mb-3">
-                Job Schedule & Duration
-              </h4>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200/60 text-sm">
-                <div>
-                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">Start Time</span>
-                  <span class="text-gray-900 font-medium">
-                    {job.start_time ? new Date(job.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}
-                  </span>
-                </div>
-                <div>
-                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">End Time</span>
-                  <span class="text-gray-900 font-medium">
-                    {job.end_time ? new Date(job.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Personal / Company Information Section */}
-          <div>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5 sm:mb-3">
-              {isCommercial ? "Company Information" : "Personal Information"}
-            </h4>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60 text-sm">
-              <div>
-                <span class="block text-xs font-semibold text-gray-500 mb-0.5">
-                  {isCommercial ? "Company Contact Email" : "Email"}
-                </span>
-                <span class="text-gray-900 font-medium break-all">{profile?.email || "N/A"}</span>
-              </div>
-              <div>
-                <span class="block text-xs font-semibold text-gray-500 mb-0.5">
-                  {isCommercial ? "Business Phone" : "Phone Number"}
-                </span>
-                <span class="text-gray-900 font-medium">{profile?.phone_number || "N/A"}</span>
-              </div>
-              <div class="sm:col-span-2">
-                <span class="block text-xs font-semibold text-gray-500 mb-0.5">Property Type</span>
-                <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-gray-200/80 text-gray-800">
-                  {isCommercial ? "Commercial" : "Residential"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Requested Services Bullet Points Section */}
-          <div>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5 sm:mb-3">
-              Requested Services
-            </h4>
-            <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60 text-sm">
-              {activeServices.length > 0 ? (
-                <ul class="space-y-2">
-                  {activeServices.map((service, idx) => (
-                    <li key={idx} class="flex items-center gap-2.5 text-gray-900 font-medium">
-                      <span class="w-1.5 h-1.5 rounded-full bg-green-600 flex-shrink-0" />
-                      <span class="break-words">{service}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <span class="text-gray-500 italic">No services selected</span>
-              )}
-            </div>
-          </div>
-
-          {/* Vertical Notes Sections */}
-          <div class="flex flex-col gap-3 sm:gap-4">
-            <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60">
-              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                Job Notes
-              </h4>
-              <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{job.notes || "N/A"}</p>
-            </div>
-            <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60">
-              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                {isCommercial ? "Commercial Client Notes" : "Customer Submitted Notes"}
-              </h4>
-              <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{profile?.description || "N/A"}</p>
-            </div>
-          </div>
-        </div>
+        <CardDetails
+          startTime={localStartTime.value}
+          endTime={localEndTime.value}
+          isCommercial={isCommercial}
+          email={profile?.email}
+          phoneNumber={profile?.phone_number}
+          services={activeServices}
+          jobNotes={job.notes}
+          clientNotes={profile?.description}
+        />
       )}
     </div>
   );

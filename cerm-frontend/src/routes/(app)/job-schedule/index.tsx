@@ -1,7 +1,8 @@
 import { component$, useComputed$, $ } from "@builder.io/qwik";
 import { useLocation, useNavigate } from "@builder.io/qwik-city";
-import { useJobsByWeekAndTeam, type Job } from "~/hooks/job-handling"; 
+import { useJobsByWeekAndTeam, useUpdateJob, type Job } from "~/hooks/job-handling"; 
 import { useMyTeam } from "~/hooks/teams-handling"; 
+import { useAuthUser } from "~/hooks/user-auth";
 import { getESTDate, getMonday, parseLocalDate, formatDateISO } from "~/utils/date-utils";
 import { WeeklyHeader } from "./components/weekly-header";
 import { WeeklyDayCell } from "./components/weekly-day-cell";
@@ -9,10 +10,14 @@ import { DailyJobsCard } from "./components/daily-jobs-card";
 
 export { useMyTeam };
 export { useJobsByWeekAndTeam };
+export { useUpdateJob };
 
 export default component$(() => {
   const loc = useLocation();
   const nav = useNavigate();
+
+  const authUserSignal = useAuthUser();
+  const isTeamLead = authUserSignal.value?.role === "TEAM LEAD";
 
   const myTeamSignal = useMyTeam();
   const jobsLoader = useJobsByWeekAndTeam();
@@ -114,7 +119,11 @@ export default component$(() => {
         <div class="space-y-3 pt-2">
           {activeDayJobs.length > 0 ? (
             activeDayJobs.map((job: Job) => (
-              <DailyJobsCard key={job.id} job={job} />
+              <DailyJobsCard 
+                key={job.id} 
+                job={job} 
+                isTeamLead={isTeamLead} 
+              />
             ))
           ) : (
             <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">

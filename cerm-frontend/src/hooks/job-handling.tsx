@@ -200,7 +200,7 @@ export const useUpdateJob = globalAction$(
     const { id, ...payload } = data;
 
     try {
-      const res = await fetch(`${API_BASE}/api/jobs/admin/${id}`, {
+      const res = await fetch(`${API_BASE}/api/jobs/team/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
