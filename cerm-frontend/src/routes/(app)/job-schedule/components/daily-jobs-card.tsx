@@ -20,6 +20,9 @@ export interface JobRecord {
   job_profile_id?: number | null;
   team_id?: number | null;
   scheduled_day?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  completed?: boolean | null;
   notes?: string | null;
   job_profile?: JobProfile | null;
   [key: string]: any;
@@ -35,6 +38,26 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
 
   const profile = job.job_profile;
   const isCommercial = Boolean(profile?.is_commercial);
+  const isCompleted = Boolean(job.completed);
+
+  // Calculate elapsed time if start_time and end_time are provided
+  const getDurationString = (start?: string | null, end?: string | null) => {
+    if (!start || !end) return null;
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffMs = endDate.getTime() - startDate.getTime();
+    if (isNaN(diffMs) || diffMs < 0) return null;
+
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const hours = Math.floor(diffMins / 60);
+    const mins = diffMins % 60;
+
+    if (hours === 0) return `${mins}m`;
+    if (mins === 0) return `${hours}h`;
+    return `${hours}h ${mins}m`;
+  };
+
+  const durationStr = getDurationString(job.start_time, job.end_time);
 
   const getFullAddress = (p?: JobProfile | null) => {
     if (!p) return "";
@@ -86,16 +109,30 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
       : [];
 
   return (
-    <div class="w-full bg-white rounded-xl overflow-hidden border-0 shadow-none">
+    <div class={`w-full bg-white rounded-xl overflow-hidden border-0 shadow-none transition-opacity ${isCompleted ? "opacity-75" : ""}`}>
       {/* Unexpanded Header Bar */}
       <div
         class="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 cursor-pointer select-none gap-2 sm:gap-4"
         onClick$={() => (isExpanded.value = !isExpanded.value)}
       >
         <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 min-w-0 w-full">
-          <span class="font-bold sm:font-semibold text-gray-900 text-sm sm:text-base truncate">
-            {profile?.name || "Unnamed Job"}
-          </span>
+          <div class="flex items-center gap-2 min-w-0">
+            <span class={`font-bold sm:font-semibold text-gray-900 text-sm sm:text-base truncate ${isCompleted ? "line-through text-gray-400" : ""}`}>
+              {profile?.name || "Unnamed Job"}
+            </span>
+
+            {isCompleted && (
+              <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-emerald-100 text-emerald-800 tracking-wider flex-shrink-0">
+                Completed
+              </span>
+            )}
+
+            {durationStr && (
+              <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-100 text-slate-600 flex-shrink-0">
+                ⏱ {durationStr}
+              </span>
+            )}
+          </div>
 
           {fullAddress && (
             <div class="flex items-center gap-2 flex-wrap">
@@ -148,6 +185,29 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job }) => {
       {/* Expanded Detailed Content Area */}
       {isExpanded.value && (
         <div class="p-3 sm:p-4 bg-slate-50/50 flex flex-col gap-4 sm:gap-6 text-sm text-gray-700 border-t border-slate-100">
+          {/* Time Tracking & Status Info */}
+          {(job.start_time || job.end_time) && (
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5 sm:mb-3">
+                Job Schedule & Duration
+              </h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200/60 text-sm">
+                <div>
+                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">Start Time</span>
+                  <span class="text-gray-900 font-medium">
+                    {job.start_time ? new Date(job.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}
+                  </span>
+                </div>
+                <div>
+                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">End Time</span>
+                  <span class="text-gray-900 font-medium">
+                    {job.end_time ? new Date(job.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Personal / Company Information Section */}
           <div>
             <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5 sm:mb-3">

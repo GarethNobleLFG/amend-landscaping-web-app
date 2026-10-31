@@ -37,15 +37,23 @@ export const WeeklyDayCell = component$(({ dayDate, isToday, isSelected, jobs, o
       </div>
 
       <div class="w-full space-y-1 sm:space-y-1.5">
-        {jobs.map((job) => (
-          <div
-            key={job.id}
-            class="w-full bg-emerald-100/70 hover:bg-emerald-200/70 text-emerald-900 rounded-md sm:rounded-xl px-1 sm:px-2.5 py-1 sm:py-1.5 text-[9px] sm:text-xs font-bold text-center transition truncate shadow-xs"
-            title={job.job_profile?.name ?? `Job #${job.id}`}
-          >
-            {job.job_profile?.name ?? `Job #${job.id}`}
-          </div>
-        ))}
+        {jobs.map((job) => {
+          const isCompleted = Boolean(job.completed);
+          return (
+            <div
+              key={job.id}
+              class={[
+                "w-full rounded-md sm:rounded-xl px-1 sm:px-2.5 py-1 sm:py-1.5 text-[9px] sm:text-xs font-bold text-center transition truncate shadow-xs",
+                isCompleted
+                  ? "bg-slate-100 text-slate-400 line-through opacity-75"
+                  : "bg-emerald-100/70 hover:bg-emerald-200/70 text-emerald-900"
+              ]}
+              title={job.job_profile?.name ?? `Job #${job.id}`}
+            >
+              {job.job_profile?.name ?? `Job #${job.id}`}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
