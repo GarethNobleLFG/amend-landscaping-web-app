@@ -30,7 +30,7 @@ export const WeeklyHeader = component$(({ teamName, startDate, endDate, onNaviga
   return (
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="space-y-1.5 sm:space-y-2">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/70 text-emerald-800 text-xs font-semibold">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/70 text-emerald-800 text-xs font-semibold mr-2">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           {teamName ?? "No Team Assigned"}
         </div>
