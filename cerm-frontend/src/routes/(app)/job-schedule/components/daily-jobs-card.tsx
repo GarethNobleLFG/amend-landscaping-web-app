@@ -2,6 +2,7 @@ import { component$, useSignal, $ } from "@builder.io/qwik";
 import { useUpdateJob } from "~/hooks/job-handling";
 import { CardHeader } from "./card-header";
 import { CardDetails } from "./card-details";
+import { CompleteJobModal } from "./complete-job-modal";
 
 export interface JobProfile {
   id?: number | null;
@@ -27,6 +28,7 @@ export interface JobRecord {
   end_time?: string | null;
   completed?: boolean | null;
   notes?: string | null;
+  completed_notes?: string | null;
   job_profile?: JobProfile | null;
   [key: string]: any;
 }
@@ -40,10 +42,12 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job, isTeamLead =
   const isExpanded = useSignal(false);
   const copied = useSignal(false);
   const isSubmitting = useSignal(false);
+  const isCompleteModalOpen = useSignal(false);
 
   const localStartTime = useSignal<string | null>(job.start_time ?? null);
   const localEndTime = useSignal<string | null>(job.end_time ?? null);
   const localCompleted = useSignal<boolean>(Boolean(job.completed));
+  const localCompletedNotes = useSignal<string | null>(job.completed_notes ?? null);
 
   const updateJobAction = useUpdateJob();
 
@@ -117,33 +121,37 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job, isTeamLead =
     }
   });
 
-  const handleEndJob$ = $(async (e: Event) => {
+  const handleOpenCompleteModal$ = $(async (e: Event) => {
     e.stopPropagation();
-    if (!job.id || !job.job_profile_id || !job.scheduled_day || isSubmitting.value) return;
+    isCompleteModalOpen.value = true;
+  });
+
+  const handleConfirmCompletion$ = $(async (notes: string) => {
+    if (!job.id || !job.job_profile_id || !job.scheduled_day) return false;
 
     const cleanDay = job.scheduled_day.split("T")[0];
     const nowIso = new Date().toISOString();
 
-    isSubmitting.value = true;
-    try {
-      const res = await updateJobAction.submit({
-        id: Number(job.id),
-        job_profile_id: Number(job.job_profile_id),
-        team_id: job.team_id ? Number(job.team_id) : null,
-        scheduled_day: cleanDay,
-        start_time: localStartTime.value ?? nowIso,
-        end_time: nowIso,
-        completed: true,
-        notes: job.notes ?? null,
-      });
+    const res = await updateJobAction.submit({
+      id: Number(job.id),
+      job_profile_id: Number(job.job_profile_id),
+      team_id: job.team_id ? Number(job.team_id) : null,
+      scheduled_day: cleanDay,
+      start_time: localStartTime.value ?? nowIso,
+      end_time: nowIso,
+      completed: true,
+      notes: job.notes ?? null,
+      completed_notes: notes || null,
+    });
 
-      if (res.status === 200 || res.value?.success) {
-        localEndTime.value = nowIso;
-        localCompleted.value = true;
-      }
-    } finally {
-      isSubmitting.value = false;
+    const isOk = res.status === 200 || res.value?.success;
+    if (isOk) {
+      localEndTime.value = nowIso;
+      localCompleted.value = true;
+      localCompletedNotes.value = notes || null;
+      return true;
     }
+    return false;
   });
 
   const servicesObj =
@@ -169,35 +177,46 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job, isTeamLead =
       : [];
 
   return (
-    <div class={`w-full bg-white rounded-xl overflow-hidden border-0 shadow-none transition-opacity ${isCompleted ? "opacity-75" : ""}`}>
-      <CardHeader
-        title={profile?.name || "Unnamed Job"}
-        isCompleted={isCompleted}
-        isJobRunning={isJobRunning}
-        durationStr={durationStr}
-        fullAddress={fullAddress}
-        isExpanded={isExpanded}
-        copied={copied}
-        isTeamLead={isTeamLead}
-        hasStartTime={Boolean(localStartTime.value)}
-        isSubmitting={isSubmitting}
-        onCopyAddress$={copyAddress$}
-        onStartJob$={handleStartJob$}
-        onEndJob$={handleEndJob$}
-      />
+    <>
+      <div class={`w-full bg-white rounded-xl overflow-hidden border-0 shadow-none transition-opacity ${isCompleted ? "opacity-75" : ""}`}>
+        <CardHeader
+          title={profile?.name || "Unnamed Job"}
+          isCompleted={isCompleted}
+          isJobRunning={isJobRunning}
+          durationStr={durationStr}
+          fullAddress={fullAddress}
+          isExpanded={isExpanded}
+          copied={copied}
+          isTeamLead={isTeamLead}
+          hasStartTime={Boolean(localStartTime.value)}
+          isSubmitting={isSubmitting}
+          onCopyAddress$={copyAddress$}
+          onStartJob$={handleStartJob$}
+          onEndJob$={handleOpenCompleteModal$}
+        />
 
-      {isExpanded.value && (
-        <CardDetails
-          startTime={localStartTime.value}
-          endTime={localEndTime.value}
-          isCommercial={isCommercial}
-          email={profile?.email}
-          phoneNumber={profile?.phone_number}
-          services={activeServices}
-          jobNotes={job.notes}
-          clientNotes={profile?.description}
+        {isExpanded.value && (
+          <CardDetails
+            startTime={localStartTime.value}
+            endTime={localEndTime.value}
+            isCommercial={isCommercial}
+            email={profile?.email}
+            phoneNumber={profile?.phone_number}
+            services={activeServices}
+            jobNotes={job.notes}
+            clientNotes={profile?.description}
+          />
+        )}
+      </div>
+
+      {/* Completion Modal */}
+      {isCompleteModalOpen.value && (
+        <CompleteJobModal
+          jobTitle={profile?.name || "Unnamed Job"}
+          onClose$={() => (isCompleteModalOpen.value = false)}
+          onConfirm$={handleConfirmCompletion$}
         />
       )}
-    </div>
+    </>
   );
 });
