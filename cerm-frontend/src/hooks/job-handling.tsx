@@ -1,4 +1,5 @@
 import { globalAction$, routeLoader$, z, zod$ } from "@builder.io/qwik-city";
+import { getMonday, formatDateISO } from "~/utils/date-utils";
 
 const API_BASE = import.meta.env.PUBLIC_CERM_API_URL ?? "http://cerm-api:8080";
 
@@ -98,36 +99,6 @@ export const useJobsByWeekAndTeam = routeLoader$<Job[]>(async ({ cookie, redirec
     throw redirect(302, "/");
   }
 
-  // Helper to pin current date strictly to America/New_York (EST/EDT)
-  const getESTDate = (date = new Date()) => {
-    const options: Intl.DateTimeFormatOptions = {
-      timeZone: "America/New_York",
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-    };
-    const formatter = new Intl.DateTimeFormat("en-US", options);
-    const parts = formatter.formatToParts(date);
-    const year = parseInt(parts.find((p) => p.type === "year")!.value, 10);
-    const month = parseInt(parts.find((p) => p.type === "month")!.value, 10) - 1;
-    const day = parseInt(parts.find((p) => p.type === "day")!.value, 10);
-    return new Date(year, month, day);
-  };
-
-  const getMonday = (d: Date) => {
-    const estDate = getESTDate(d);
-    const day = estDate.getDay();
-    const diff = estDate.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(estDate.setDate(diff));
-  };
-
-  const formatDateISO = (d: Date) => {
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
   let start = url.searchParams.get("start");
   let end = url.searchParams.get("end");
 
@@ -144,19 +115,12 @@ export const useJobsByWeekAndTeam = routeLoader$<Job[]>(async ({ cookie, redirec
       headers: { Authorization: `Bearer ${token.value}` },
     });
 
-    if (res.status === 404) {
-      return [];
-    }
-
+    if (res.status === 404) return [];
     if (!res.ok) throw new Error("Failed to fetch weekly team jobs");
 
     const json = await res.json();
     const jobs = json.data ?? json;
-    if (!Array.isArray(jobs)) {
-      return [];
-    }
-
-    return jobs;
+    return Array.isArray(jobs) ? jobs : [];
   } catch (err) {
     console.error("Error fetching weekly team jobs:", err);
     return [];
