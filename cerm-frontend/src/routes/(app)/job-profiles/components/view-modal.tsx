@@ -43,11 +43,6 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                             {profile.name || "N/A"}
                         </h3>
                     </div>
-                    <div>
-                        <span class="inline-flex items-center px-3 py-1 text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-xs">
-                            {profile.schedule || "N/A"}
-                        </span>
-                    </div>
                 </div>
 
                 {/* Personal / Company Information Section */}
@@ -133,13 +128,13 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                         <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
                             Scratch Notes (Not Visible to Staff)
                         </h4>
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{profile.admin_notes || "N/A"}</p>
+                        <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{profile.admin_notes || "N/A"}</p>
                     </div>
                     <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
                             {isCommercial ? "Commercial Client Notes" : "Customer Submitted Notes"}
                         </h4>
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{profile.description || "N/A"}</p>
+                        <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{profile.description || "N/A"}</p>
                     </div>
                 </div>
 

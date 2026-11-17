@@ -68,15 +68,15 @@ export const ViewModal = component$<ViewModalProps>(({
 
   return (
     <>
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/40 backdrop-blur-xs overflow-y-auto">
-        {/* Compact balanced container */}
-        <div class="flex flex-col lg:flex-row items-stretch lg:items-start gap-4 max-w-4xl w-full max-h-[90vh]">
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs overflow-y-auto">
+        {/* Container matching job-profile view-modal max-w-2xl width */}
+        <div class={`flex flex-col lg:flex-row items-stretch lg:items-start gap-4 w-full max-h-[90vh] ${isCompleted ? "max-w-4xl" : "max-w-2xl"}`}>
           {/* Main View Modal */}
-          <div class="bg-white rounded-3xl flex-1 p-6 sm:p-7 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
+          <div class="bg-white rounded-3xl flex-1 max-w-2xl w-full p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick$={onClose$}
               disabled={isDeleting.value}
-              class="absolute top-4 right-4 p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-slate-100 transition-all disabled:opacity-50 cursor-pointer"
+              class="absolute top-3.5 right-3.5 p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-slate-100 transition-all disabled:opacity-50 cursor-pointer"
               title="Close Modal"
             >
               <IconX class="w-5 h-5" />
@@ -88,14 +88,14 @@ export const ViewModal = component$<ViewModalProps>(({
               </div>
             )}
 
-            {/* Header: Preserves full original 2xl title */}
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-3.5 border-b border-slate-100 pr-8">
+            {/* Header with Name/Company Name & Team Color/Schedule Badge */}
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100 pr-8">
               <div>
                 <span class="text-xs font-bold uppercase tracking-wider text-gray-400">
                   {isCommercial ? "Commercial Job" : "Job"}
                 </span>
                 <div class="flex items-center gap-2.5 mt-0.5">
-                  <h3 class={`text-2xl font-extrabold ${isCompleted ? "line-through text-gray-400" : "text-gray-900"}`}>
+                  <h3 class={`text-2xl font-extrabold break-words ${isCompleted ? "line-through text-gray-400" : "text-gray-900"}`}>
                     {(profile as any).name || `Profile #${job.job_profile_id}`}
                   </h3>
                 </div>
@@ -113,12 +113,12 @@ export const ViewModal = component$<ViewModalProps>(({
               </div>
             </div>
 
-            {/* Information Grid: Preserved text-sm text with tighter gap */}
-            <div class="mb-5">
-              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
+            {/* Information Section */}
+            <div class="mb-6">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
                 {isCommercial ? "Company Information" : "Information"}
               </h4>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
                 <div>
                   <span class="block text-xs font-semibold text-gray-500 mb-0.5">
                     {isCommercial ? "Company Contact Email" : "Email"}
@@ -135,15 +135,15 @@ export const ViewModal = component$<ViewModalProps>(({
                   <span class="block text-xs font-semibold text-gray-500 mb-0.5">
                     {isCommercial ? "Facility / Service Address" : "Address"}
                   </span>
-                  <span class="text-gray-900 font-medium">{fullAddress}</span>
+                  <span class="text-gray-900 font-medium break-words">{fullAddress}</span>
                 </div>
                 <div>
                   <span class="block text-xs font-semibold text-gray-500 mb-0.5">Referral Info</span>
-                  <span class="text-gray-900 font-medium">{(profile as any).referral_info || "N/A"}</span>
+                  <span class="text-gray-900 font-medium break-words">{(profile as any).referral_info || "N/A"}</span>
                 </div>
                 <div>
                   <span class="block text-xs font-semibold text-gray-500 mb-0.5">
-                    {isCommercial ? "Contract Value" : "Average Job Payout"}
+                    {isCommercial ? "Contract / Service Value" : "Average Job Payout"}
                   </span>
                   <span class="text-gray-900 font-medium">
                     {(profile as any).job_payout != null
@@ -154,40 +154,40 @@ export const ViewModal = component$<ViewModalProps>(({
               </div>
             </div>
 
-            {/* Requested Services: Preserved text-sm with compact vertical padding */}
-            <div class="mb-5">
-              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
+            {/* Requested Services Bullet Points Section */}
+            <div class="mb-6">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
                 Requested Services
               </h4>
-              <div class="bg-slate-50 p-3.5 sm:p-4 rounded-2xl border border-slate-200/60 text-sm">
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
                 {activeServices.length > 0 ? (
-                  <ul class="space-y-1.5">
+                  <ul class="space-y-2">
                     {activeServices.map((service, idx) => (
                       <li key={idx} class="flex items-center gap-2.5 text-gray-900 font-medium">
                         <span class="w-1.5 h-1.5 rounded-full bg-green-600 flex-shrink-0" />
-                        <span>{service}</span>
+                        <span class="break-words">{service}</span>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <span class="text-gray-500 italic text-sm">No services selected</span>
+                  <span class="text-gray-500 italic">No services selected</span>
                 )}
               </div>
             </div>
 
-            {/* Notes Sections */}
-            <div class="flex flex-col gap-3 mb-6">
-              <div class="bg-slate-50 p-3.5 sm:p-4 rounded-2xl border border-slate-200/60">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">
+            {/* Vertical Notes Sections */}
+            <div class="flex flex-col gap-4 mb-8">
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
                   Job Notes
                 </h4>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap">{job.notes || "N/A"}</p>
+                <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{job.notes || "N/A"}</p>
               </div>
-              <div class="bg-slate-50 p-3.5 sm:p-4 rounded-2xl border border-slate-200/60">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
                   {isCommercial ? "Commercial Client Notes" : "Customer Submitted Notes"}
                 </h4>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap">{(profile as any).description || "N/A"}</p>
+                <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{(profile as any).description || "N/A"}</p>
               </div>
             </div>
 
@@ -197,7 +197,7 @@ export const ViewModal = component$<ViewModalProps>(({
                 type="button"
                 onClick$={onClose$}
                 disabled={isDeleting.value}
-                class="px-4.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-sm font-semibold rounded-xl transition-all cursor-pointer"
+                class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-sm font-semibold rounded-xl transition-all cursor-pointer"
               >
                 Close
               </button>

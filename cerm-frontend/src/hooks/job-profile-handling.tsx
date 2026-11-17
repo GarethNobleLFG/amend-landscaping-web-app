@@ -160,8 +160,11 @@ export const useUpdateJobProfile = globalAction$(
     approved: z.boolean().optional(),
     is_commercial: z.boolean().optional(),
     is_seen: z.boolean().optional(),
-    admin_notes: z.string().optional(),
-    job_payout: z.coerce.number().optional(),
+    description: z.string().optional().nullable(),
+    admin_notes: z.string().optional().nullable(),
+    referral_info: z.string().optional().nullable(),
+    schedule: z.string().optional().nullable(),
+    job_payout: z.coerce.number().optional().nullable(),
     services_requested: z.any().optional(),
   })
 );
