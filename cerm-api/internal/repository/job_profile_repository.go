@@ -32,9 +32,9 @@ func (r *postgresJobProfileRepo) Create(ctx context.Context, profile *model.JobP
         INSERT INTO job_profiles (
             name, email, phone_number, address, city, state, zip,
             services_requested, scheduled_date, description, approved,
-            is_commercial, is_seen, referral_info, admin_notes, job_payout
+            is_commercial, is_seen, referral_info, schedule, admin_notes, job_payout
         ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
         ) RETURNING id, created_at, updated_at`
 
 	err := r.db.QueryRowContext(
@@ -43,7 +43,7 @@ func (r *postgresJobProfileRepo) Create(ctx context.Context, profile *model.JobP
 		profile.City, profile.State, profile.Zip, profile.ServicesRequested,
 		profile.ScheduledDate, profile.Description, profile.Approved,
 		profile.IsCommercial, profile.IsSeen, profile.ReferralInfo,
-		profile.AdminNotes, profile.JobPayout,
+		profile.Schedule, profile.AdminNotes, profile.JobPayout,
 	).Scan(&profile.ID, &profile.CreatedAt, &profile.UpdatedAt)
 
 	if err != nil {
@@ -62,9 +62,9 @@ func (r *postgresJobProfileRepo) Update(ctx context.Context, id int64, profile *
             name = $1, email = $2, phone_number = $3, address = $4, city = $5,
             state = $6, zip = $7, services_requested = $8, scheduled_date = $9,
             description = $10, approved = $11, is_commercial = $12, is_seen = $13,
-            referral_info = $14, admin_notes = $15, job_payout = $16,
+            referral_info = $14, schedule = $15, admin_notes = $16, job_payout = $17,
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = $17`
+        WHERE id = $18`
 
 	res, err := r.db.ExecContext(
 		ctx, query,
@@ -72,7 +72,7 @@ func (r *postgresJobProfileRepo) Update(ctx context.Context, id int64, profile *
 		profile.City, profile.State, profile.Zip, profile.ServicesRequested,
 		profile.ScheduledDate, profile.Description, profile.Approved,
 		profile.IsCommercial, profile.IsSeen, profile.ReferralInfo,
-		profile.AdminNotes, profile.JobPayout, id,
+		profile.Schedule, profile.AdminNotes, profile.JobPayout, id,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to update job profile: %w", err)
@@ -92,7 +92,7 @@ func (r *postgresJobProfileRepo) GetByApproved(ctx context.Context, approved boo
 	query := `
         SELECT id, name, email, phone_number, address, city, state, zip,
                services_requested, scheduled_date, description, approved,
-               is_commercial, is_seen, referral_info, admin_notes, job_payout,
+               is_commercial, is_seen, referral_info, schedule, admin_notes, job_payout,
                created_at, updated_at
         FROM job_profiles
         WHERE approved = $1
@@ -111,7 +111,7 @@ func (r *postgresJobProfileRepo) GetByApproved(ctx context.Context, approved boo
 			&p.ID, &p.Name, &p.Email, &p.PhoneNumber, &p.Address, &p.City,
 			&p.State, &p.Zip, &p.ServicesRequested, &p.ScheduledDate,
 			&p.Description, &p.Approved, &p.IsCommercial, &p.IsSeen,
-			&p.ReferralInfo, &p.AdminNotes, &p.JobPayout,
+			&p.ReferralInfo, &p.Schedule, &p.AdminNotes, &p.JobPayout,
 			&p.CreatedAt, &p.UpdatedAt,
 		)
 		if err != nil {

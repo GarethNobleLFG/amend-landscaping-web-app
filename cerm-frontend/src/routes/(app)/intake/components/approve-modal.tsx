@@ -43,7 +43,7 @@ export const ApproveModal = component$<ApproveModalProps>(({
     });
   });
 
-  const handleSave$=$(async () => {
+  const handleSave$ = $(async () => {
     if (isSubmitting.value || isSuccess.value) return;
 
     isSubmitting.value = true;
@@ -174,6 +174,38 @@ export const ApproveModal = component$<ApproveModalProps>(({
                       value={formData.value.zip || ""}
                       placeholder="N/A"
                       onInput$={(e) => (formData.value = { ...formData.value, zip: (e.target as HTMLInputElement).value })}
+                      class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  {/* Schedule Frequency & Job Payout */}
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">
+                      Schedule Frequency (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.value.schedule || ""}
+                      placeholder="e.g. Bi-Weekly, Monthly"
+                      onInput$={(e) => (formData.value = { ...formData.value, schedule: (e.target as HTMLInputElement).value })}
+                      class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">
+                      Job Payout ($) (Optional)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.value.job_payout != null ? formData.value.job_payout : ""}
+                      placeholder="0.00"
+                      onInput$={(e) => {
+                        const val = (e.target as HTMLInputElement).value;
+                        formData.value = {
+                          ...formData.value,
+                          job_payout: val === "" ? undefined : parseFloat(val),
+                        };
+                      }}
                       class="w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                     />
                   </div>
