@@ -26,11 +26,11 @@ export const useNotification = () => {
     state.value = { show: true, type: "loading", message };
   });
 
-  const success = $((message: string, autoCloseMs = 2500) => {
+  const success = $((message: string, autoCloseMs = 3500) => {
     show("success", message, autoCloseMs);
   });
 
-  const error = $((message: string, autoCloseMs = 3500) => {
+  const error = $((message: string, autoCloseMs = 4500) => {
     show("error", message, autoCloseMs);
   });
 
@@ -74,10 +74,10 @@ export const NotificationToast = component$(() => {
       <div class="fixed right-6 bottom-20 md:bottom-6 z-50 pointer-events-none toast-animate-up">
         <div
           class={[
-            "pointer-events-auto rounded-lg px-4 py-3 shadow-xl border flex items-center gap-5 transition-all",
+            "pointer-events-auto rounded-lg px-4 py-3 flex items-center gap-5 transition-all font-sans border-0 shadow-none",
             isError
-              ? "bg-rose-50 border-rose-200 text-rose-900"
-              : "bg-white border-slate-200 text-slate-900"
+              ? "bg-rose-50 text-rose-900"
+              : "bg-white text-slate-800"
           ]}
         >
           <div class="flex items-center gap-3">
@@ -85,7 +85,7 @@ export const NotificationToast = component$(() => {
               <div class="w-4 h-4 border-2 border-emerald-600/30 border-t-emerald-600 rounded-full animate-spin flex-shrink-0" />
             )}
 
-            <span class="text-sm font-medium whitespace-nowrap">
+            <span class="text-sm font-semibold whitespace-nowrap">
               {state.value.message}
             </span>
           </div>
@@ -93,7 +93,7 @@ export const NotificationToast = component$(() => {
           <button
             type="button"
             onClick$={close}
-            class="text-slate-500 hover:text-slate-800 p-0.5 transition-colors cursor-pointer flex-shrink-0"
+            class="text-slate-400 hover:text-slate-600 p-0.5 transition-colors cursor-pointer flex-shrink-0"
             title="Dismiss"
           >
             <svg
