@@ -76,8 +76,8 @@ export const NotificationToast = component$(() => {
           class={[
             "pointer-events-auto rounded-lg px-4 py-3 flex items-center gap-5 transition-all font-sans border-0 shadow-none",
             isError
-              ? "bg-rose-50 text-rose-900"
-              : "bg-white text-slate-800"
+              ? "bg-rose-100/80 text-rose-900"
+              : "bg-slate-200 text-slate-800"
           ]}
         >
           <div class="flex items-center gap-3">

@@ -104,7 +104,7 @@ export const ApproveModal = component$<ApproveModalProps>(({
               </h4>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
                 <div class="sm:col-span-2">
-                  <label class="block text-xs font-semibold text-gray-500 mb-1">Job Profile Name (Free to Name How You See Fit) </label>
+                  <label class="block text-xs font-semibold text-gray-500 mb-1">Job Profile Name</label>
                   <input
                     type="text"
                     value={formData.value.name || ""}
