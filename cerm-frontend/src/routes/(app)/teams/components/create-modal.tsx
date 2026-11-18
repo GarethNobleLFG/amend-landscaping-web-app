@@ -1,5 +1,6 @@
 import { component$, useSignal, $, type PropFunction } from "@builder.io/qwik";
 import { IconX } from "../../../../components/ui/icons";
+import { useNotification } from "~/components/ui/notification-toast";
 
 interface CreateModalProps {
   createAction: any;
@@ -10,18 +11,19 @@ export const CreateModal = component$(({ createAction, onClose$ }: CreateModalPr
   const teamNameInput = useSignal("");
   const teamColorInput = useSignal("#10B981"); // Default emerald green
   const isSubmitting = useSignal(false);
-  const isSuccess = useSignal(false);
   const errorMessage = useSignal("");
+  const notify = useNotification();
 
   const handleSubmit = $(async () => {
-    if (isSubmitting.value || isSuccess.value) return;
+    if (isSubmitting.value) return;
     if (!teamNameInput.value.trim()) {
       errorMessage.value = "Team name is required";
       return;
     }
 
     isSubmitting.value = true;
-    errorMessage.value = "";
+    notify.loading("Creating team...");
+    onClose$();
 
     try {
       const res = await createAction.submit({
@@ -31,18 +33,14 @@ export const CreateModal = component$(({ createAction, onClose$ }: CreateModalPr
       const isOk = res?.status === 201 || res?.status === 200 || res?.value?.success;
 
       if (isOk) {
-        isSubmitting.value = false;
-        isSuccess.value = true;
-        setTimeout(() => {
-          onClose$();
-        }, 1200);
+        notify.success("Team created successfully!");
       } else {
-        isSubmitting.value = false;
-        errorMessage.value = res?.value?.message || "Failed to create team";
+        notify.error(res?.value?.message || "Failed to create team");
       }
     } catch {
+      notify.error("Network error. Please try again.");
+    } finally {
       isSubmitting.value = false;
-      errorMessage.value = "Network error. Please try again.";
     }
   });
 
@@ -51,7 +49,7 @@ export const CreateModal = component$(({ createAction, onClose$ }: CreateModalPr
       <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
         <button
           onClick$={onClose$}
-          disabled={isSubmitting.value || isSuccess.value}
+          disabled={isSubmitting.value}
           class="absolute top-4 right-4 p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-slate-100 transition-all disabled:opacity-50"
         >
           <IconX class="w-5 h-5" />
@@ -93,7 +91,7 @@ export const CreateModal = component$(({ createAction, onClose$ }: CreateModalPr
             <button
               type="button"
               onClick$={onClose$}
-              disabled={isSubmitting.value || isSuccess.value}
+              disabled={isSubmitting.value}
               class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-gray-700 text-sm font-semibold rounded-xl transition-all disabled:opacity-50"
             >
               Cancel
@@ -101,23 +99,10 @@ export const CreateModal = component$(({ createAction, onClose$ }: CreateModalPr
             <button
               type="button"
               onClick$={handleSubmit}
-              disabled={isSubmitting.value || isSuccess.value}
-              class="min-w-[110px] h-[38px] px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-90 disabled:hover:bg-green-600"
+              disabled={isSubmitting.value}
+              class="min-w-[110px] h-[38px] px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {isSuccess.value ? (
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                  <path
-                    class="css-check-path"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              ) : isSubmitting.value ? (
-                <div class="css-spinner" />
-              ) : (
-                <span>Save Team</span>
-              )}
+              <span>{isSubmitting.value ? "Saving..." : "Save Team"}</span>
             </button>
           </div>
         </div>

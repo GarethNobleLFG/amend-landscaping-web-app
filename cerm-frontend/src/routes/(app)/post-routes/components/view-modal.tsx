@@ -4,6 +4,7 @@ import type { Team } from "~/hooks/teams-handling";
 import { IconX, IconEdit, IconTrash } from "../../../../components/ui/icons";
 import { CompletedDetailsCard } from "./completed-details-card";
 import { MarkCompleteModal } from "./mark-complete-modal";
+import { useNotification } from "~/components/ui/notification-toast";
 
 interface ViewModalProps {
   job: Job;
@@ -25,6 +26,7 @@ export const ViewModal = component$<ViewModalProps>(({
   const isDeleting = useSignal(false);
   const errorMessage = useSignal("");
   const isMarkCompleteOpen = useSignal(false);
+  const notify = useNotification();
 
   const profile = job.job_profile || {};
   const isCommercial = Boolean((profile as any).is_commercial);
@@ -48,21 +50,22 @@ export const ViewModal = component$<ViewModalProps>(({
   const handleDelete = $(async () => {
     if (isDeleting.value) return;
     isDeleting.value = true;
-    errorMessage.value = "";
+    notify.loading("Deleting scheduled job...");
+    onClose$();
 
     try {
       const res = await deleteAction.submit({ id: job.id });
       const isOk = res?.status === 200 || res?.value?.success;
 
       if (isOk) {
-        onClose$();
+        notify.success("Job deleted successfully!");
       } else {
-        isDeleting.value = false;
-        errorMessage.value = res?.value?.message || "Failed to delete job";
+        notify.error(res?.value?.message || "Failed to delete job");
       }
     } catch {
+      notify.error("Network error. Please try again.");
+    } finally {
       isDeleting.value = false;
-      errorMessage.value = "Network error. Please try again.";
     }
   });
 

@@ -1,6 +1,7 @@
 import { component$, useSignal, $, type PropFunction } from "@builder.io/qwik";
 import type { Job } from "~/hooks/job-handling";
 import { IconX } from "../../../../components/ui/icons";
+import { useNotification } from "~/components/ui/notification-toast";
 
 interface EditModalProps {
   job: Job;
@@ -18,15 +19,13 @@ export const EditModal = component$(({ job, updateAction, onClose$ }: EditModalP
   const isSuccess = useSignal(false);
   const errorMessage = useSignal("");
 
-  const handleSubmit = $(async () => {
-    if (isSubmitting.value || isSuccess.value) return;
-    if (!scheduledDayInput.value) {
-      errorMessage.value = "Scheduled date is required";
-      return;
-    }
+  const notify = useNotification();
 
+  const handleSubmit = $(async () => {
+    if (isSubmitting.value) return;
     isSubmitting.value = true;
-    errorMessage.value = "";
+    notify.loading("Updating scheduled job...");
+    onClose$();
 
     try {
       const res = await updateAction.submit({
@@ -36,21 +35,18 @@ export const EditModal = component$(({ job, updateAction, onClose$ }: EditModalP
         scheduled_day: scheduledDayInput.value,
         notes: notesInput.value,
       });
+
       const isOk = res?.status === 200 || res?.value?.success;
 
       if (isOk) {
-        isSubmitting.value = false;
-        isSuccess.value = true;
-        setTimeout(() => {
-          onClose$();
-        }, 1200);
+        notify.success("Job updated successfully!");
       } else {
-        isSubmitting.value = false;
-        errorMessage.value = res?.value?.message || "Failed to update job schedule";
+        notify.error(res?.value?.message || "Failed to update job.");
       }
     } catch {
+      notify.error("Network error. Please try again.");
+    } finally {
       isSubmitting.value = false;
-      errorMessage.value = "Network error. Please try again.";
     }
   });
 

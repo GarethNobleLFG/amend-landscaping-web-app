@@ -2,6 +2,7 @@ import { component$, useSignal, $, type PropFunction } from "@builder.io/qwik";
 import type { Team } from "~/hooks/teams-handling";
 import type { JobProfile } from "~/hooks/job-profile-handling";
 import { IconX } from "../../../../components/ui/icons";
+import { useNotification } from "~/components/ui/notification-toast";
 
 interface CreateModalProps {
   selectedDateStr: string; // Format: YYYY-MM-DD
@@ -26,6 +27,8 @@ export const CreateModal = component$(({ selectedDateStr, profiles, teams, creat
   const isSuccess = useSignal(false);
   const errorMessage = useSignal("");
 
+  const notify = useNotification();
+
   // Filter profiles based on search query
   const filteredProfiles = profiles.filter((p) =>
     (p.name || "").toLowerCase().includes(profileSearch.value.toLowerCase()) ||
@@ -41,46 +44,35 @@ export const CreateModal = component$(({ selectedDateStr, profiles, teams, creat
   const activeTeam = teams.find((t) => t.id === selectedTeamId.value);
 
   const handleSubmit = $(async () => {
-    if (isSubmitting.value || isSuccess.value) return;
-    if (!selectedProfileId.value) {
-      errorMessage.value = "Please select a job profile";
-      return;
-    }
-    if (!selectedTeamId.value) {
-      errorMessage.value = "Please select a team";
-      return;
-    }
-    if (!scheduledDayInput.value) {
-      errorMessage.value = "Scheduled date is required";
+    if (isSubmitting.value) return;
+    if (!selectedProfileId.value || !scheduledDayInput.value) {
+      errorMessage.value = "Customer profile and scheduled day are required.";
       return;
     }
 
     isSubmitting.value = true;
-    errorMessage.value = "";
+    notify.loading("Scheduling job...");
+    onClose$();
 
     try {
       const res = await createAction.submit({
         job_profile_id: selectedProfileId.value,
         team_id: selectedTeamId.value,
         scheduled_day: scheduledDayInput.value,
-        notes: notesInput.value,
+        notes: notesInput.value ? notesInput.value : null,
       });
 
       const isOk = res?.status === 200 || res?.value?.success;
 
       if (isOk) {
-        isSubmitting.value = false;
-        isSuccess.value = true;
-        setTimeout(() => {
-          onClose$();
-        }, 1200);
+        notify.success("Job scheduled successfully!");
       } else {
-        isSubmitting.value = false;
-        errorMessage.value = res?.value?.message || "Failed to create scheduled job";
+        notify.error(res?.value?.message || "Failed to schedule job.");
       }
     } catch {
+      notify.error("Network error. Please try again.");
+    } finally {
       isSubmitting.value = false;
-      errorMessage.value = "Network error. Please try again.";
     }
   });
 

@@ -1,6 +1,7 @@
 import { component$, useSignal, useComputed$, $, type PropFunction } from "@builder.io/qwik";
 import type { Job } from "~/hooks/job-handling";
 import { IconX } from "../../../../components/ui/icons";
+import { useNotification } from "~/components/ui/notification-toast";
 
 interface MarkCompleteModalProps {
   job: Job;
@@ -43,6 +44,8 @@ export const MarkCompleteModal = component$<MarkCompleteModalProps>(({
     return endTimeSignal.value <= startTimeSignal.value;
   });
 
+  const notify = useNotification();
+
   const handleMarkComplete = $(async () => {
     if (isSubmitting.value) return;
     errorMessage.value = "";
@@ -57,11 +60,12 @@ export const MarkCompleteModal = component$<MarkCompleteModalProps>(({
       return;
     }
 
-    // Combine scheduled date with selected time to create RFC3339 timestamps
     const startDateTime = new Date(`${scheduledDate}T${startTimeSignal.value}:00`).toISOString();
     const endDateTime = new Date(`${scheduledDate}T${endTimeSignal.value}:00`).toISOString();
 
     isSubmitting.value = true;
+    notify.loading("Completing job...");
+
     try {
       const res = await updateAction.submit({
         id: job.id,
@@ -76,15 +80,21 @@ export const MarkCompleteModal = component$<MarkCompleteModalProps>(({
       });
 
       const isOk = res?.status === 200 || res?.value?.success;
+      isSubmitting.value = false;
+
       if (isOk) {
+        notify.success("Job marked as complete!");
         onSuccess$();
       } else {
-        isSubmitting.value = false;
-        errorMessage.value = res?.value?.message || "Failed to mark job as complete.";
+        const msg = res?.value?.message || "Failed to mark job as complete.";
+        errorMessage.value = msg;
+        notify.error(msg);
       }
     } catch {
       isSubmitting.value = false;
-      errorMessage.value = "Network error. Please try again.";
+      const msg = "Network error. Please try again.";
+      errorMessage.value = msg;
+      notify.error(msg);
     }
   });
 
@@ -145,11 +155,10 @@ export const MarkCompleteModal = component$<MarkCompleteModalProps>(({
                 onInput$={(e) => {
                   endTimeSignal.value = (e.target as HTMLInputElement).value;
                 }}
-                class={`w-full px-3.5 py-2.5 rounded-xl border bg-slate-50 focus:bg-white focus:outline-none text-sm font-semibold text-gray-800 transition ${
-                  isTimeInvalid.value
+                class={`w-full px-3.5 py-2.5 rounded-xl border bg-slate-50 focus:bg-white focus:outline-none text-sm font-semibold text-gray-800 transition ${isTimeInvalid.value
                     ? "border-red-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
                     : "border-gray-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-600"
-                }`}
+                  }`}
               />
               {isTimeInvalid.value && (
                 <span class="block text-[11px] font-semibold text-red-600 mt-1">

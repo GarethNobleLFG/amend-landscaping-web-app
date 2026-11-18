@@ -2,6 +2,7 @@ import { component$, type Signal, type PropFunction, $, useVisibleTask$, useSign
 import type { JobProfile } from "../../../../hooks/job-profile-handling";
 import { IconX } from "../../../../components/ui/icons";
 import { formatPhoneNumber } from "../../../../utils/formatters";
+import { useNotification } from "~/components/ui/notification-toast";
 
 export interface ServiceItem {
     id: number;
@@ -41,40 +42,28 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
         });
     });
 
-    // Wrapped submit handler to drive CSS animations & error banners
-    const handleCreate$ = $(async () => {
-        if (isSubmitting.value || isSuccess.value) return;
+    const notify = useNotification();
 
-        errorMessage.value = null;
+    const handleCreate$ = $(async () => {
+        if (isSubmitting.value) return;
         isSubmitting.value = true;
+        notify.loading("Creating customer profile...");
+        onClose$();
 
         try {
             const res = await onSubmit$();
-
-            // Check for 201/200 HTTP status or success flag
-            const isOk = res?.status === 201 || res?.status === 200 || res?.value?.success || res === true;
+            const isOk = res?.status === 200 || res?.status === 201 || res?.value?.success || res === true;
 
             if (isOk) {
-                isSubmitting.value = false;
-                isSuccess.value = true;
-
-                setTimeout(() => {
-                    onClose$();
-                }, 1200);
+                notify.success("Customer profile created successfully!");
             } else {
-                isSubmitting.value = false;
-                
-                // Display specific error message from server or Zod failure
-                const errorText =
-                    res?.value?.message ||
-                    res?.message ||
-                    "Please fill out all required fields marked with * and try again.";
-                errorMessage.value = errorText;
+                notify.error(res?.value?.message || res?.message || "Please check all required fields.");
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error(err);
+            notify.error("An unexpected error occurred. Please try again.");
+        } finally {
             isSubmitting.value = false;
-            errorMessage.value = "An unexpected error occurred. Please try again.";
         }
     });
 
@@ -87,31 +76,6 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
 
     return (
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
-            {/* CSS Animation Keyframes for Spinner and SVG Checkmark Drawing */}
-            <style dangerouslySetInnerHTML={`
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-                @keyframes draw-check {
-                    0% { stroke-dashoffset: 24; }
-                    100% { stroke-dashoffset: 0; }
-                }
-                .css-spinner {
-                    width: 18px;
-                    height: 18px;
-                    border: 2px solid rgba(255, 255, 255, 0.3);
-                    border-top-color: #ffffff;
-                    border-radius: 50%;
-                    animation: spin 0.6s linear infinite;
-                }
-                .css-check-path {
-                    stroke-dasharray: 24;
-                    stroke-dashoffset: 24;
-                    animation: draw-check 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-                }
-            `} />
-
             <div class="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
                 <button
                     type="button"
@@ -395,24 +359,12 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                         </button>
 
                         <button
-                            type="submit"
-                            disabled={isSubmitting.value || isSuccess.value}
-                            class="min-w-[130px] h-[42px] px-5 py-2.5 bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white text-sm font-semibold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-90 disabled:hover:bg-green-600"
+                            type="button"
+                            onClick$={handleCreate$}
+                            disabled={isSubmitting.value}
+                            class="min-w-[130px] h-[42px] px-5 py-2.5 bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white text-sm font-semibold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                         >
-                            {isSuccess.value ? (
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                                    <path
-                                        class="css-check-path"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M5 13l4 4L19 7"
-                                    />
-                                </svg>
-                            ) : isSubmitting.value ? (
-                                <div class="css-spinner" />
-                            ) : (
-                                <span>Create Profile</span>
-                            )}
+                            <span>{isSubmitting.value ? "Creating..." : "Create Profile"}</span>
                         </button>
                     </div>
                 </form>

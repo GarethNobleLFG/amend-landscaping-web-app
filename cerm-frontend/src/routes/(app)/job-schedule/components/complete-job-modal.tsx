@@ -1,5 +1,6 @@
 import { component$, useSignal, $, type PropFunction } from "@builder.io/qwik";
 import { IconX } from "../../../../components/ui/icons";
+import { useNotification } from "~/components/ui/notification-toast";
 
 interface CompleteJobModalProps {
   jobTitle: string;
@@ -16,28 +17,27 @@ export const CompleteJobModal = component$<CompleteJobModalProps>(({
   const isSubmitting = useSignal(false);
   const isSuccess = useSignal(false);
 
-  const handleSubmit$ = $(async () => {
-    if (isSubmitting.value || isSuccess.value) return;
+  const notify = useNotification();
 
+  const handleSubmit$ = $(async () => {
+    if (isSubmitting.value) return;
     isSubmitting.value = true;
+    notify.loading("Completing job...");
+    onClose$();
 
     try {
       const res = await onConfirm$(notesSignal.value.trim());
       const isOk = res?.status === 200 || res?.value?.success || res === true;
 
       if (isOk) {
-        isSubmitting.value = false;
-        isSuccess.value = true;
-
-        // Keep modal open so the full checkmark drawing & hold animation plays out
-        setTimeout(() => {
-          onClose$();
-        }, 1200); // 600ms drawing + 600ms hold time
+        notify.success("Job marked as complete!");
       } else {
-        isSubmitting.value = false;
+        notify.error("Failed to complete job.");
       }
     } catch (err) {
       console.error(err);
+      notify.error("Network error. Please try again.");
+    } finally {
       isSubmitting.value = false;
     }
   });
@@ -51,31 +51,6 @@ export const CompleteJobModal = component$<CompleteJobModalProps>(({
         }
       }}
     >
-      {/* CSS Animation Keyframes matching edit-modal */}
-      <style dangerouslySetInnerHTML={`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        @keyframes draw-check {
-          0% { stroke-dashoffset: 24; }
-          100% { stroke-dashoffset: 0; }
-        }
-        .css-spinner {
-          width: 18px;
-          height: 18px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top-color: #ffffff;
-          border-radius: 50%;
-          animation: spin 0.6s linear infinite;
-        }
-        .css-check-path {
-          stroke-dasharray: 24;
-          stroke-dashoffset: 24;
-          animation: draw-check 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-        }
-      `} />
-
       <div
         class="bg-white rounded-3xl w-full max-w-md p-5 sm:p-6 shadow-2xl border border-slate-100 relative max-h-[85dvh] flex flex-col animate-in fade-in slide-in-from-top-4 duration-200"
         onClick$={(e) => e.stopPropagation()}
@@ -128,23 +103,10 @@ export const CompleteJobModal = component$<CompleteJobModalProps>(({
           <button
             type="button"
             onClick$={handleSubmit$}
-            disabled={isSubmitting.value || isSuccess.value}
-            class="min-w-[170px] h-[42px] px-5 py-2.5 bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white text-sm font-semibold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-90 disabled:hover:bg-green-600 cursor-pointer"
+            disabled={isSubmitting.value}
+            class="min-w-[170px] h-[42px] px-4.5 py-2.5 bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white text-sm font-semibold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
-            {isSuccess.value ? (
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                <path
-                  class="css-check-path"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            ) : isSubmitting.value ? (
-              <div class="css-spinner" />
-            ) : (
-              <span>End Job, Mark Complete</span>
-            )}
+            <span>{isSubmitting.value ? "Completing..." : "End Job, Mark Complete"}</span>
           </button>
         </div>
       </div>

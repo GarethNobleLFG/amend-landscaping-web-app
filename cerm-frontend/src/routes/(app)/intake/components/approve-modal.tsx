@@ -1,5 +1,6 @@
 import { component$, type Signal, type PropFunction, $, useVisibleTask$, useSignal } from "@builder.io/qwik";
 import type { JobProfile } from "../../../../hooks/job-profile-handling";
+import { useNotification } from "~/components/ui/notification-toast";
 
 export interface ServiceItem {
   id: number;
@@ -43,32 +44,32 @@ export const ApproveModal = component$<ApproveModalProps>(({
     });
   });
 
-  const handleSave$ = $(async () => {
-    if (isSubmitting.value || isSuccess.value) return;
+  const notify = useNotification();
 
+  const handleSave$ = $(async () => {
+    if (isSubmitting.value) return;
     isSubmitting.value = true;
 
-    // Synchronize signal value if external customMessage signal was provided
     if (customMessage) {
       customMessage.value = localCustomMessage.value;
     }
+
+    notify.loading("Sending approval & email...");
+    onClose$();
 
     try {
       const res = await onSubmit$();
       const isOk = res?.status === 200 || res?.value?.success || res === true;
 
       if (isOk) {
-        isSubmitting.value = false;
-        isSuccess.value = true;
-
-        setTimeout(() => {
-          onClose$();
-        }, 1500);
+        notify.success("Profile approved and email sent!");
       } else {
-        isSubmitting.value = false;
+        notify.error(res?.value?.message || "Failed to approve profile.");
       }
     } catch (err) {
       console.error(err);
+      notify.error("Network error. Please try again.");
+    } finally {
       isSubmitting.value = false;
     }
   });
@@ -81,30 +82,6 @@ export const ApproveModal = component$<ApproveModalProps>(({
 
   return (
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
-      <style dangerouslySetInnerHTML={`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        @keyframes draw-check {
-          0% { stroke-dashoffset: 24; }
-          100% { stroke-dashoffset: 0; }
-        }
-        .css-spinner {
-          width: 18px;
-          height: 18px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top-color: #ffffff;
-          border-radius: 50%;
-          animation: spin 0.6s linear infinite;
-        }
-        .css-check-path {
-          stroke-dasharray: 24;
-          stroke-dashoffset: 24;
-          animation: draw-check 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-        }
-      `} />
-
       <div class="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
         {step.value === "edit" ? (
           <>
@@ -345,23 +322,10 @@ export const ApproveModal = component$<ApproveModalProps>(({
               <button
                 type="button"
                 onClick$={handleSave$}
-                disabled={isSubmitting.value || isSuccess.value}
-                class="min-w-[130px] h-[42px] px-5 py-2.5 bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white text-sm font-semibold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-90 disabled:hover:bg-green-600"
+                disabled={isSubmitting.value}
+                class="min-w-[130px] h-[42px] px-5 py-2.5 bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white text-sm font-semibold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {isSuccess.value ? (
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                    <path
-                      class="css-check-path"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                ) : isSubmitting.value ? (
-                  <div class="css-spinner" />
-                ) : (
-                  <span>Send Approval & Email</span>
-                )}
+                <span>{isSubmitting.value ? "Sending..." : "Send Approval & Email"}</span>
               </button>
             </div>
           </div>

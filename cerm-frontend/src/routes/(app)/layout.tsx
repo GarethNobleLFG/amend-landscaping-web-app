@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { useAuthUser } from "~/hooks/user-auth";
 import { useUnapprovedProfiles } from "~/hooks/job-profile-handling";
 import { IconDashboard, IconIntake, IconSend, IconChecklist, IconUsers, IconTeams, IconDotsVertical, IconLogOut, IconCalendar } from "~/components/ui/icons";
+import { useContextProvider } from "@builder.io/qwik";
+import { NotificationContext, NotificationToast, type NotificationState } from "~/components/ui/notification-toast";
 
 // ============================================================================
 // 1. RE-EXPORT ROUTE LOADERS
@@ -36,6 +38,13 @@ export default component$(() => {
 
   // Signal to control mobile popup menu visibility
   const isMobileMenuOpen = useSignal(false);
+
+  const notificationState = useSignal<NotificationState>({
+    show: false,
+    type: "info",
+    message: "",
+  });
+  useContextProvider(NotificationContext, notificationState);
 
   // Dynamically constructed navigation configuration based on state
   const navigationConfig: NavItem[] = [
@@ -300,6 +309,8 @@ export default component$(() => {
           )}
         </nav>
       </div>
+      {/* Global Notification Toast */}
+      <NotificationToast />
     </div>
   );
 });
