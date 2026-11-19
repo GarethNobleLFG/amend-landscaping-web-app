@@ -289,9 +289,9 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                                 const target = e.target as HTMLTextAreaElement;
                                 formData.value = { ...formData.value, admin_notes: target.value };
                                 target.style.height = "auto";
-                                target.style.height = `${target.scrollHeight}px`;
+                                target.style.height = `${Math.max(target.scrollHeight, 88)}px`;
                             }}
-                            class="auto-expand w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none overflow-hidden min-h-[80px]"
+                            class="auto-expand w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none overflow-hidden min-h-[88px]"
                         />
                     </div>
 
