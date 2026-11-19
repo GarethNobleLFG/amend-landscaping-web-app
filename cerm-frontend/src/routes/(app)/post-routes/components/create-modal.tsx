@@ -106,8 +106,7 @@ export const CreateModal = component$(({
           <IconX class="w-5 h-5" />
         </button>
 
-        <h3 class="text-2xl font-extrabold text-gray-900 mb-1">Schedule New Job</h3>
-        <p class="text-xs text-gray-500 mb-6">Assign a job profile, team, and services for {scheduledDayInput.value}.</p>
+        <h3 class="text-2xl font-extrabold text-gray-900 mb-6">Schedule New Job</h3>
 
         {errorMessage.value && (
           <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
