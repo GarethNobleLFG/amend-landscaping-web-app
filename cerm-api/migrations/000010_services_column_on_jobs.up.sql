@@ -1,0 +1,2 @@
+ALTER TABLE jobs
+ADD COLUMN IF NOT EXISTS services_requested JSONB NOT NULL DEFAULT '{}'::jsonb;

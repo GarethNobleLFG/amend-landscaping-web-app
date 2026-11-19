@@ -1,6 +1,7 @@
 import { component$, type PropFunction } from "@builder.io/qwik";
 import type { JobProfile } from "../../../../hooks/job-profile-handling";
 import { IconX } from "../../../../components/ui/icons";
+import { ServicesList } from "~/components/ui/services-list";
 
 interface ViewModalProps {
     profile: JobProfile;
@@ -13,14 +14,6 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
     const fullAddress = hasAddress
         ? `${profile.address || ""}, ${profile.city || ""} ${profile.state || ""} ${profile.zip || ""}`.trim()
         : "N/A";
-
-    // Extract requested services from profile.services_requested dictionary object where value is true
-    const servicesObj = (profile as any).services_requested || (profile as any).services || (profile as any).requested_services || {};
-    const activeServices: string[] = typeof servicesObj === "object" && servicesObj !== null
-        ? Object.entries(servicesObj)
-            .filter(([_, enabled]) => Boolean(enabled))
-            .map(([serviceName]) => serviceName)
-        : [];
 
     return (
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
@@ -51,7 +44,6 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                         {isCommercial ? "Company Information" : "Personal Information"}
                     </h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
-                        {/* Row 1: Email & Phone Number */}
                         <div>
                             <span class="block text-xs font-semibold text-gray-500 mb-0.5">
                                 {isCommercial ? "Company Contact Email" : "Email"}
@@ -64,30 +56,20 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                             </span>
                             <span class="text-gray-900 font-medium">{profile.phone_number || "N/A"}</span>
                         </div>
-
-                        {/* Row 2: Address (Left) & Schedule Frequency (Right) */}
                         <div>
+                            <span class="block text-xs font-semibold text-gray-500 mb-0.5">Scheduled Frequency</span>
+                            <span class="text-gray-900 font-medium">{profile.schedule || "N/A"}</span>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-semibold text-gray-500 mb-0.5">Referral Info</span>
+                            <span class="text-gray-900 font-medium">{profile.referral_info || "N/A"}</span>
+                        </div>
+                        <div class="sm:col-span-2">
                             <span class="block text-xs font-semibold text-gray-500 mb-0.5">
                                 {isCommercial ? "Facility / Service Address" : "Address"}
                             </span>
-                            <span class="text-gray-900 font-medium">{fullAddress}</span>
+                            <span class="text-gray-900 font-medium break-words">{fullAddress}</span>
                         </div>
-                        <div>
-                            <span class="block text-xs font-semibold text-gray-500 mb-0.5">
-                                Schedule Frequency
-                            </span>
-                            <span class="text-gray-900 font-medium">{profile.schedule || "N/A"}</span>
-                        </div>
-
-                        {/* Row 3: Referral Info */}
-                        <div class="sm:col-span-2">
-                            <span class="block text-xs font-semibold text-gray-500 mb-0.5">
-                                Referral Info
-                            </span>
-                            <span class="text-gray-900 font-medium">{profile.referral_info || "N/A"}</span>
-                        </div>
-
-                        {/* Row 4: Value / Payout */}
                         <div class="sm:col-span-2">
                             <span class="block text-xs font-semibold text-gray-500 mb-0.5">
                                 {isCommercial ? "Contract / Service Value" : "Average Job Payout"}
@@ -101,44 +83,30 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                     </div>
                 </div>
 
-                {/* Requested Services Bullet Points Section */}
-                <div class="mb-6">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
-                        Requested Services
-                    </h4>
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
-                        {activeServices.length > 0 ? (
-                            <ul class="space-y-2">
-                                {activeServices.map((service, idx) => (
-                                    <li key={idx} class="flex items-center gap-2.5 text-gray-900 font-medium">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-green-600 flex-shrink-0" />
-                                        <span>{service}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <span class="text-gray-500 italic">No services selected</span>
-                        )}
-                    </div>
-                </div>
+                {/* Requested Services (Shared ServicesList Component) */}
+                <ServicesList
+                    services={profile.services_requested}
+                    title="Requested Services"
+                />
 
-                {/* Vertical Notes Sections */}
+                {/* Notes Sections */}
                 <div class="flex flex-col gap-4 mb-8">
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                            Scratch Notes (Not Visible to Staff)
-                        </h4>
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{profile.admin_notes || "N/A"}</p>
-                    </div>
                     <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
                             {isCommercial ? "Commercial Client Notes" : "Customer Submitted Notes"}
                         </h4>
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{profile.description || "N/A"}</p>
+                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{profile.description || "N/A"}</p>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+                            Scratch Notes (Not Visible to Staff)
+                        </h4>
+                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{profile.admin_notes || "N/A"}</p>
                     </div>
                 </div>
 
-                {/* Footer Actions */}
+                {/* Close Button */}
                 <div class="flex justify-end">
                     <button
                         onClick$={onClose$}

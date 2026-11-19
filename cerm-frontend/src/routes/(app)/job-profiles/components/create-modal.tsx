@@ -3,6 +3,8 @@ import type { JobProfile } from "../../../../hooks/job-profile-handling";
 import { IconX } from "../../../../components/ui/icons";
 import { formatPhoneNumber } from "../../../../utils/formatters";
 import { useNotification } from "~/components/ui/notification-toast";
+import { parseServices } from "~/utils/service-utils";
+import { ServicesChecklist } from "~/components/ui/services-checklist";
 
 export interface ServiceItem {
     id: number;
@@ -20,19 +22,25 @@ interface CreateModalProps {
 export const CreateModal = component$<CreateModalProps>(({ formData, availableServices = [], onClose$, onSubmit$ }) => {
     const isCommercial = Boolean(formData.value.is_commercial);
 
-    // UI state signals for button loading, success animation, and error messages
     const isSubmitting = useSignal(false);
-    const isSuccess = useSignal(false);
     const errorMessage = useSignal<string | null>(null);
 
-    // Helper to adjust a textarea height dynamically to fit its content
+    // Reactive services signal mapped from formData
+    const servicesSignal = useSignal<Record<string, boolean>>(
+        parseServices(formData.value.services_requested)
+    );
+
+    // Keep formData.value.services_requested synchronized with servicesSignal
+    const handleServicesChange = $((updated: Record<string, boolean>) => {
+        formData.value = { ...formData.value, services_requested: { ...updated } };
+    });
+
     const autoResizeTextarea = $((el: HTMLTextAreaElement) => {
         if (!el) return;
         el.style.height = "auto";
         el.style.height = `${el.scrollHeight}px`;
     });
 
-    // Automatically recalculate heights for all textareas on modal initial mount
     useVisibleTask$(({ track }) => {
         track(() => formData.value);
         const textareas = document.querySelectorAll<HTMLTextAreaElement>("textarea.auto-expand");
@@ -67,12 +75,7 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
         }
     });
 
-    // Safely resolve services_requested whether it's a JSON string or an object
-    const rawServices = formData.value.services_requested;
-    const currentServices: Record<string, boolean> =
-        typeof rawServices === "string"
-            ? (() => { try { return JSON.parse(rawServices); } catch { return {}; } })()
-            : (rawServices as Record<string, boolean>) || {};
+    const serviceKeys = availableServices.map((s) => s.name);
 
     return (
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
@@ -80,7 +83,7 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                 <button
                     type="button"
                     onClick$={onClose$}
-                    disabled={isSubmitting.value || isSuccess.value}
+                    disabled={isSubmitting.value}
                     class="absolute top-3.5 right-3.5 p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-slate-100 transition-all disabled:opacity-50"
                     title="Close Modal"
                 >
@@ -113,7 +116,6 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                     </div>
                 </div>
 
-                {/* Pop-up Error Notification Banner */}
                 {errorMessage.value && (
                     <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3 text-red-800">
                         <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -135,9 +137,7 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                     </div>
                 )}
 
-                {/* Form Element Wrapping inputs to enforce validation and handle submit */}
                 <form preventdefault:submit onSubmit$={handleCreate$}>
-                    {/* Personal / Company Information Form Fields */}
                     <div class="mb-6">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
                             {isCommercial ? "Company Information" : "Personal Information"}
@@ -281,51 +281,13 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                         </div>
                     </div>
 
-                    {/* Requested Services Checkbox Section */}
+                    {/* Requested Services (Shared ServicesChecklist Component) */}
                     <div class="mb-6">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
-                            Requested Services
-                        </h4>
-                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
-                            {availableServices.length > 0 ? (
-                                <div class="grid grid-cols-1 gap-3">
-                                    {availableServices.map((service) => {
-                                        const isChecked = Boolean(currentServices[service.name]);
-                                        return (
-                                            <label
-                                                key={service.id}
-                                                class="flex items-center gap-3 p-2.5 bg-white rounded-xl border border-gray-200 cursor-pointer hover:border-green-500 transition-all text-sm font-medium text-gray-900 select-none"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isChecked}
-                                                    onChange$={(e) => {
-                                                        const checked = (e.target as HTMLInputElement).checked;
-
-                                                        const raw = formData.value.services_requested;
-                                                        const currentMap: Record<string, boolean> =
-                                                            typeof raw === "string"
-                                                                ? (() => { try { return JSON.parse(raw); } catch { return {}; } })()
-                                                                : { ...((raw as Record<string, boolean>) || {}) };
-
-                                                        currentMap[service.name] = checked;
-
-                                                        formData.value = {
-                                                            ...formData.value,
-                                                            services_requested: { ...currentMap },
-                                                        };
-                                                    }}
-                                                    class="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
-                                                />
-                                                <span class="truncate">{service.name}</span>
-                                            </label>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <span class="text-sm text-gray-500 italic">No services available</span>
-                            )}
-                        </div>
+                        <ServicesChecklist
+                            services={servicesSignal}
+                            availableServiceKeys={serviceKeys}
+                            onChange$={handleServicesChange}
+                        />
                     </div>
 
                     {/* Scratch Notes Section */}
@@ -352,7 +314,7 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                         <button
                             type="button"
                             onClick$={onClose$}
-                            disabled={isSubmitting.value || isSuccess.value}
+                            disabled={isSubmitting.value}
                             class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-gray-700 text-sm font-semibold rounded-xl transition-all disabled:opacity-50"
                         >
                             Cancel

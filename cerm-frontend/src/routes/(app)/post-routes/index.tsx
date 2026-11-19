@@ -8,10 +8,11 @@ import { CalendarDayCell } from "./components/calendar-day-cell";
 import { CreateModal } from "./components/create-modal";
 import { EditModal } from "./components/edit-modal";
 import { buildMonthGrid } from "~/utils/calendar-utils";
+import { useAmendServices, type Service } from "~/hooks/amend-api-handling";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export { useJobsByMonth, useTeams, useApprovedProfiles, useDeleteJob, useCreateJob, useUpdateJob };
+export { useJobsByMonth, useTeams, useApprovedProfiles, useDeleteJob, useCreateJob, useUpdateJob, useAmendServices };
 
 export default component$(() => {
   const loc = useLocation();
@@ -22,6 +23,9 @@ export default component$(() => {
   const deleteAction = useDeleteJob();
   const createAction = useCreateJob();
   const updateAction = useUpdateJob();
+
+  const servicesLoader = useAmendServices();
+  const availableServices: Service[] = servicesLoader.value || [];
 
   const selectedTeamId = useSignal<number | null>(null);
 
@@ -155,21 +159,23 @@ export default component$(() => {
         })}
       </div>
 
-      {/* Render CreateModal when a date is selected */}
+      {/* CreateModal */}
       {creatingDateStr.value && (
         <CreateModal
           selectedDateStr={creatingDateStr.value}
           profiles={profilesList}
           teams={teamsList}
+          availableServices={availableServices}
           createAction={createAction}
           onClose$={() => (creatingDateStr.value = null)}
         />
       )}
 
-      {/* Render EditModal when editingJob is set */}
+      {/* EditModal */}
       {editingJob.value && (
         <EditModal
           job={editingJob.value}
+          availableServices={availableServices}
           updateAction={updateAction}
           onClose$={() => (editingJob.value = null)}
         />

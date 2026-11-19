@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -24,16 +25,17 @@ type jobRepo struct {
 }
 
 type JobWithProfile struct {
-	ID             int64             `json:"id"`
-	JobProfileID   int64             `json:"job_profile_id"`
-	TeamID         *int64            `json:"team_id"`
-	ScheduledDay   time.Time         `json:"scheduled_day"`
-	StartTime      *time.Time        `json:"start_time"`
-	EndTime        *time.Time        `json:"end_time"`
-	Completed      bool              `json:"completed"`
-	Notes          *string           `json:"notes"`
-	CompletedNotes *string           `json:"completed_notes,omitempty"`
-	JobProfile     *model.JobProfile `json:"job_profile,omitempty"`
+	ID                int64             `json:"id"`
+	JobProfileID      int64             `json:"job_profile_id"`
+	TeamID            *int64            `json:"team_id"`
+	ScheduledDay      time.Time         `json:"scheduled_day"`
+	StartTime         *time.Time        `json:"start_time"`
+	EndTime           *time.Time        `json:"end_time"`
+	Completed         bool              `json:"completed"`
+	Notes             *string           `json:"notes"`
+	CompletedNotes    *string           `json:"completed_notes,omitempty"`
+	ServicesRequested json.RawMessage   `json:"services_requested"`
+	JobProfile        *model.JobProfile `json:"job_profile,omitempty"`
 }
 
 func NewJobRepository(db *sql.DB) JobRepository {
@@ -42,9 +44,13 @@ func NewJobRepository(db *sql.DB) JobRepository {
 
 // Create inserts a new job record and returns its generated ID
 func (r *jobRepo) Create(ctx context.Context, job *model.Job) (int64, error) {
+	if len(job.ServicesRequested) == 0 {
+		job.ServicesRequested = []byte("{}")
+	}
+
 	query := `
-        INSERT INTO jobs (job_profile_id, team_id, scheduled_day, start_time, end_time, completed, notes)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO jobs (job_profile_id, team_id, scheduled_day, start_time, end_time, completed, notes, services_requested)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING id
     `
 	var id int64
@@ -58,6 +64,7 @@ func (r *jobRepo) Create(ctx context.Context, job *model.Job) (int64, error) {
 		job.EndTime,
 		job.Completed,
 		job.Notes,
+		job.ServicesRequested,
 	).Scan(&id)
 
 	if err != nil {
@@ -71,7 +78,7 @@ func (r *jobRepo) Create(ctx context.Context, job *model.Job) (int64, error) {
 func (r *jobRepo) GetByID(ctx context.Context, id int64) (*JobWithProfile, error) {
 	query := `
         SELECT 
-            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes,
+            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes, j.completed_notes, j.services_requested,
             p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
             p.services_requested, p.scheduled_date, p.description, p.approved, 
             p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
@@ -93,6 +100,8 @@ func (r *jobRepo) GetByID(ctx context.Context, id int64) (*JobWithProfile, error
 		&res.EndTime,
 		&res.Completed,
 		&res.Notes,
+		&res.CompletedNotes,
+		&res.ServicesRequested,
 		&profile.ID,
 		&profile.Name,
 		&profile.Email,
@@ -130,7 +139,7 @@ func (r *jobRepo) GetByID(ctx context.Context, id int64) (*JobWithProfile, error
 func (r *jobRepo) GetAll(ctx context.Context) ([]JobWithProfile, error) {
 	query := `
         SELECT 
-            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes,
+            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes, j.completed_notes, j.services_requested,
             p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
             p.services_requested, p.scheduled_date, p.description, p.approved, 
             p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
@@ -160,6 +169,8 @@ func (r *jobRepo) GetAll(ctx context.Context) ([]JobWithProfile, error) {
 			&res.EndTime,
 			&res.Completed,
 			&res.Notes,
+			&res.CompletedNotes,
+			&res.ServicesRequested,
 			&profile.ID,
 			&profile.Name,
 			&profile.Email,
@@ -195,7 +206,7 @@ func (r *jobRepo) GetAll(ctx context.Context) ([]JobWithProfile, error) {
 func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([]JobWithProfile, error) {
 	query := `
         SELECT 
-            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes, j.completed_notes,
+            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes, j.completed_notes, j.services_requested,
             p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
             p.services_requested, p.scheduled_date, p.description, p.approved, 
             p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
@@ -228,6 +239,7 @@ func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([
 			&res.Completed,
 			&res.Notes,
 			&res.CompletedNotes,
+			&res.ServicesRequested,
 			&profile.ID,
 			&profile.Name,
 			&profile.Email,
@@ -263,7 +275,7 @@ func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([
 func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]JobWithProfile, error) {
 	query := `
         SELECT 
-            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes,
+            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes, j.completed_notes, j.services_requested,
             p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
             p.services_requested, p.scheduled_date, p.description, p.approved, 
             p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
@@ -296,6 +308,8 @@ func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate 
 			&res.EndTime,
 			&res.Completed,
 			&res.Notes,
+			&res.CompletedNotes,
+			&res.ServicesRequested,
 			&profile.ID,
 			&profile.Name,
 			&profile.Email,
@@ -329,10 +343,14 @@ func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate 
 
 // Update modifies an existing job record by ID
 func (r *jobRepo) Update(ctx context.Context, job *model.Job) error {
+	if len(job.ServicesRequested) == 0 {
+		job.ServicesRequested = []byte("{}")
+	}
+
 	query := `
         UPDATE jobs
-        SET job_profile_id = $1, team_id = $2, scheduled_day = $3, start_time = $4, end_time = $5, completed = $6, notes = $7, completed_notes = $8
-        WHERE id = $9
+        SET job_profile_id = $1, team_id = $2, scheduled_day = $3, start_time = $4, end_time = $5, completed = $6, notes = $7, completed_notes = $8, services_requested = $9
+        WHERE id = $10
     `
 	result, err := r.db.ExecContext(
 		ctx,
@@ -345,6 +363,7 @@ func (r *jobRepo) Update(ctx context.Context, job *model.Job) error {
 		job.Completed,
 		job.Notes,
 		job.CompletedNotes,
+		job.ServicesRequested,
 		job.ID,
 	)
 	if err != nil {

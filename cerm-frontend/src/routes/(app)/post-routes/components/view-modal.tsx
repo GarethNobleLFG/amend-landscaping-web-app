@@ -5,6 +5,8 @@ import { IconX, IconEdit, IconTrash } from "../../../../components/ui/icons";
 import { CompletedDetailsCard } from "./completed-details-card";
 import { MarkCompleteModal } from "./mark-complete-modal";
 import { useNotification } from "~/components/ui/notification-toast";
+import { parseServices } from "~/utils/service-utils";
+import { ServicesList } from "~/components/ui/services-list";
 
 interface ViewModalProps {
   job: Job;
@@ -40,16 +42,15 @@ export const ViewModal = component$<ViewModalProps>(({
   const team = job.team_id ? teamsMap.get(job.team_id) : null;
   const teamColor = team?.team_color || "#3B82F6";
 
-  const servicesObj = (profile as any).services_requested || (profile as any).services || (profile as any).requested_services || {};
-  const activeServices: string[] = typeof servicesObj === "object" && servicesObj !== null
-    ? Object.entries(servicesObj)
-        .filter(([_, isEnabled]) => Boolean(isEnabled))
-        .map(([serviceName]) => serviceName)
-    : [];
+  // Resolve services: job's specific services, falling back to profile services
+  const jobServices = parseServices(job.services_requested);
+  const profileServices = parseServices((profile as any).services_requested || (profile as any).services);
+  const resolvedServices = Object.keys(jobServices).length > 0 ? jobServices : profileServices;
 
   const handleDelete = $(async () => {
     if (isDeleting.value) return;
     isDeleting.value = true;
+    errorMessage.value = "";
     notify.loading("Deleting scheduled job...");
     onClose$();
 
@@ -60,10 +61,14 @@ export const ViewModal = component$<ViewModalProps>(({
       if (isOk) {
         notify.success("Job deleted successfully!");
       } else {
-        notify.error(res?.value?.message || "Failed to delete job");
+        const msg = res?.value?.message || "Failed to delete job";
+        errorMessage.value = msg;
+        notify.error(msg);
       }
     } catch {
-      notify.error("Network error. Please try again.");
+      const msg = "Network error. Please try again.";
+      errorMessage.value = msg;
+      notify.error(msg);
     } finally {
       isDeleting.value = false;
     }
@@ -157,26 +162,11 @@ export const ViewModal = component$<ViewModalProps>(({
               </div>
             </div>
 
-            {/* Requested Services Bullet Points Section */}
-            <div class="mb-6">
-              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
-                Requested Services
-              </h4>
-              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
-                {activeServices.length > 0 ? (
-                  <ul class="space-y-2">
-                    {activeServices.map((service, idx) => (
-                      <li key={idx} class="flex items-center gap-2.5 text-gray-900 font-medium">
-                        <span class="w-1.5 h-1.5 rounded-full bg-green-600 flex-shrink-0" />
-                        <span class="break-words">{service}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <span class="text-gray-500 italic">No services selected</span>
-                )}
-              </div>
-            </div>
+            {/* Requested Services Section (Refactored Shared Component) */}
+            <ServicesList
+              services={resolvedServices}
+              title="Requested Services for this Job"
+            />
 
             {/* Vertical Notes Sections */}
             <div class="flex flex-col gap-4 mb-8">
@@ -243,7 +233,7 @@ export const ViewModal = component$<ViewModalProps>(({
             </div>
           </div>
 
-          {/* Right-Side Completed Details Card: Sits off to the right on desktop, stacks below on mobile */}
+          {/* Right-Side Completed Details Card */}
           {isCompleted && (
             <div class="mt-4 lg:mt-0 lg:absolute lg:left-[calc(100%+16px)] lg:top-0 lg:w-80 w-full pointer-events-auto">
               <CompletedDetailsCard job={job} />

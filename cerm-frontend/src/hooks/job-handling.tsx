@@ -36,6 +36,7 @@ export interface Job {
   completed: boolean;
   notes?: string | null;
   completed_notes?: string | null;
+  services_requested?: Record<string, boolean> | string | null;
   job_profile?: JobProfile | null;
 }
 
@@ -190,6 +191,7 @@ export const useCreateJob = globalAction$(
     end_time: z.string().optional().nullable(),
     completed: z.boolean().optional().default(false),
     notes: z.string().optional().nullable(),
+    services_requested: z.union([z.record(z.boolean()), z.string()]).optional().nullable(),
   })
 );
 
@@ -231,6 +233,7 @@ export const useUpdateJob = globalAction$(
     completed: z.boolean().optional().default(false),
     notes: z.string().optional().nullable(),
     completed_notes: z.string().optional().nullable(),
+    services_requested: z.union([z.record(z.boolean()), z.string()]).optional().nullable(),
   })
 );
 

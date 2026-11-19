@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -10,12 +11,12 @@ import (
 )
 
 type JobService interface {
-	CreateJob(ctx context.Context, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string) (int64, error)
+	CreateJob(ctx context.Context, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, servicesRequested json.RawMessage) (int64, error)
 	GetJobByID(ctx context.Context, id int64) (*repository.JobWithProfile, error)
 	GetAllJobs(ctx context.Context) ([]repository.JobWithProfile, error)
 	GetByMonthAndYear(ctx context.Context, month int, year int) ([]repository.JobWithProfile, error)
 	GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]repository.JobWithProfile, error)
-	UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, completedNotes *string) error
+	UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, completedNotes *string, servicesRequested json.RawMessage) error
 	DeleteJob(ctx context.Context, id int64) error
 }
 
@@ -28,19 +29,20 @@ func NewJobService(jobRepo repository.JobRepository) JobService {
 }
 
 // CreateJob validates and creates a new job record
-func (s *jobService) CreateJob(ctx context.Context, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string) (int64, error) {
+func (s *jobService) CreateJob(ctx context.Context, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, servicesRequested json.RawMessage) (int64, error) {
 	if jobProfileID <= 0 {
 		return 0, fmt.Errorf("invalid job profile ID")
 	}
 
 	job := &model.Job{
-		JobProfileID: jobProfileID,
-		TeamID:       teamID,
-		ScheduledDay: scheduledDay,
-		StartTime:    startTime,
-		EndTime:      endTime,
-		Completed:    completed,
-		Notes:        notes,
+		JobProfileID:      jobProfileID,
+		TeamID:            teamID,
+		ScheduledDay:      scheduledDay,
+		StartTime:         startTime,
+		EndTime:           endTime,
+		Completed:         completed,
+		Notes:             notes,
+		ServicesRequested: servicesRequested,
 	}
 
 	id, err := s.jobRepo.Create(ctx, job)
@@ -106,7 +108,7 @@ func (s *jobService) GetByWeekAndTeam(ctx context.Context, teamID int64, startDa
 }
 
 // UpdateJob updates an existing job record
-func (s *jobService) UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, completedNotes *string) error {
+func (s *jobService) UpdateJob(ctx context.Context, id int64, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, completedNotes *string, servicesRequested json.RawMessage) error {
 	if id <= 0 {
 		return fmt.Errorf("invalid job ID")
 	}
@@ -115,15 +117,16 @@ func (s *jobService) UpdateJob(ctx context.Context, id int64, jobProfileID int64
 	}
 
 	job := &model.Job{
-		ID:             id,
-		JobProfileID:   jobProfileID,
-		TeamID:         teamID,
-		ScheduledDay:   scheduledDay,
-		StartTime:      startTime,
-		EndTime:        endTime,
-		Completed:      completed,
-		Notes:          notes,
-		CompletedNotes: completedNotes,
+		ID:                id,
+		JobProfileID:      jobProfileID,
+		TeamID:            teamID,
+		ScheduledDay:      scheduledDay,
+		StartTime:         startTime,
+		EndTime:           endTime,
+		Completed:         completed,
+		Notes:             notes,
+		CompletedNotes:    completedNotes,
+		ServicesRequested: servicesRequested,
 	}
 
 	err := s.jobRepo.Update(ctx, job)
