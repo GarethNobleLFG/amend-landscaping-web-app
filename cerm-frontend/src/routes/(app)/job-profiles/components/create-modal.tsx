@@ -5,6 +5,7 @@ import { formatPhoneNumber } from "../../../../utils/formatters";
 import { useNotification } from "~/components/ui/notification-toast";
 import { parseServices } from "~/utils/service-utils";
 import { ServicesChecklist } from "~/components/ui/services-checklist";
+import { AutoResizeTextarea } from "~/components/ui/auto-resize-textarea";
 
 export interface ServiceItem {
     id: number;
@@ -274,24 +275,16 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
 
                     {/* Scratch Notes Section */}
                     <div class="mb-6">
-                        <label
-                            for="admin-scratch-notes"
-                            class="block text-xs font-semibold text-gray-500 mb-1"
-                        >
-                            Scratch Notes (Not Visible to Staff)
-                        </label>
-                        <textarea
+                        <AutoResizeTextarea
                             id="admin-scratch-notes"
-                            rows={3}
+                            label="Scratch Notes (Not Visible to Staff)"
                             value={formData.value.admin_notes || ""}
+                            rows={3}
+                            minHeight={88}
                             placeholder="Internal notes..."
-                            onInput$={(e) => {
-                                const target = e.target as HTMLTextAreaElement;
-                                formData.value = { ...formData.value, admin_notes: target.value };
-                                target.style.height = "auto";
-                                target.style.height = `${Math.max(target.scrollHeight, 88)}px`;
+                            onValueChange$={(val) => {
+                                formData.value = { ...formData.value, admin_notes: val };
                             }}
-                            class="auto-expand w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none overflow-hidden min-h-[88px]"
                         />
                     </div>
 

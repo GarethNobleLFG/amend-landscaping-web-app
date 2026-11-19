@@ -6,6 +6,7 @@ import { IconX } from "../../../../components/ui/icons";
 import { useNotification } from "~/components/ui/notification-toast";
 import { parseServices } from "~/utils/service-utils";
 import { ServicesChecklist } from "~/components/ui/services-checklist";
+import { AutoResizeTextarea } from "~/components/ui/auto-resize-textarea";
 
 interface CreateModalProps {
   selectedDateStr: string; // Format: YYYY-MM-DD
@@ -233,27 +234,14 @@ export const CreateModal = component$(({
             titleClass="block text-xs font-semibold text-gray-500 mb-1"
           />
 
-          <div>
-            <label
-              for="create-job-notes"
-              class="block text-xs font-semibold text-gray-500 mb-1"
-            >
-              Job Specific Notes (Visible to Crew)
-            </label>
-            <textarea
-              id="create-job-notes"
-              rows={3}
-              value={notesInput.value}
-              onInput$={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                notesInput.value = target.value;
-                target.style.height = "auto";
-                target.style.height = `${Math.max(target.scrollHeight, 88)}px`;
-              }}
-              placeholder="Instructions or notes for this job..."
-              class="auto-expand w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none overflow-hidden min-h-[88px]"
-            />
-          </div>
+          <AutoResizeTextarea
+            id="create-job-notes"
+            label="Job Specific Notes (Visible to Crew)"
+            signal={notesInput}
+            rows={3}
+            minHeight={88}
+            placeholder="Instructions or notes for this job..."
+          />
         </div>
 
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
