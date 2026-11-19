@@ -10,10 +10,14 @@ interface ViewModalProps {
 
 export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
     const isCommercial = Boolean(profile.is_commercial);
-    const hasAddress = profile.address || profile.city || profile.state || profile.zip;
-    const fullAddress = hasAddress
-        ? `${profile.address || ""}, ${profile.city || ""} ${profile.state || ""} ${profile.zip || ""}`.trim()
-        : "N/A";
+
+    const cityStateZip = [profile.city, profile.state, profile.zip]
+        .map((part) => part?.trim())
+        .filter(Boolean)
+        .join(" ");
+
+    const addressParts = [profile.address?.trim(), cityStateZip].filter(Boolean);
+    const fullAddress = addressParts.length > 0 ? addressParts.join(", ") : "N/A";
 
     return (
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
@@ -26,7 +30,7 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                     <IconX class="w-5 h-5" />
                 </button>
 
-                {/* Header with Name/Company Name & Schedule Badge */}
+                {/* Header with Name/Company Name */}
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100 pr-8">
                     <div>
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-400">
@@ -40,7 +44,7 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
 
                 {/* Personal / Company Information Section */}
                 <div class="mb-6">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
                         {isCommercial ? "Company Information" : "Personal Information"}
                     </h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
@@ -84,25 +88,35 @@ export const ViewModal = component$<ViewModalProps>(({ profile, onClose$ }) => {
                 </div>
 
                 {/* Requested Services (Shared ServicesList Component) */}
-                <ServicesList
-                    services={profile.services_requested}
-                    title="Requested Services"
-                />
+                <div class="mb-6">
+                    <ServicesList
+                        services={profile.services_requested}
+                        title="Requested Services"
+                    />
+                </div>
 
                 {/* Notes Sections */}
-                <div class="flex flex-col gap-4 mb-8">
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                            {isCommercial ? "Commercial Client Notes" : "Customer Submitted Notes"}
+                <div class="flex flex-col gap-5 mb-6">
+                    <div class="flex flex-col gap-2.5">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">
+                            {isCommercial ? "Company Description" : "Profile Description"}
                         </h4>
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{profile.description || "N/A"}</p>
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                                {profile.description || "N/A"}
+                            </p>
+                        </div>
                     </div>
 
-                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+                    <div class="flex flex-col gap-2.5">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">
                             Scratch Notes (Not Visible to Staff)
                         </h4>
-                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{profile.admin_notes || "N/A"}</p>
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                                {profile.admin_notes || "N/A"}
+                            </p>
+                        </div>
                     </div>
                 </div>
 

@@ -231,6 +231,7 @@ export const CreateModal = component$(({
             services={selectedServices}
             availableServiceKeys={serviceKeys}
             label="Requested Services for this Job"
+            titleClass="block text-xs font-semibold text-gray-500 mb-1"
           />
 
           {/* 5. Notes */}

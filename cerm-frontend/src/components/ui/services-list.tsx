@@ -5,18 +5,20 @@ export interface ServicesListProps {
   services: any;
   title?: string;
   emptyText?: string;
+  titleClass?: string;
 }
 
 export const ServicesList = component$<ServicesListProps>(({
   services,
   title = "Requested Services",
   emptyText = "No services selected",
+  titleClass = "block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2",
 }) => {
   const activeServices = getActiveServiceNames(services);
 
   return (
-    <div class="mb-6">
-      <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
+    <div>
+      <h4 class={titleClass}>
         {title}
       </h4>
       <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">

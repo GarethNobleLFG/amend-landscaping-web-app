@@ -6,6 +6,7 @@ export interface ServicesChecklistProps {
   label?: string;
   disabled?: boolean;
   onChange$?: PropFunction<(updatedServices: Record<string, boolean>) => void>;
+  titleClass?: string;
 }
 
 export const ServicesChecklist = component$<ServicesChecklistProps>(({
@@ -14,6 +15,7 @@ export const ServicesChecklist = component$<ServicesChecklistProps>(({
   label = "Requested Services",
   disabled = false,
   onChange$,
+  titleClass = "block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2",
 }) => {
   const keys = availableServiceKeys && availableServiceKeys.length > 0
     ? availableServiceKeys
@@ -30,7 +32,7 @@ export const ServicesChecklist = component$<ServicesChecklistProps>(({
 
   return (
     <div>
-      <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+      <label class={titleClass}>
         {label}
       </label>
       <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60 max-h-48 overflow-y-auto">

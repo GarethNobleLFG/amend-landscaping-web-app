@@ -292,10 +292,11 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
 
                     {/* Scratch Notes Section */}
                     <div class="mb-8">
-                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
                             <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
                                 Scratch Notes (Not Visible to Staff)
                             </label>
+                                                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+
                             <textarea
                                 value={formData.value.admin_notes || ""}
                                 placeholder="Internal notes..."

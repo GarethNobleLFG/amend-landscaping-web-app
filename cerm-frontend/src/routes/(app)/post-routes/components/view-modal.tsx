@@ -91,7 +91,7 @@ export const ViewModal = component$<ViewModalProps>(({
             </button>
 
             {errorMessage.value && (
-              <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
+              <div class="mb-6 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
                 {errorMessage.value}
               </div>
             )}
@@ -123,7 +123,7 @@ export const ViewModal = component$<ViewModalProps>(({
 
             {/* Information Section */}
             <div class="mb-6">
-              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
                 {isCommercial ? "Company Information" : "Information"}
               </h4>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
@@ -163,29 +163,35 @@ export const ViewModal = component$<ViewModalProps>(({
             </div>
 
             {/* Requested Services Section (Refactored Shared Component) */}
-            <ServicesList
-              services={resolvedServices}
-              title="Requested Services for this Job"
-            />
+            <div class="mb-6">
+              <ServicesList
+                services={resolvedServices}
+                title="Requested Services for this Job"
+              />
+            </div>
 
             {/* Vertical Notes Sections */}
-            <div class="flex flex-col gap-4 mb-8">
-              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+            <div class="flex flex-col gap-6 mb-6">
+              <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
                   Job Notes
                 </h4>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{job.notes || "N/A"}</p>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+                  <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{job.notes || "N/A"}</p>
+                </div>
               </div>
-              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+              <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
                   {isCommercial ? "Commercial Client Notes" : "Customer Submitted Notes"}
                 </h4>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{(profile as any).description || "N/A"}</p>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+                  <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{(profile as any).description || "N/A"}</p>
+                </div>
               </div>
             </div>
 
             {/* Footer Actions */}
-            <div class="flex items-center justify-between pt-4 border-t border-slate-100 flex-wrap gap-2">
+            <div class="flex items-center justify-between pt-4 border-t border-slate-100 flex-wrap gap-3">
               <button
                 type="button"
                 onClick$={onClose$}
@@ -195,7 +201,7 @@ export const ViewModal = component$<ViewModalProps>(({
                 Close
               </button>
 
-              <div class="flex items-center gap-2 flex-wrap">
+              <div class="flex items-center gap-2.5 flex-wrap">
                 {!isCompleted && updateAction && (
                   <button
                     type="button"
@@ -235,7 +241,7 @@ export const ViewModal = component$<ViewModalProps>(({
 
           {/* Right-Side Completed Details Card */}
           {isCompleted && (
-            <div class="mt-4 lg:mt-0 lg:absolute lg:left-[calc(100%+16px)] lg:top-0 lg:w-80 w-full pointer-events-auto">
+            <div class="mt-4 lg:mt-0 lg:absolute lg:left-[calc(100%+1rem)] lg:top-0 lg:w-80 w-full pointer-events-auto">
               <CompletedDetailsCard job={job} />
             </div>
           )}

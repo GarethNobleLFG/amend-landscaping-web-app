@@ -3,6 +3,7 @@ import { useUpdateJob } from "~/hooks/job-handling";
 import { CardHeader } from "./card-header";
 import { CardDetails } from "./card-details";
 import { CompleteJobModal } from "./complete-job-modal";
+import { parseServices } from "~/utils/service-utils";
 
 export interface JobProfile {
   id?: number | null;
@@ -29,6 +30,7 @@ export interface JobRecord {
   completed?: boolean | null;
   notes?: string | null;
   completed_notes?: string | null;
+  services_requested?: Record<string, boolean> | string | null;
   job_profile?: JobProfile | null;
   [key: string]: any;
 }
@@ -154,27 +156,10 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job, isTeamLead =
     return false;
   });
 
-  const servicesObj =
-    profile?.services_requested ||
-    (profile as any)?.services ||
-    (profile as any)?.requested_services ||
-    {};
-
-  const activeServices: string[] =
-    typeof servicesObj === "object" && servicesObj !== null
-      ? Object.entries(servicesObj).filter(([, v]) => Boolean(v)).map(([k]) => k)
-      : typeof servicesObj === "string"
-      ? (() => {
-          try {
-            const parsed = JSON.parse(servicesObj);
-            return typeof parsed === "object" && parsed !== null
-              ? Object.entries(parsed).filter(([, v]) => Boolean(v)).map(([k]) => k)
-              : [servicesObj];
-          } catch {
-            return [servicesObj];
-          }
-        })()
-      : [];
+  // Priority: Job's specific services -> fallback to profile's services
+  const jobServices = parseServices(job.services_requested);
+  const profileServices = parseServices(profile?.services_requested);
+  const resolvedServices = Object.keys(jobServices).length > 0 ? jobServices : profileServices;
 
   return (
     <>
@@ -202,7 +187,7 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job, isTeamLead =
             isCommercial={isCommercial}
             email={profile?.email}
             phoneNumber={profile?.phone_number}
-            services={activeServices}
+            services={resolvedServices}
             jobNotes={job.notes}
             clientNotes={profile?.description}
           />

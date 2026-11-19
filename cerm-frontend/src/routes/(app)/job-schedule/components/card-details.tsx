@@ -1,4 +1,5 @@
 import { component$ } from "@builder.io/qwik";
+import { ServicesList } from "~/components/ui/services-list";
 
 export interface CardDetailsProps {
   startTime?: string | null;
@@ -6,12 +7,12 @@ export interface CardDetailsProps {
   isCommercial: boolean;
   email?: string | null;
   phoneNumber?: string | null;
-  services: string[];
+  services: any;
   jobNotes?: string | null;
   clientNotes?: string | null;
 }
 
-export const CardDetails = component$<CardDetailsProps>(({
+export const CardDetails = component$<CardDetailsProps>((({
   startTime,
   endTime,
   isCommercial,
@@ -73,42 +74,30 @@ export const CardDetails = component$<CardDetailsProps>(({
         </div>
       </div>
 
-      {/* Services List */}
+      {/* Requested Services */}
       <div>
-        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5 sm:mb-3">
-          Requested Services
-        </h4>
-        <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60 text-sm">
-          {services.length > 0 ? (
-            <ul class="space-y-2">
-              {services.map((service, idx) => (
-                <li key={idx} class="flex items-center gap-2.5 text-gray-900 font-medium">
-                  <span class="w-1.5 h-1.5 rounded-full bg-green-600 flex-shrink-0" />
-                  <span class="break-words">{service}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <span class="text-gray-500 italic">No services selected</span>
-          )}
-        </div>
+        <ServicesList services={services} title="Requested Services" />
       </div>
 
       {/* Notes */}
-      <div class="flex flex-col gap-3 sm:gap-4">
-        <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+      <div class="flex flex-col gap-4 sm:gap-6">
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5 sm:mb-3">
             Job Notes
           </h4>
-          <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{jobNotes || "N/A"}</p>
+          <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60">
+            <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{jobNotes || "N/A"}</p>
+          </div>
         </div>
-        <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5 sm:mb-3">
             {isCommercial ? "Commercial Client Notes" : "Customer Submitted Notes"}
           </h4>
-          <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{clientNotes || "N/A"}</p>
+          <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60">
+            <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{clientNotes || "N/A"}</p>
+          </div>
         </div>
       </div>
     </div>
   );
-});
+}));
