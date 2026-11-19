@@ -3,8 +3,7 @@ import { Link, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { useAuthUser } from "~/hooks/user-auth";
 import { useUnapprovedProfiles } from "~/hooks/job-profile-handling";
 import { IconDashboard, IconIntake, IconSend, IconChecklist, IconUsers, IconTeams, IconDotsVertical, IconLogOut, IconCalendar } from "~/components/ui/icons";
-import { useContextProvider } from "@builder.io/qwik";
-import { NotificationContext, NotificationToast, type NotificationState } from "~/components/ui/notification-toast";
+import { NotificationProvider } from "~/components/ui/notification-toast";
 
 // ============================================================================
 // 1. RE-EXPORT ROUTE LOADERS
@@ -38,13 +37,6 @@ export default component$(() => {
 
   // Signal to control mobile popup menu visibility
   const isMobileMenuOpen = useSignal(false);
-
-  const notificationState = useSignal<NotificationState>({
-    show: false,
-    type: "info",
-    message: "",
-  });
-  useContextProvider(NotificationContext, notificationState);
 
   // Dynamically constructed navigation configuration based on state
   const navigationConfig: NavItem[] = [
@@ -127,6 +119,7 @@ export default component$(() => {
   });
 
   return (
+    <NotificationProvider>
     <div class="min-h-[100dvh] bg-slate-100 text-gray-900 font-sans flex flex-col h-[100dvh] overflow-hidden">
       {/* Top Header Bar */}
       <header class="h-16 px-4 md:px-6 flex items-center justify-between bg-transparent flex-shrink-0 z-30">
@@ -309,8 +302,7 @@ export default component$(() => {
           )}
         </nav>
       </div>
-      {/* Global Notification Toast */}
-      <NotificationToast />
     </div>
+    </NotificationProvider>
   );
 });

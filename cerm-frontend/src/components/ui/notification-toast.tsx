@@ -1,4 +1,4 @@
-import { component$, createContextId, useContext, $, type Signal } from "@builder.io/qwik";
+import { component$, createContextId, useContext, useContextProvider, useSignal, Slot, $, type Signal } from "@builder.io/qwik";
 
 export type NotificationType = "loading" | "success" | "error" | "info";
 
@@ -10,10 +10,27 @@ export interface NotificationState {
 
 export const NotificationContext = createContextId<Signal<NotificationState>>("notification-context");
 
+export const NotificationProvider = component$(() => {
+  const notificationState = useSignal<NotificationState>({
+    show: false,
+    type: "info",
+    message: "",
+  });
+
+  useContextProvider(NotificationContext, notificationState);
+
+  return (
+    <>
+      <Slot />
+      <NotificationToast />
+    </>
+  );
+});
+
 export const useNotification = () => {
   const state = useContext(NotificationContext);
 
-  const show = $((type: NotificationType, message: string, autoCloseMs = 3500) => {
+  const show = $((type: NotificationType, message: string, autoCloseMs = 2500) => {
     state.value = { show: true, type, message };
     if (autoCloseMs > 0 && type !== "loading") {
       setTimeout(() => {
@@ -26,11 +43,11 @@ export const useNotification = () => {
     state.value = { show: true, type: "loading", message };
   });
 
-  const success = $((message: string, autoCloseMs = 3500) => {
+  const success = $((message: string, autoCloseMs = 2500) => {
     show("success", message, autoCloseMs);
   });
 
-  const error = $((message: string, autoCloseMs = 4500) => {
+  const error = $((message: string, autoCloseMs = 3500) => {
     show("error", message, autoCloseMs);
   });
 
