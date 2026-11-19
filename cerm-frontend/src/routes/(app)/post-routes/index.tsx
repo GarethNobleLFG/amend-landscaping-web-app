@@ -23,6 +23,8 @@ export default component$(() => {
   const createAction = useCreateJob();
   const updateAction = useUpdateJob();
 
+  const selectedTeamId = useSignal<number | null>(null);
+
   // Modal states
   const creatingDateStr = useSignal<string | null>(null);
   const editingJob = useSignal<Job | null>(null);
@@ -63,6 +65,9 @@ export default component$(() => {
     const map = new Map<string, typeof jobs>();
     for (const job of jobs) {
       if (!job?.scheduled_day) continue;
+      if (selectedTeamId.value !== null && job.team_id !== selectedTeamId.value) {
+        continue;
+      }
       const dateKey = job.scheduled_day.split("T")[0];
       if (!map.has(dateKey)) map.set(dateKey, []);
       map.get(dateKey)!.push(job);
@@ -106,7 +111,15 @@ export default component$(() => {
 
   return (
     <div class="max-w-7xl mx-auto px-3 sm:px-6 pt-2 pb-6">
-      <CalendarHeader currentDate={activeDate.value} teams={teamsList} onNavigate$={handleNavigate$} />
+      <CalendarHeader
+        currentDate={activeDate.value}
+        teams={teamsList}
+        selectedTeamId={selectedTeamId.value}
+        onSelectTeam$={$((teamId: number | null) => {
+          selectedTeamId.value = teamId;
+        })}
+        onNavigate$={handleNavigate$}
+      />
 
       <div class="grid grid-cols-7 mb-3 px-1">
         {WEEKDAYS.map((day) => (
