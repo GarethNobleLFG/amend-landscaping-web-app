@@ -35,21 +35,6 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
         formData.value = { ...formData.value, services_requested: { ...updated } };
     });
 
-    const autoResizeTextarea = $((el: HTMLTextAreaElement) => {
-        if (!el) return;
-        el.style.height = "auto";
-        el.style.height = `${el.scrollHeight}px`;
-    });
-
-    useVisibleTask$(({ track }) => {
-        track(() => formData.value);
-        const textareas = document.querySelectorAll<HTMLTextAreaElement>("textarea.auto-expand");
-        textareas.forEach((ta) => {
-            ta.style.height = "auto";
-            ta.style.height = `${ta.scrollHeight}px`;
-        });
-    });
-
     const notify = useNotification();
 
     const handleCreate$ = $(async () => {
@@ -93,15 +78,12 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                 {/* Header with Commercial Toggle/Indicator */}
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
                     <div>
-                        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">
-                            {isCommercial ? "Create Commercial Profile" : "Create Profile"}
-                        </span>
-                        <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">
-                            {formData.value.name || (isCommercial ? "New Company" : "New Job Profile")}
+                        <h3 class="text-2xl font-extrabold text-gray-900">
+                            {formData.value.name || (isCommercial ? "New Company Profile" : "New Job Profile")}
                         </h3>
                     </div>
                     <div class="flex items-center gap-3">
-                        <label class="flex items-center gap-2 cursor-pointer bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 text-xs font-bold text-gray-700">
+                        <label class="flex items-center gap-2 cursor-pointer bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 text-xs font-bold text-gray-700 mr-6">
                             <input
                                 type="checkbox"
                                 checked={isCommercial}
@@ -291,23 +273,26 @@ export const CreateModal = component$<CreateModalProps>(({ formData, availableSe
                     </div>
 
                     {/* Scratch Notes Section */}
-                    <div class="mb-8">
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                                Scratch Notes (Not Visible to Staff)
-                            </label>
-                                                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
-
-                            <textarea
-                                value={formData.value.admin_notes || ""}
-                                placeholder="Internal notes..."
-                                onInput$={(e) => {
-                                    const target = e.target as HTMLTextAreaElement;
-                                    formData.value = { ...formData.value, admin_notes: target.value };
-                                    autoResizeTextarea(target);
-                                }}
-                                class="auto-expand w-full px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none overflow-hidden min-h-[80px]"
-                            />
-                        </div>
+                    <div class="mb-6">
+                        <label
+                            for="admin-scratch-notes"
+                            class="block text-xs font-semibold text-gray-500 mb-1"
+                        >
+                            Scratch Notes (Not Visible to Staff)
+                        </label>
+                        <textarea
+                            id="admin-scratch-notes"
+                            rows={3}
+                            value={formData.value.admin_notes || ""}
+                            placeholder="Internal notes..."
+                            onInput$={(e) => {
+                                const target = e.target as HTMLTextAreaElement;
+                                formData.value = { ...formData.value, admin_notes: target.value };
+                                target.style.height = "auto";
+                                target.style.height = `${target.scrollHeight}px`;
+                            }}
+                            class="auto-expand w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none overflow-hidden min-h-[80px]"
+                        />
                     </div>
 
                     {/* Footer Actions */}

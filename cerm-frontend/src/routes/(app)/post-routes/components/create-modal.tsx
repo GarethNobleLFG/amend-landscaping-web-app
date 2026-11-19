@@ -1,4 +1,4 @@
-import { component$, useSignal, $, type PropFunction } from "@builder.io/qwik";
+import { component$, useSignal, useVisibleTask$, $, type PropFunction } from "@builder.io/qwik";
 import type { Team } from "~/hooks/teams-handling";
 import type { JobProfile } from "~/hooks/job-profile-handling";
 import type { Service } from "~/hooks/amend-api-handling";
@@ -233,15 +233,25 @@ export const CreateModal = component$(({
             titleClass="block text-xs font-semibold text-gray-500 mb-1"
           />
 
-          {/* 5. Notes */}
           <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">Job Specific Notes (Visible to Crew)</label>
+            <label
+              for="create-job-notes"
+              class="block text-xs font-semibold text-gray-500 mb-1"
+            >
+              Job Specific Notes (Visible to Crew)
+            </label>
             <textarea
+              id="create-job-notes"
               rows={3}
               value={notesInput.value}
-              onInput$={(e) => (notesInput.value = (e.target as HTMLTextAreaElement).value)}
+              onInput$={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                notesInput.value = target.value;
+                target.style.height = "auto";
+                target.style.height = `${target.scrollHeight}px`;
+              }}
               placeholder="Instructions or notes for this job..."
-              class="w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+              class="auto-expand w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none overflow-hidden min-h-[80px]"
             />
           </div>
         </div>
