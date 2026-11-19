@@ -72,10 +72,10 @@ export const ViewModal = component$<ViewModalProps>(({
   return (
     <>
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs overflow-y-auto">
-        {/* Container matching job-profile view-modal max-w-2xl width */}
-        <div class={`flex flex-col lg:flex-row items-stretch lg:items-start gap-4 w-full max-h-[90vh] ${isCompleted ? "max-w-4xl" : "max-w-2xl"}`}>
-          {/* Main View Modal */}
-          <div class="bg-white rounded-3xl flex-1 max-w-2xl w-full p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
+        {/* Main View Modal Wrapper (Always stays centered and locked at max-w-2xl) */}
+        <div class="relative max-w-2xl w-full my-auto">
+          {/* Main View Modal Card */}
+          <div class="bg-white rounded-3xl w-full p-8 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
             <button
               onClick$={onClose$}
               disabled={isDeleting.value}
@@ -243,8 +243,12 @@ export const ViewModal = component$<ViewModalProps>(({
             </div>
           </div>
 
-          {/* Right-Side Completed Details Card */}
-          {isCompleted && <CompletedDetailsCard job={job} />}
+          {/* Right-Side Completed Details Card: Sits off to the right on desktop, stacks below on mobile */}
+          {isCompleted && (
+            <div class="mt-4 lg:mt-0 lg:absolute lg:left-[calc(100%+16px)] lg:top-0 lg:w-80 w-full pointer-events-auto">
+              <CompletedDetailsCard job={job} />
+            </div>
+          )}
         </div>
       </div>
 
