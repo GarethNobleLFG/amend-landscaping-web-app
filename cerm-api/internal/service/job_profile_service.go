@@ -39,11 +39,11 @@ func (s *jobProfileService) UpdateJobProfile(ctx context.Context, id int64, prof
 }
 
 func (s *jobProfileService) GetApprovedJobProfiles(ctx context.Context) ([]model.JobProfile, error) {
-	return s.repo.GetByApproved(ctx, true)
+	return s.repo.GetApproved(ctx)
 }
 
 func (s *jobProfileService) GetUnapprovedJobProfiles(ctx context.Context) ([]model.JobProfile, error) {
-	return s.repo.GetByApproved(ctx, false)
+	return s.repo.GetUnapproved(ctx)
 }
 
 func (s *jobProfileService) DeleteJobProfile(ctx context.Context, id int64) error {

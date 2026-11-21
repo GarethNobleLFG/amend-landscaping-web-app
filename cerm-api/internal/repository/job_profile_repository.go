@@ -11,7 +11,8 @@ import (
 type JobProfileRepository interface {
 	Create(ctx context.Context, profile *model.JobProfile) error
 	Update(ctx context.Context, id int64, profile *model.JobProfile) error
-	GetByApproved(ctx context.Context, approved bool) ([]model.JobProfile, error)
+	GetApproved(ctx context.Context) ([]model.JobProfile, error)
+	GetUnapproved(ctx context.Context) ([]model.JobProfile, error)
 	Delete(ctx context.Context, id int64) error
 }
 
@@ -88,19 +89,19 @@ func (r *postgresJobProfileRepo) Update(ctx context.Context, id int64, profile *
 	return nil
 }
 
-func (r *postgresJobProfileRepo) GetByApproved(ctx context.Context, approved bool) ([]model.JobProfile, error) {
+func (r *postgresJobProfileRepo) GetApproved(ctx context.Context) ([]model.JobProfile, error) {
 	query := `
         SELECT id, name, email, phone_number, address, city, state, zip,
                services_requested, scheduled_date, description, approved,
                is_commercial, is_seen, referral_info, schedule, admin_notes, job_payout,
                created_at, updated_at
         FROM job_profiles
-        WHERE approved = $1
+        WHERE approved = true
         ORDER BY created_at DESC`
 
-	rows, err := r.db.QueryContext(ctx, query, approved)
+	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch job profiles: %w", err)
+		return nil, fmt.Errorf("failed to fetch approved job profiles: %w", err)
 	}
 	defer rows.Close()
 
@@ -115,13 +116,52 @@ func (r *postgresJobProfileRepo) GetByApproved(ctx context.Context, approved boo
 			&p.CreatedAt, &p.UpdatedAt,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan job profile row: %w", err)
+			return nil, fmt.Errorf("failed to scan approved job profile row: %w", err)
 		}
 		profiles = append(profiles, p)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating job profile rows: %w", err)
+		return nil, fmt.Errorf("error iterating approved job profile rows: %w", err)
+	}
+
+	return profiles, nil
+}
+
+func (r *postgresJobProfileRepo) GetUnapproved(ctx context.Context) ([]model.JobProfile, error) {
+	query := `
+        SELECT id, name, email, phone_number, address, city, state, zip,
+               services_requested, scheduled_date, description, approved,
+               is_commercial, is_seen, referral_info, schedule, admin_notes, job_payout,
+               created_at, updated_at
+        FROM job_profiles
+        WHERE approved = false
+        ORDER BY created_at DESC`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch unapproved job profiles: %w", err)
+	}
+	defer rows.Close()
+
+	profiles := []model.JobProfile{}
+	for rows.Next() {
+		var p model.JobProfile
+		err := rows.Scan(
+			&p.ID, &p.Name, &p.Email, &p.PhoneNumber, &p.Address, &p.City,
+			&p.State, &p.Zip, &p.ServicesRequested, &p.ScheduledDate,
+			&p.Description, &p.Approved, &p.IsCommercial, &p.IsSeen,
+			&p.ReferralInfo, &p.Schedule, &p.AdminNotes, &p.JobPayout,
+			&p.CreatedAt, &p.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan unapproved job profile row: %w", err)
+		}
+		profiles = append(profiles, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating unapproved job profile rows: %w", err)
 	}
 
 	return profiles, nil
