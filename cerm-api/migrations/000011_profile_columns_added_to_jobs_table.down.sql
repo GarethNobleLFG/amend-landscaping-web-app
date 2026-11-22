@@ -1,0 +1,6 @@
+ALTER TABLE jobs
+    DROP COLUMN IF EXISTS job_payout,
+    DROP COLUMN IF EXISTS address,
+    DROP COLUMN IF EXISTS phone_number,
+    DROP COLUMN IF EXISTS email,
+    DROP COLUMN IF EXISTS name;

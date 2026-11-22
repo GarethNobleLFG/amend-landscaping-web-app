@@ -22,8 +22,7 @@ export const EditModal = component$(({ job, availableServices = [], updateAction
 
   const notify = useNotification();
 
-  // Job's services, falling back to customer profile's requested services
-  const jobServices = parseServices(job.services_requested || job.job_profile?.services_requested);
+  const jobServices = parseServices(job.services_requested);
   const selectedServices = useSignal<Record<string, boolean>>(jobServices);
 
   // Use master service list names if available, otherwise fallback to existing keys
@@ -40,10 +39,18 @@ export const EditModal = component$(({ job, availableServices = [], updateAction
     try {
       const res = await updateAction.submit({
         id: job.id,
-        job_profile_id: job.job_profile_id,
         team_id: job.team_id,
+        name: job.name,
+        email: job.email,
+        phone_number: job.phone_number,
+        address: job.address,
+        job_payout: job.job_payout,
         scheduled_day: scheduledDayInput.value,
+        start_time: job.start_time,
+        end_time: job.end_time,
+        completed: job.completed,
         notes: notesInput.value,
+        completed_notes: job.completed_notes,
         services_requested: selectedServices.value,
       });
 
@@ -61,7 +68,7 @@ export const EditModal = component$(({ job, availableServices = [], updateAction
     }
   });
 
-  const customerName = job.job_profile?.name || `Profile #${job.job_profile_id}`;
+  const customerName = job.name?.trim() || `Job #${job.id}`;
 
   return (
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">

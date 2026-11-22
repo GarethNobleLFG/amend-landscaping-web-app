@@ -69,14 +69,19 @@ export const MarkCompleteModal = component$<MarkCompleteModalProps>(({
     try {
       const res = await updateAction.submit({
         id: job.id,
-        job_profile_id: job.job_profile_id,
         team_id: job.team_id ? Number(job.team_id) : null,
+        name: job.name ?? null,
+        email: job.email ?? null,
+        phone_number: job.phone_number ?? null,
+        address: job.address ?? null,
+        job_payout: job.job_payout ?? null,
         scheduled_day: scheduledDate,
         start_time: startDateTime,
         end_time: endDateTime,
         completed: true,
         notes: job.notes ?? null,
         completed_notes: completedNotesSignal.value.trim() || null,
+        services_requested: job.services_requested ?? null,
       });
 
       const isOk = res?.status === 200 || res?.value?.success;

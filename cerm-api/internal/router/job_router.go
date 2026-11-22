@@ -13,7 +13,9 @@ import (
 
 func RegisterJobRoutes(app *fiber.App, db *sql.DB) {
 	jobRepo := repository.NewJobRepository(db)
-	jobSvc := service.NewJobService(jobRepo)
+	jobProfileRepo := repository.NewJobProfileRepository(db)
+	jobProfileSvc := service.NewJobProfileService(jobProfileRepo)
+	jobSvc := service.NewJobService(jobRepo, jobProfileSvc)
 	jobHandler := handler.NewJobHandler(jobSvc)
 
 	jobs := app.Group("/api/jobs/admin", middleware.AuthMiddleware(), middleware.RequireRole("ADMIN"))

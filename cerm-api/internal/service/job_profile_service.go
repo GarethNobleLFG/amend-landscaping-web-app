@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"sort"
@@ -15,6 +16,7 @@ import (
 
 type JobProfileService interface {
 	CreateJobProfile(ctx context.Context, profile *model.JobProfile) error
+	GetJobProfileByID(ctx context.Context, id int64) (*model.JobProfile, error)
 	UpdateJobProfile(ctx context.Context, id int64, profile *model.JobProfile) error
 	GetAllApprovedProfilesWithLatestJob(ctx context.Context, limit int, offset int) (PaginatedApprovedJobProfilesResponse, error)
 	GetUnapprovedJobProfiles(ctx context.Context) ([]model.JobProfile, error)
@@ -55,6 +57,22 @@ func (s *jobProfileService) UpdateJobProfile(ctx context.Context, id int64, prof
 		return errors.New("invalid job profile ID")
 	}
 	return s.repo.Update(ctx, id, profile)
+}
+
+func (s *jobProfileService) GetJobProfileByID(ctx context.Context, id int64) (*model.JobProfile, error) {
+	if id <= 0 {
+		return nil, errors.New("invalid job profile ID")
+	}
+
+	profile, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("job profile not found: %w", err)
+		}
+		return nil, fmt.Errorf("failed to get job profile by id: %w", err)
+	}
+
+	return profile, nil
 }
 
 func buildApprovedJobProfileItems(

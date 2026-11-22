@@ -30,22 +30,14 @@ export const ViewModal = component$<ViewModalProps>(({
   const isMarkCompleteOpen = useSignal(false);
   const notify = useNotification();
 
-  const profile = job.job_profile || {};
-  const isCommercial = Boolean((profile as any).is_commercial);
   const isCompleted = Boolean(job.completed);
-
-  const hasAddress = (profile as any).address || (profile as any).city || (profile as any).state || (profile as any).zip;
-  const fullAddress = hasAddress
-    ? `${(profile as any).address || ""}, ${(profile as any).city || ""} ${(profile as any).state || ""} ${(profile as any).zip || ""}`.trim()
-    : "N/A";
+  const customerName = job.name?.trim() || `Job #${job.id}`;
+  const fullAddress = job.address?.trim() ? job.address : "N/A";
 
   const team = job.team_id ? teamsMap.get(job.team_id) : null;
   const teamColor = team?.team_color || "#3B82F6";
 
-  // Resolve services: job's specific services, falling back to profile services
-  const jobServices = parseServices(job.services_requested);
-  const profileServices = parseServices((profile as any).services_requested || (profile as any).services);
-  const resolvedServices = Object.keys(jobServices).length > 0 ? jobServices : profileServices;
+  const resolvedServices = parseServices(job.services_requested);
 
   const handleDelete = $(async () => {
     if (isDeleting.value) return;
@@ -96,15 +88,15 @@ export const ViewModal = component$<ViewModalProps>(({
               </div>
             )}
 
-            {/* Header with Name/Company Name & Team Color/Schedule Badge */}
+            {/* Header with Name & Team Color/Schedule Badge */}
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100 pr-8">
               <div>
                 <span class="text-xs font-bold uppercase tracking-wider text-gray-400">
-                  {isCommercial ? "Commercial Job" : "Residential Job"}
+                  Scheduled Job
                 </span>
                 <div class="flex items-center gap-2.5 mt-0.5">
                   <h3 class={`text-2xl font-extrabold break-words ${isCompleted ? "line-through text-gray-400" : "text-gray-900"}`}>
-                    {(profile as any).name || `Profile #${job.job_profile_id}`}
+                    {customerName}
                   </h3>
                 </div>
               </div>
@@ -124,34 +116,26 @@ export const ViewModal = component$<ViewModalProps>(({
             {/* Information Section */}
             <div class="mb-6">
               <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
-                {isCommercial ? "Company Information" : "Information"}
+                Job Snapshot Details
               </h4>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/60 text-sm">
                 <div>
-                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">
-                    {isCommercial ? "Company Contact Email" : "Email"}
-                  </span>
-                  <span class="text-gray-900 font-medium break-all">{(profile as any).email || "N/A"}</span>
+                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">Email</span>
+                  <span class="text-gray-900 font-medium break-all">{job.email || "N/A"}</span>
                 </div>
                 <div>
-                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">
-                    {isCommercial ? "Business Phone" : "Phone Number"}
-                  </span>
-                  <span class="text-gray-900 font-medium">{(profile as any).phone_number || "N/A"}</span>
+                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">Phone Number</span>
+                  <span class="text-gray-900 font-medium">{job.phone_number || "N/A"}</span>
                 </div>
                 <div class="sm:col-span-2">
-                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">
-                    {isCommercial ? "Facility / Service Address" : "Address"}
-                  </span>
+                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">Address</span>
                   <span class="text-gray-900 font-medium break-words">{fullAddress}</span>
                 </div>
                 <div>
-                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">
-                    {isCommercial ? "Contract / Service Value" : "Average Job Payout"}
-                  </span>
+                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">Job Payout</span>
                   <span class="text-gray-900 font-medium">
-                    {(profile as any).job_payout != null
-                      ? `$${Number((profile as any).job_payout).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    {job.job_payout != null
+                      ? `$${Number(job.job_payout).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       : "N/A"}
                   </span>
                 </div>
@@ -166,23 +150,13 @@ export const ViewModal = component$<ViewModalProps>(({
               />
             </div>
 
-            {/* Vertical Notes Sections */}
-            <div class="flex flex-col gap-6 mb-6">
-              <div>
-                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
-                  Job Notes
-                </h4>
-                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
-                  <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{job.notes || "N/A"}</p>
-                </div>
-              </div>
-              <div>
-                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
-                  {isCommercial ? "Commercial Client Notes" : "Customer Submitted Notes"}
-                </h4>
-                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
-                  <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{(profile as any).description || "N/A"}</p>
-                </div>
+            {/* Job Notes Section */}
+            <div class="mb-6">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
+                Job Notes
+              </h4>
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+                <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{job.notes || "N/A"}</p>
               </div>
             </div>
 

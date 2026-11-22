@@ -25,21 +25,54 @@ type jobRepo struct {
 }
 
 type JobWithProfile struct {
-	ID                int64             `json:"id"`
-	JobProfileID      int64             `json:"job_profile_id"`
-	TeamID            *int64            `json:"team_id"`
-	ScheduledDay      time.Time         `json:"scheduled_day"`
-	StartTime         *time.Time        `json:"start_time"`
-	EndTime           *time.Time        `json:"end_time"`
-	Completed         bool              `json:"completed"`
-	Notes             *string           `json:"notes"`
-	CompletedNotes    *string           `json:"completed_notes,omitempty"`
-	ServicesRequested json.RawMessage   `json:"services_requested"`
-	JobProfile        *model.JobProfile `json:"job_profile,omitempty"`
+	ID                int64           `json:"id"`
+	TeamID            *int64          `json:"team_id,omitempty"`
+	Name              *string         `json:"name,omitempty"`
+	Email             *string         `json:"email,omitempty"`
+	PhoneNumber       *string         `json:"phone_number,omitempty"`
+	Address           *string         `json:"address,omitempty"`
+	JobPayout         *float64        `json:"job_payout,omitempty"`
+	ScheduledDay      time.Time       `json:"scheduled_day"`
+	StartTime         *time.Time      `json:"start_time,omitempty"`
+	EndTime           *time.Time      `json:"end_time,omitempty"`
+	Completed         bool            `json:"completed"`
+	Notes             *string         `json:"notes,omitempty"`
+	CompletedNotes    *string         `json:"completed_notes,omitempty"`
+	ServicesRequested json.RawMessage `json:"services_requested"`
 }
 
 func NewJobRepository(db *sql.DB) JobRepository {
 	return &jobRepo{db: db}
+}
+
+const jobSelectColumns = `
+	id, team_id, name, email, phone_number, address, job_payout,
+	scheduled_day, start_time, end_time, completed, notes, completed_notes, services_requested
+`
+
+type rowScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanJobRow(scanner rowScanner) (JobWithProfile, error) {
+	var res JobWithProfile
+	err := scanner.Scan(
+		&res.ID,
+		&res.TeamID,
+		&res.Name,
+		&res.Email,
+		&res.PhoneNumber,
+		&res.Address,
+		&res.JobPayout,
+		&res.ScheduledDay,
+		&res.StartTime,
+		&res.EndTime,
+		&res.Completed,
+		&res.Notes,
+		&res.CompletedNotes,
+		&res.ServicesRequested,
+	)
+	return res, err
 }
 
 // Create inserts a new job record and returns its generated ID
@@ -49,16 +82,23 @@ func (r *jobRepo) Create(ctx context.Context, job *model.Job) (int64, error) {
 	}
 
 	query := `
-        INSERT INTO jobs (job_profile_id, team_id, scheduled_day, start_time, end_time, completed, notes, services_requested)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING id
-    `
+		INSERT INTO jobs (
+			team_id, name, email, phone_number, address, job_payout,
+			scheduled_day, start_time, end_time, completed, notes, services_requested
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		RETURNING id
+	`
 	var id int64
 	err := r.db.QueryRowContext(
 		ctx,
 		query,
-		job.JobProfileID,
 		job.TeamID,
+		job.Name,
+		job.Email,
+		job.PhoneNumber,
+		job.Address,
+		job.JobPayout,
 		job.ScheduledDay,
 		job.StartTime,
 		job.EndTime,
@@ -76,54 +116,13 @@ func (r *jobRepo) Create(ctx context.Context, job *model.Job) (int64, error) {
 
 // GetByID retrieves a single job by its primary key ID
 func (r *jobRepo) GetByID(ctx context.Context, id int64) (*JobWithProfile, error) {
-	query := `
-        SELECT 
-            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes, j.completed_notes, j.services_requested,
-            p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
-            p.services_requested, p.scheduled_date, p.description, p.approved, 
-            p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
-            p.job_payout, p.created_at, p.updated_at
-        FROM jobs j
-        LEFT JOIN job_profiles p ON j.job_profile_id = p.id
-        WHERE j.id = $1
-    `
+	query := fmt.Sprintf(`
+		SELECT %s
+		FROM jobs
+		WHERE id = $1
+	`, jobSelectColumns)
 
-	var res JobWithProfile
-	var profile model.JobProfile
-
-	err := r.db.QueryRowContext(ctx, query, id).Scan(
-		&res.ID,
-		&res.JobProfileID,
-		&res.TeamID,
-		&res.ScheduledDay,
-		&res.StartTime,
-		&res.EndTime,
-		&res.Completed,
-		&res.Notes,
-		&res.CompletedNotes,
-		&res.ServicesRequested,
-		&profile.ID,
-		&profile.Name,
-		&profile.Email,
-		&profile.PhoneNumber,
-		&profile.Address,
-		&profile.City,
-		&profile.State,
-		&profile.Zip,
-		&profile.ServicesRequested,
-		&profile.ScheduledDate,
-		&profile.Description,
-		&profile.Approved,
-		&profile.IsCommercial,
-		&profile.IsSeen,
-		&profile.ReferralInfo,
-		&profile.Schedule,
-		&profile.AdminNotes,
-		&profile.JobPayout,
-		&profile.CreatedAt,
-		&profile.UpdatedAt,
-	)
-
+	res, err := scanJobRow(r.db.QueryRowContext(ctx, query, id))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("job not found")
@@ -131,23 +130,16 @@ func (r *jobRepo) GetByID(ctx context.Context, id int64) (*JobWithProfile, error
 		return nil, fmt.Errorf("failed to get job by id: %w", err)
 	}
 
-	res.JobProfile = &profile
 	return &res, nil
 }
 
-// GetAll retrieves all jobs ordered by scheduled date along with associated job profile fields
+// GetAll retrieves all jobs ordered by scheduled date
 func (r *jobRepo) GetAll(ctx context.Context) ([]JobWithProfile, error) {
-	query := `
-        SELECT 
-            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes, j.completed_notes, j.services_requested,
-            p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
-            p.services_requested, p.scheduled_date, p.description, p.approved, 
-            p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
-            p.job_payout, p.created_at, p.updated_at
-        FROM jobs j
-        LEFT JOIN job_profiles p ON j.job_profile_id = p.id
-        ORDER BY j.scheduled_day ASC
-    `
+	query := fmt.Sprintf(`
+		SELECT %s
+		FROM jobs
+		ORDER BY scheduled_day ASC
+	`, jobSelectColumns)
 
 	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
@@ -157,66 +149,29 @@ func (r *jobRepo) GetAll(ctx context.Context) ([]JobWithProfile, error) {
 
 	var jobs []JobWithProfile
 	for rows.Next() {
-		var res JobWithProfile
-		var profile model.JobProfile
-
-		if err := rows.Scan(
-			&res.ID,
-			&res.JobProfileID,
-			&res.TeamID,
-			&res.ScheduledDay,
-			&res.StartTime,
-			&res.EndTime,
-			&res.Completed,
-			&res.Notes,
-			&res.CompletedNotes,
-			&res.ServicesRequested,
-			&profile.ID,
-			&profile.Name,
-			&profile.Email,
-			&profile.PhoneNumber,
-			&profile.Address,
-			&profile.City,
-			&profile.State,
-			&profile.Zip,
-			&profile.ServicesRequested,
-			&profile.ScheduledDate,
-			&profile.Description,
-			&profile.Approved,
-			&profile.IsCommercial,
-			&profile.IsSeen,
-			&profile.ReferralInfo,
-			&profile.Schedule,
-			&profile.AdminNotes,
-			&profile.JobPayout,
-			&profile.CreatedAt,
-			&profile.UpdatedAt,
-		); err != nil {
+		res, err := scanJobRow(rows)
+		if err != nil {
 			return nil, fmt.Errorf("failed to scan job row: %w", err)
 		}
-
-		res.JobProfile = &profile
 		jobs = append(jobs, res)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating job rows: %w", err)
 	}
 
 	return jobs, nil
 }
 
-// GetByMonthAndYear retrieves all jobs scheduled in a specific month and year with job profile fields
+// GetByMonthAndYear retrieves all jobs scheduled in a specific month and year
 func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([]JobWithProfile, error) {
-	query := `
-        SELECT 
-            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes, j.completed_notes, j.services_requested,
-            p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
-            p.services_requested, p.scheduled_date, p.description, p.approved, 
-            p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
-            p.job_payout, p.created_at, p.updated_at
-        FROM jobs j
-        LEFT JOIN job_profiles p ON j.job_profile_id = p.id
-        WHERE EXTRACT(MONTH FROM j.scheduled_day) = $1 
-          AND EXTRACT(YEAR FROM j.scheduled_day) = $2
-        ORDER BY j.scheduled_day ASC
-    `
+	query := fmt.Sprintf(`
+		SELECT %s
+		FROM jobs
+		WHERE EXTRACT(MONTH FROM scheduled_day) = $1
+		  AND EXTRACT(YEAR FROM scheduled_day) = $2
+		ORDER BY scheduled_day ASC
+	`, jobSelectColumns)
 
 	rows, err := r.db.QueryContext(ctx, query, month, year)
 	if err != nil {
@@ -226,46 +181,15 @@ func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([
 
 	var jobs []JobWithProfile
 	for rows.Next() {
-		var res JobWithProfile
-		var profile model.JobProfile
-
-		if err := rows.Scan(
-			&res.ID,
-			&res.JobProfileID,
-			&res.TeamID,
-			&res.ScheduledDay,
-			&res.StartTime,
-			&res.EndTime,
-			&res.Completed,
-			&res.Notes,
-			&res.CompletedNotes,
-			&res.ServicesRequested,
-			&profile.ID,
-			&profile.Name,
-			&profile.Email,
-			&profile.PhoneNumber,
-			&profile.Address,
-			&profile.City,
-			&profile.State,
-			&profile.Zip,
-			&profile.ServicesRequested,
-			&profile.ScheduledDate,
-			&profile.Description,
-			&profile.Approved,
-			&profile.IsCommercial,
-			&profile.IsSeen,
-			&profile.ReferralInfo,
-			&profile.Schedule,
-			&profile.AdminNotes,
-			&profile.JobPayout,
-			&profile.CreatedAt,
-			&profile.UpdatedAt,
-		); err != nil {
+		res, err := scanJobRow(rows)
+		if err != nil {
 			return nil, fmt.Errorf("failed to scan job row: %w", err)
 		}
-
-		res.JobProfile = &profile
 		jobs = append(jobs, res)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating job rows: %w", err)
 	}
 
 	return jobs, nil
@@ -273,20 +197,14 @@ func (r *jobRepo) GetByMonthAndYear(ctx context.Context, month int, year int) ([
 
 // GetByWeekAndTeam fetches jobs scheduled for a specific team within an inclusive date range [startDate, endDate]
 func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]JobWithProfile, error) {
-	query := `
-        SELECT 
-            j.id, j.job_profile_id, j.team_id, j.scheduled_day, j.start_time, j.end_time, j.completed, j.notes, j.completed_notes, j.services_requested,
-            p.id, p.name, p.email, p.phone_number, p.address, p.city, p.state, p.zip,
-            p.services_requested, p.scheduled_date, p.description, p.approved, 
-            p.is_commercial, p.is_seen, p.referral_info, p.schedule, p.admin_notes, 
-            p.job_payout, p.created_at, p.updated_at
-        FROM jobs j
-        LEFT JOIN job_profiles p ON j.job_profile_id = p.id
-        WHERE j.team_id = $1 
-          AND j.scheduled_day >= $2 
-          AND j.scheduled_day <= $3
-        ORDER BY j.scheduled_day ASC
-    `
+	query := fmt.Sprintf(`
+		SELECT %s
+		FROM jobs
+		WHERE team_id = $1
+		  AND scheduled_day >= $2
+		  AND scheduled_day <= $3
+		ORDER BY scheduled_day ASC
+	`, jobSelectColumns)
 
 	rows, err := r.db.QueryContext(ctx, query, teamID, startDate, endDate)
 	if err != nil {
@@ -296,46 +214,15 @@ func (r *jobRepo) GetByWeekAndTeam(ctx context.Context, teamID int64, startDate 
 
 	var jobs []JobWithProfile
 	for rows.Next() {
-		var res JobWithProfile
-		var profile model.JobProfile
-
-		if err := rows.Scan(
-			&res.ID,
-			&res.JobProfileID,
-			&res.TeamID,
-			&res.ScheduledDay,
-			&res.StartTime,
-			&res.EndTime,
-			&res.Completed,
-			&res.Notes,
-			&res.CompletedNotes,
-			&res.ServicesRequested,
-			&profile.ID,
-			&profile.Name,
-			&profile.Email,
-			&profile.PhoneNumber,
-			&profile.Address,
-			&profile.City,
-			&profile.State,
-			&profile.Zip,
-			&profile.ServicesRequested,
-			&profile.ScheduledDate,
-			&profile.Description,
-			&profile.Approved,
-			&profile.IsCommercial,
-			&profile.IsSeen,
-			&profile.ReferralInfo,
-			&profile.Schedule,
-			&profile.AdminNotes,
-			&profile.JobPayout,
-			&profile.CreatedAt,
-			&profile.UpdatedAt,
-		); err != nil {
+		res, err := scanJobRow(rows)
+		if err != nil {
 			return nil, fmt.Errorf("failed to scan weekly job row: %w", err)
 		}
-
-		res.JobProfile = &profile
 		jobs = append(jobs, res)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating job rows: %w", err)
 	}
 
 	return jobs, nil
@@ -348,15 +235,31 @@ func (r *jobRepo) Update(ctx context.Context, job *model.Job) error {
 	}
 
 	query := `
-        UPDATE jobs
-        SET job_profile_id = $1, team_id = $2, scheduled_day = $3, start_time = $4, end_time = $5, completed = $6, notes = $7, completed_notes = $8, services_requested = $9
-        WHERE id = $10
-    `
+		UPDATE jobs
+		SET team_id = $1,
+		    name = $2,
+		    email = $3,
+		    phone_number = $4,
+		    address = $5,
+		    job_payout = $6,
+		    scheduled_day = $7,
+		    start_time = $8,
+		    end_time = $9,
+		    completed = $10,
+		    notes = $11,
+		    completed_notes = $12,
+		    services_requested = $13
+		WHERE id = $14
+	`
 	result, err := r.db.ExecContext(
 		ctx,
 		query,
-		job.JobProfileID,
 		job.TeamID,
+		job.Name,
+		job.Email,
+		job.PhoneNumber,
+		job.Address,
+		job.JobPayout,
 		job.ScheduledDay,
 		job.StartTime,
 		job.EndTime,

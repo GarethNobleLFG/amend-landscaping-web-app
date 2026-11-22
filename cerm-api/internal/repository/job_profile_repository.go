@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 
 type JobProfileRepository interface {
 	Create(ctx context.Context, profile *model.JobProfile) error
+	GetByID(ctx context.Context, id int64) (*model.JobProfile, error)
 	Update(ctx context.Context, id int64, profile *model.JobProfile) error
 	GetAllApprovedWithLatestJob(
 		ctx context.Context,
@@ -27,7 +29,6 @@ type JobProfileRepository interface {
 	) ([]JobProfileWithLastJob, int, error)
 	Delete(ctx context.Context, id int64) error
 }
-
 type postgresJobProfileRepo struct {
 	db *sql.DB
 }
@@ -104,6 +105,33 @@ func (r *postgresJobProfileRepo) Update(ctx context.Context, id int64, profile *
 		return sql.ErrNoRows
 	}
 	return nil
+}
+
+func (r *postgresJobProfileRepo) GetByID(ctx context.Context, id int64) (*model.JobProfile, error) {
+	query := `
+        SELECT id, name, email, phone_number, address, city, state, zip,
+               services_requested, scheduled_date, description, approved,
+               is_commercial, is_seen, referral_info, schedule, admin_notes, job_payout,
+               created_at, updated_at
+        FROM job_profiles
+        WHERE id = $1`
+
+	var p model.JobProfile
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&p.ID, &p.Name, &p.Email, &p.PhoneNumber, &p.Address, &p.City,
+		&p.State, &p.Zip, &p.ServicesRequested, &p.ScheduledDate,
+		&p.Description, &p.Approved, &p.IsCommercial, &p.IsSeen,
+		&p.ReferralInfo, &p.Schedule, &p.AdminNotes, &p.JobPayout,
+		&p.CreatedAt, &p.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, sql.ErrNoRows
+		}
+		return nil, fmt.Errorf("failed to get job profile by id: %w", err)
+	}
+
+	return &p, nil
 }
 
 func (r *postgresJobProfileRepo) GetAllApprovedWithLatestJob(

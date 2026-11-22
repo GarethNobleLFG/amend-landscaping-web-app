@@ -50,8 +50,8 @@ export const DayJobsPopover = component$<DayJobsPopoverProps>(({
         <div class="space-y-2 mb-4 max-h-56 overflow-y-auto pr-1">
           {jobs.length > 0 ? (
             jobs.map((job) => {
-              const customerName = job.job_profile?.name || `Profile #${job.job_profile_id}`;
-              const serviceType = job.job_profile?.services_requested;
+              const customerName = job.name?.trim() || `Job #${job.id}`;
+              const serviceType = job.services_requested;
               const hasValidService = typeof serviceType === "string" && serviceType.trim().length > 0;
               const team = job.team_id ? teamsMap.get(job.team_id) : null;
               const teamColor = team?.team_color || "#3B82F6";

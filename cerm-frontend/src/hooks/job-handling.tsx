@@ -28,8 +28,12 @@ export interface JobProfile {
 
 export interface Job {
   id: number;
-  job_profile_id: number;
   team_id?: number | null;
+  name?: string | null;
+  email?: string | null;
+  phone_number?: string | null;
+  address?: string | null;
+  job_payout?: number | null;
   scheduled_day: string;
   start_time?: string | null;
   end_time?: string | null;
@@ -37,7 +41,6 @@ export interface Job {
   notes?: string | null;
   completed_notes?: string | null;
   services_requested?: Record<string, boolean> | string | null;
-  job_profile?: JobProfile | null;
 }
 
 export const useJobs = routeLoader$<Job[]>(async ({ cookie, redirect }) => {
@@ -84,7 +87,7 @@ export const useJobsByMonth = routeLoader$<Job[]>(async ({ cookie, redirect, url
     if (!res.ok) throw new Error("Failed to fetch jobs by month");
 
     const json = await res.json();
-    
+
     const jobs = json.data ?? json;
     if (!Array.isArray(jobs)) {
       return [];
@@ -93,7 +96,7 @@ export const useJobsByMonth = routeLoader$<Job[]>(async ({ cookie, redirect, url
     return jobs;
   } catch (err) {
     console.error("Error fetching monthly jobs:", err);
-    return []; 
+    return [];
   }
 });
 
@@ -225,8 +228,12 @@ export const useUpdateJob = globalAction$(
   },
   zod$({
     id: z.coerce.number(),
-    job_profile_id: z.coerce.number().min(1, "Job profile ID is required"),
     team_id: z.coerce.number().optional().nullable(),
+    name: z.string().optional().nullable(),
+    email: z.string().optional().nullable(),
+    phone_number: z.string().optional().nullable(),
+    address: z.string().optional().nullable(),
+    job_payout: z.coerce.number().optional().nullable(),
     scheduled_day: z.string().min(1, "Scheduled day is required"),
     start_time: z.string().optional().nullable(),
     end_time: z.string().optional().nullable(),

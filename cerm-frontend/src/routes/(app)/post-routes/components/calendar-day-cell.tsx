@@ -132,8 +132,8 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
 
           <div class="space-y-1 overflow-y-auto max-h-[120px] flex-1">
             {jobs.map((job) => {
-              const customerName = job.job_profile?.name || `Profile #${job.job_profile_id}`;
-              const serviceType = job.job_profile?.services_requested;
+              const customerName = job.name?.trim() || `Job #${job.id}`;
+              const serviceType = job.services_requested;
               const hasValidService = typeof serviceType === "string" && serviceType.trim().length > 0;
 
               const team = job.team_id ? teamsMap.get(job.team_id) : null;

@@ -30,8 +30,12 @@ type createJobRequest struct {
 }
 
 type updateJobRequest struct {
-	JobProfileID      int64           `json:"job_profile_id" form:"job_profile_id"`
 	TeamID            *int64          `json:"team_id" form:"team_id"`
+	Name              *string         `json:"name" form:"name"`
+	Email             *string         `json:"email" form:"email"`
+	PhoneNumber       *string         `json:"phone_number" form:"phone_number"`
+	Address           *string         `json:"address" form:"address"`
+	JobPayout         *float64        `json:"job_payout" form:"job_payout"`
 	ScheduledDay      string          `json:"scheduled_day" form:"scheduled_day"` // Expected format: "YYYY-MM-DD"
 	StartTime         *string         `json:"start_time" form:"start_time"`       // Expected format: RFC3339
 	EndTime           *string         `json:"end_time" form:"end_time"`           // Expected format: RFC3339
@@ -48,8 +52,12 @@ func (h *JobHandler) Create(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
-	if req.JobProfileID <= 0 || req.ScheduledDay == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Job profile ID and scheduled day are required"})
+	if req.JobProfileID <= 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Job profile ID is required"})
+	}
+
+	if req.ScheduledDay == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Scheduled day is required"})
 	}
 
 	scheduledDay, err := time.Parse("2006-01-02", req.ScheduledDay)
@@ -75,7 +83,17 @@ func (h *JobHandler) Create(c *fiber.Ctx) error {
 		endTime = &parsedEnd
 	}
 
-	id, err := h.service.CreateJob(c.UserContext(), req.JobProfileID, req.TeamID, scheduledDay, startTime, endTime, req.Completed, req.Notes, req.ServicesRequested)
+	id, err := h.service.CreateJob(
+		c.UserContext(),
+		req.JobProfileID,
+		req.TeamID,
+		scheduledDay,
+		startTime,
+		endTime,
+		req.Completed,
+		req.Notes,
+		req.ServicesRequested,
+	)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -184,8 +202,8 @@ func (h *JobHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
-	if req.JobProfileID <= 0 || req.ScheduledDay == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Job profile ID and scheduled day are required"})
+	if req.ScheduledDay == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Scheduled day is required"})
 	}
 
 	scheduledDay, err := time.Parse("2006-01-02", req.ScheduledDay)
@@ -214,8 +232,12 @@ func (h *JobHandler) Update(c *fiber.Ctx) error {
 	err = h.service.UpdateJob(
 		c.UserContext(),
 		id,
-		req.JobProfileID,
 		req.TeamID,
+		req.Name,
+		req.Email,
+		req.PhoneNumber,
+		req.Address,
+		req.JobPayout,
 		scheduledDay,
 		startTime,
 		endTime,
