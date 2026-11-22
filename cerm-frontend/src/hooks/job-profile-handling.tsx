@@ -1,4 +1,4 @@
-import { globalAction$, routeLoader$, z, zod$ } from "@builder.io/qwik-city";
+import { globalAction$, routeLoader$, z, zod$, server$ } from "@builder.io/qwik-city";
 
 const API_BASE = import.meta.env.PUBLIC_CERM_API_URL ?? "http://cerm-api:8080";
 
@@ -37,6 +37,8 @@ export interface PaginatedApprovedJobProfilesResponse {
   limit: number;
   offset: number;
 }
+
+export type ProfileCategory = "residential" | "commercial";
 
 export const useApprovedProfiles = routeLoader$(async ({ cookie, query, redirect }) => {
   const token = cookie.get("cerm_token");
@@ -197,6 +199,55 @@ export const useUpdateJobProfile = globalAction$(
   })
 );
 
+export const searchApprovedProfiles = server$(
+  async function (params: {
+    q: string;
+    type: ProfileCategory;
+    limit?: number;
+    offset?: number;
+    token?: string;
+  }): Promise<PaginatedApprovedJobProfilesResponse> {
+    const trimmedQuery = params.q.trim();
+    const limit = params.limit ?? 20;
+    const offset = params.offset ?? 0;
+
+    if (!trimmedQuery) {
+      return {
+        items: [],
+        total_count: 0,
+        limit,
+        offset,
+      };
+    }
+
+    const url = new URL(`${API_BASE}/api/job-profiles/approved/search`);
+    url.searchParams.set("q", trimmedQuery);
+    url.searchParams.set("type", params.type);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("offset", String(offset));
+
+    const token = params.token ?? this.cookie.get("cerm_token")?.value;
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch(url.toString(), { headers });
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error ?? "Failed to search approved profiles");
+    }
+
+    const data: PaginatedApprovedJobProfilesResponse = await res.json();
+
+    return {
+      items: data.items ?? [],
+      total_count: data.total_count ?? 0,
+      limit: data.limit ?? limit,
+      offset: data.offset ?? offset,
+    };
+  }
+);
 export const useDeleteJobProfile = globalAction$(
   async (data, { fail, cookie }) => {
     const token = cookie.get("cerm_token");

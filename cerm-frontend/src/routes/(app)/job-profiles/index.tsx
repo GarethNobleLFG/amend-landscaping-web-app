@@ -7,6 +7,7 @@ import {
   useDeleteJobProfile,
   type JobProfile,
 } from "../../../hooks/job-profile-handling";
+import { useApprovedProfileSearch } from "./hooks/use-approved-profile-search";
 import { useAmendServices } from "../../../hooks/amend-api-handling";
 import { JobCard } from "./components/job-card";
 import { ViewModal } from "./components/view-modal";
@@ -31,6 +32,7 @@ export default component$(() => {
   const createAction = useCreateJobProfile();
   const updateAction = useUpdateJobProfile();
   const deleteAction = useDeleteJobProfile();
+  const search = useApprovedProfileSearch();
 
   const selectedProfile = useSignal<JobProfile | null>(null);
   const activeModal = useSignal<"view" | "edit" | "delete" | "create" | null>(null);
@@ -40,8 +42,12 @@ export default component$(() => {
   // Tab state: 'residential' (non-commercial) vs 'commercial'
   const activeTab = useSignal<"residential" | "commercial">("residential");
 
-  // Search query signal for substring filtering
-  const searchQuery = useSignal("");
+  const handleTabChange = $((nextTab: "residential" | "commercial") => {
+    activeTab.value = nextTab;
+    if (search.query.value.trim()) {
+      search.searchNow(search.query.value, nextTab);
+    }
+  });
 
   const openCreateModal = $(() => {
     createFormData.value = { approved: true };
@@ -89,9 +95,11 @@ export default component$(() => {
     const res = await deleteAction.submit({ id: selectedProfile.value.id });
     if (res.status === 200 || res.value?.success) {
       closeModal();
+      await search.refresh(activeTab.value);
     }
   });
 
+  // Default loader state (URL query pagination)
   const paginated = profilesSignal.value;
   const entries = paginated?.items || [];
   const totalCount = paginated?.totalCount ?? 0;
@@ -99,9 +107,9 @@ export default component$(() => {
   const offset = paginated?.offset ?? 0;
 
   const availableServices = servicesSignal.value || [];
-  const query = searchQuery.value.trim().toLowerCase();
+  const isSearchActive = search.query.value.trim().length > 0;
 
-  // 1. Filter entries by Commercial / Non-Commercial tab selection
+  // 1. Filter default paginated entries by Commercial / Non-Commercial tab selection
   const tabFilteredEntries = entries.filter(({ profile }) => {
     if (activeTab.value === "commercial") {
       return Boolean(profile.is_commercial);
@@ -109,12 +117,11 @@ export default component$(() => {
     return !profile.is_commercial;
   });
 
-  // 2. Filter entries by search query present anywhere in the name
-  const filteredEntries = tabFilteredEntries.filter(({ profile }) => {
-    if (!query) return true;
-    return (profile.name || "").toLowerCase().includes(query);
-  });
+  // 2. Choose search results when searching, otherwise tab-filtered loader items
+  const searchItems = search.results.value?.items ?? [];
+  const displayedEntries = isSearchActive ? searchItems : tabFilteredEntries;
 
+  // URL pagination helpers (default browse mode)
   const goToOffset = $((nextOffset: number) => {
     const safeOffset = Math.max(0, nextOffset);
     const params = new URLSearchParams(window.location.search);
@@ -128,6 +135,15 @@ export default component$(() => {
   const showingStart = totalCount === 0 ? 0 : offset + 1;
   const showingEnd = Math.min(offset + entries.length, totalCount);
 
+  // Search pagination helpers (independent of URL query params)
+  const searchTotal = search.results.value?.total_count ?? 0;
+  const searchLimit = search.limit.value;
+  const searchOffset = search.offset.value;
+  const searchHasPrev = searchOffset > 0;
+  const searchHasNext = searchOffset + searchLimit < searchTotal;
+  const searchStart = searchTotal === 0 ? 0 : searchOffset + 1;
+  const searchEnd = Math.min(searchOffset + searchItems.length, searchTotal);
+
   return (
     <div class="space-y-6">
       {/* Centered Controls Container: Tabs & Search Bar */}
@@ -135,7 +151,7 @@ export default component$(() => {
         {/* Commercial / Non-Commercial Tab Switcher: Fluid on mobile */}
         <div class="w-full sm:w-auto flex bg-slate-200/80 p-1 rounded-2xl sm:rounded-full text-xs font-bold text-gray-600">
           <button
-            onClick$={() => (activeTab.value = "residential")}
+            onClick$={() => handleTabChange("residential")}
             class={`flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 sm:py-2 rounded-xl sm:rounded-full transition-all text-center ${
               activeTab.value === "residential"
                 ? "bg-white text-gray-900 shadow-sm"
@@ -145,7 +161,7 @@ export default component$(() => {
             Residential
           </button>
           <button
-            onClick$={() => (activeTab.value = "commercial")}
+            onClick$={() => handleTabChange("commercial")}
             class={`flex-1 sm:flex-initial px-4 sm:px-5 py-2.5 sm:py-2 rounded-xl sm:rounded-full transition-all text-center ${
               activeTab.value === "commercial"
                 ? "bg-white text-gray-900 shadow-sm"
@@ -164,8 +180,10 @@ export default component$(() => {
             <input
               type="text"
               placeholder="Search job profiles"
-              value={searchQuery.value}
-              onInput$={(e) => (searchQuery.value = (e.target as HTMLInputElement).value)}
+              value={search.query.value}
+              onInput$={(e) =>
+                search.setQuery((e.target as HTMLInputElement).value, activeTab.value)
+              }
               class="w-full bg-transparent text-sm text-gray-900 placeholder:text-gray-600 focus:outline-none"
             />
           </div>
@@ -182,12 +200,20 @@ export default component$(() => {
 
       {/* Grid Display Container: Flows naturally with page scroll */}
       <div class="w-full pb-4 space-y-3">
-        {filteredEntries.length === 0 ? (
+        {search.error.value ? (
+          <div class="text-sm text-red-600 py-12 text-center bg-red-50/50 rounded-2xl border border-red-100">
+            {search.error.value}
+          </div>
+        ) : search.isSearching.value ? (
+          <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
+            Searching job profiles...
+          </div>
+        ) : displayedEntries.length === 0 ? (
           <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
             No job profiles found
           </div>
         ) : (
-          filteredEntries.map(({ profile, days_since_last_job, has_no_jobs }) => (
+          displayedEntries.map(({ profile, days_since_last_job, has_no_jobs }) => (
             <JobCard
               key={profile.id}
               profile={profile}
@@ -201,8 +227,8 @@ export default component$(() => {
         )}
       </div>
 
-      {/* Pagination Controls */}
-      {totalCount > 0 && (
+      {/* Default Loader Pagination Controls */}
+      {!isSearchActive && totalCount > 0 && (
         <div class="flex items-center justify-between pt-2 text-sm text-gray-600">
           <span>
             Showing {showingStart}–{showingEnd} of {totalCount}
@@ -218,6 +244,32 @@ export default component$(() => {
             <button
               disabled={!hasNext}
               onClick$={() => goToOffset(offset + limit)}
+              class="px-4 py-2 rounded-full bg-slate-200/80 hover:bg-slate-300 text-gray-900 font-medium disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Search Pagination Controls */}
+      {isSearchActive && !search.isSearching.value && searchTotal > 0 && (
+        <div class="flex items-center justify-between pt-2 text-sm text-gray-600">
+          <span>
+            Showing {searchStart}–{searchEnd} of {searchTotal} matching{" "}
+            {searchTotal === 1 ? "profile" : "profiles"}
+          </span>
+          <div class="flex items-center gap-2">
+            <button
+              disabled={!searchHasPrev}
+              onClick$={() => search.goToOffset(searchOffset - searchLimit, activeTab.value)}
+              class="px-4 py-2 rounded-full bg-slate-200/80 hover:bg-slate-300 text-gray-900 font-medium disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+            >
+              Previous
+            </button>
+            <button
+              disabled={!searchHasNext}
+              onClick$={() => search.goToOffset(searchOffset + searchLimit, activeTab.value)}
               class="px-4 py-2 rounded-full bg-slate-200/80 hover:bg-slate-300 text-gray-900 font-medium disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
             >
               Next

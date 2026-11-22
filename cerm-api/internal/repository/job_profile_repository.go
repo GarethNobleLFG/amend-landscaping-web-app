@@ -18,6 +18,13 @@ type JobProfileRepository interface {
 		offset int,
 	) ([]JobProfileWithLastJob, int, error)
 	GetUnapproved(ctx context.Context) ([]model.JobProfile, error)
+	SearchApprovedByName(
+		ctx context.Context,
+		nameQuery string,
+		isCommercial bool,
+		limit int,
+		offset int,
+	) ([]JobProfileWithLastJob, int, error)
 	Delete(ctx context.Context, id int64) error
 }
 
@@ -218,6 +225,71 @@ func (r *postgresJobProfileRepo) GetUnapproved(ctx context.Context) ([]model.Job
 	}
 
 	return profiles, nil
+}
+
+func (r *postgresJobProfileRepo) SearchApprovedByName(
+	ctx context.Context,
+	nameQuery string,
+	isCommercial bool,
+	limit int,
+	offset int,
+) ([]JobProfileWithLastJob, int, error) {
+	pattern := "%" + nameQuery + "%"
+
+	query := `
+		WITH latest_jobs AS (
+			SELECT DISTINCT ON (job_profile_id)
+			       job_profile_id,
+			       scheduled_day
+			FROM jobs
+			ORDER BY job_profile_id, id DESC
+		)
+		SELECT jp.id, jp.name, jp.email, jp.phone_number, jp.address, jp.city,
+		       jp.state, jp.zip, jp.services_requested, jp.scheduled_date,
+		       jp.description, jp.approved, jp.is_commercial, jp.is_seen,
+		       jp.referral_info, jp.schedule, jp.admin_notes, jp.job_payout,
+		       jp.created_at, jp.updated_at,
+		       lj.scheduled_day AS last_scheduled_day,
+		       COUNT(*) OVER() AS total_count
+		FROM job_profiles jp
+		LEFT JOIN latest_jobs lj ON lj.job_profile_id = jp.id
+		WHERE jp.approved = true
+		  AND jp.is_commercial = $1
+		  AND jp.name ILIKE $2
+		ORDER BY jp.created_at DESC, jp.id DESC
+		LIMIT $3 OFFSET $4`
+
+	rows, err := r.db.QueryContext(ctx, query, isCommercial, pattern, limit, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("search approved profiles with latest job: %w", err)
+	}
+	defer rows.Close()
+
+	var results []JobProfileWithLastJob
+	var totalCount int
+
+	for rows.Next() {
+		var item JobProfileWithLastJob
+		if err := rows.Scan(
+			&item.Profile.ID, &item.Profile.Name, &item.Profile.Email, &item.Profile.PhoneNumber,
+			&item.Profile.Address, &item.Profile.City, &item.Profile.State, &item.Profile.Zip,
+			&item.Profile.ServicesRequested, &item.Profile.ScheduledDate, &item.Profile.Description,
+			&item.Profile.Approved, &item.Profile.IsCommercial, &item.Profile.IsSeen,
+			&item.Profile.ReferralInfo, &item.Profile.Schedule, &item.Profile.AdminNotes,
+			&item.Profile.JobPayout, &item.Profile.CreatedAt, &item.Profile.UpdatedAt,
+			&item.LastScheduledDay,
+			&totalCount,
+		); err != nil {
+			return nil, 0, fmt.Errorf("scan searched job profile: %w", err)
+		}
+		results = append(results, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("iterate searched job profile rows: %w", err)
+	}
+
+	return results, totalCount, nil
 }
 
 func (r *postgresJobProfileRepo) Delete(ctx context.Context, id int64) error {

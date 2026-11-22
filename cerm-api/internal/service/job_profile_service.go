@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"cerm-api/internal/model"
@@ -17,6 +18,7 @@ type JobProfileService interface {
 	UpdateJobProfile(ctx context.Context, id int64, profile *model.JobProfile) error
 	GetAllApprovedProfilesWithLatestJob(ctx context.Context, limit int, offset int) (PaginatedApprovedJobProfilesResponse, error)
 	GetUnapprovedJobProfiles(ctx context.Context) ([]model.JobProfile, error)
+	SearchApprovedProfiles(ctx context.Context, nameQuery string, profileType string, limit int, offset int) (PaginatedApprovedJobProfilesResponse, error)
 	DeleteJobProfile(ctx context.Context, id int64) error
 }
 
@@ -55,17 +57,10 @@ func (s *jobProfileService) UpdateJobProfile(ctx context.Context, id int64, prof
 	return s.repo.Update(ctx, id, profile)
 }
 
-func (s *jobProfileService) GetAllApprovedProfilesWithLatestJob(
-	ctx context.Context,
-	limit int,
-	offset int,
-) (PaginatedApprovedJobProfilesResponse, error) {
-	rawItems, totalCount, err := s.repo.GetAllApprovedWithLatestJob(ctx, limit, offset)
-	if err != nil {
-		return PaginatedApprovedJobProfilesResponse{}, fmt.Errorf("failed to fetch approved job profiles with latest job: %w", err)
-	}
-
-	now := time.Now()
+func buildApprovedJobProfileItems(
+	rawItems []repository.JobProfileWithLastJob,
+	now time.Time,
+) []ApprovedJobProfileItem {
 	items := make([]ApprovedJobProfileItem, 0, len(rawItems))
 	for _, raw := range rawItems {
 		hasNoJobs := raw.LastScheduledDay == nil
@@ -98,8 +93,21 @@ func (s *jobProfileService) GetAllApprovedProfilesWithLatestJob(
 		return *a > *b
 	})
 
+	return items
+}
+
+func (s *jobProfileService) GetAllApprovedProfilesWithLatestJob(
+	ctx context.Context,
+	limit int,
+	offset int,
+) (PaginatedApprovedJobProfilesResponse, error) {
+	rawItems, totalCount, err := s.repo.GetAllApprovedWithLatestJob(ctx, limit, offset)
+	if err != nil {
+		return PaginatedApprovedJobProfilesResponse{}, fmt.Errorf("failed to fetch approved job profiles with latest job: %w", err)
+	}
+
 	return PaginatedApprovedJobProfilesResponse{
-		Items:      items,
+		Items:      buildApprovedJobProfileItems(rawItems, time.Now()),
 		TotalCount: totalCount,
 		Limit:      limit,
 		Offset:     offset,
@@ -108,6 +116,41 @@ func (s *jobProfileService) GetAllApprovedProfilesWithLatestJob(
 
 func (s *jobProfileService) GetUnapprovedJobProfiles(ctx context.Context) ([]model.JobProfile, error) {
 	return s.repo.GetUnapproved(ctx)
+}
+
+func (s *jobProfileService) SearchApprovedProfiles(
+	ctx context.Context,
+	nameQuery string,
+	profileType string,
+	limit int,
+	offset int,
+) (PaginatedApprovedJobProfilesResponse, error) {
+	trimmedName := strings.TrimSpace(nameQuery)
+	if trimmedName == "" {
+		return PaginatedApprovedJobProfilesResponse{}, errors.New("search query cannot be empty")
+	}
+
+	var isCommercial bool
+	switch strings.ToLower(strings.TrimSpace(profileType)) {
+	case "commercial":
+		isCommercial = true
+	case "residential", "":
+		isCommercial = false
+	default:
+		return PaginatedApprovedJobProfilesResponse{}, errors.New("profile type must be 'residential' or 'commercial'")
+	}
+
+	rawItems, totalCount, err := s.repo.SearchApprovedByName(ctx, trimmedName, isCommercial, limit, offset)
+	if err != nil {
+		return PaginatedApprovedJobProfilesResponse{}, fmt.Errorf("failed to search approved job profiles: %w", err)
+	}
+
+	return PaginatedApprovedJobProfilesResponse{
+		Items:      buildApprovedJobProfileItems(rawItems, time.Now()),
+		TotalCount: totalCount,
+		Limit:      limit,
+		Offset:     offset,
+	}, nil
 }
 
 func (s *jobProfileService) DeleteJobProfile(ctx context.Context, id int64) error {
