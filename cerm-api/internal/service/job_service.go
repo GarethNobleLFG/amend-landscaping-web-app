@@ -8,6 +8,7 @@ import (
 
 	"cerm-api/internal/model"
 	"cerm-api/internal/repository"
+	"cerm-api/pkg/utils"
 )
 
 type JobService interface {
@@ -59,7 +60,7 @@ func (s *jobService) CreateJob(
 	name := profile.Name
 	email := profile.Email
 	phoneNumber := profile.PhoneNumber
-	address := profile.Address
+	address := utils.FormatProfileAddress(profile.Address, profile.City, profile.State, profile.Zip)
 
 	var jobPayout *float64
 	if profile.JobPayout != nil {
