@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"cerm-api/internal/database"
+	"cerm-api/internal/middleware"
 	"cerm-api/internal/router"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,7 +18,12 @@ func main() {
 	}
 	defer db.Close()
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		ErrorHandler: middleware.JSONErrorHandler,
+	})
+
+	app.Use(middleware.PanicRecovery())
+	app.Use(middleware.RequestLogger())
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "http://localhost:5173, http://localhost:3000",
