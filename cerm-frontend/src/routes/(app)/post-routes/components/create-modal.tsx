@@ -10,7 +10,6 @@ import { AutoResizeTextarea } from "~/components/ui/auto-resize-textarea";
 
 interface CreateModalProps {
   selectedDateStr: string; // Format: YYYY-MM-DD
-  profiles: JobProfile[];
   teams: Team[];
   availableServices?: Service[];
   createAction: any;
@@ -19,52 +18,42 @@ interface CreateModalProps {
 
 export const CreateModal = component$(({
   selectedDateStr,
-  profiles,
   teams,
   availableServices = [],
   createAction,
   onClose$,
 }: CreateModalProps) => {
-  const initialProfile = profiles.length > 0 ? profiles[0] : null;
-  const selectedProfileId = useSignal<number | null>(initialProfile ? initialProfile.id : null);
   const selectedTeamId = useSignal<number | null>(teams.length > 0 ? teams[0].id : null);
   const scheduledDayInput = useSignal(selectedDateStr);
   const notesInput = useSignal("");
 
   // Requested services signal, prefilled from the initial customer profile
-  const selectedServices = useSignal<Record<string, boolean>>(
-    initialProfile ? parseServices(initialProfile.services_requested) : {}
-  );
+  const selectedServices = useSignal<Record<string, boolean>>({});
 
   const profileSearch = useSignal("");
   const teamSearch = useSignal("");
   const isProfileDropdownOpen = useSignal(false);
   const isTeamDropdownOpen = useSignal(false);
 
+  // TODO: Set selected service to the profile's services when a profile is selected.
+
   const isSubmitting = useSignal(false);
   const errorMessage = useSignal("");
   const notify = useNotification();
 
-  const filteredProfiles = profiles.filter((p) =>
-    (p.name || "").toLowerCase().includes(profileSearch.value.toLowerCase()) ||
-    (p.email || "").toLowerCase().includes(profileSearch.value.toLowerCase())
-  );
-
   const filteredTeams = teams.filter((t) =>
     (t.name || "").toLowerCase().includes(teamSearch.value.toLowerCase())
   );
-
-  const activeProfile = profiles.find((p) => p.id === selectedProfileId.value);
   const activeTeam = teams.find((t) => t.id === selectedTeamId.value);
 
   // Available service keys: uses the master service list from useAmendServices, falling back to profile keys
   const serviceKeys = availableServices.length > 0
     ? availableServices.map((s) => s.name)
-    : Object.keys(activeProfile ? parseServices(activeProfile.services_requested) : selectedServices.value);
+    : [];
 
   const handleSubmit = $(async () => {
     if (isSubmitting.value) return;
-    if (!selectedProfileId.value || !scheduledDayInput.value) {
+    if (!scheduledDayInput.value) {
       errorMessage.value = "Customer profile and scheduled day are required.";
       return;
     }
@@ -75,11 +64,11 @@ export const CreateModal = component$(({
 
     try {
       const res = await createAction.submit({
-        job_profile_id: selectedProfileId.value,
+        job_profile_id: 0, // TODO: Wire this up to the profile search field
         team_id: selectedTeamId.value,
         scheduled_day: scheduledDayInput.value,
         notes: notesInput.value ? notesInput.value : null,
-        services_requested: selectedServices.value,
+        services_requested: {}, // TODO: Wire this up to the services checklist
       });
 
       const isOk = res?.status === 200 || res?.value?.success;
@@ -123,9 +112,6 @@ export const CreateModal = component$(({
               onClick$={() => (isProfileDropdownOpen.value = !isProfileDropdownOpen.value)}
               class="w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-gray-200 text-sm flex items-center justify-between cursor-pointer"
             >
-              <span class={activeProfile ? "text-gray-900 font-medium" : "text-gray-400"}>
-                {activeProfile ? `${activeProfile.name} ${activeProfile.email ? `(${activeProfile.email})` : ""}` : "Select customer profile..."}
-              </span>
               <span class="text-xs text-gray-400">&#9660;</span>
             </div>
 
@@ -139,24 +125,17 @@ export const CreateModal = component$(({
                   class="w-full px-3 py-1.5 bg-slate-50 rounded-xl border border-gray-200 text-xs focus:outline-none"
                 />
                 <div class="max-h-48 overflow-y-auto space-y-1">
-                  {filteredProfiles.length > 0 ? (
-                    filteredProfiles.map((p) => (
                       <div
-                        key={p.id}
+                        key={0} // TODO: Wire this up to the profile search field
                         onClick$={() => {
-                          selectedProfileId.value = p.id;
                           isProfileDropdownOpen.value = false;
                           // Pre-check the services that this customer specifically requested
-                          selectedServices.value = parseServices(p.services_requested);
+                          selectedServices.value = {}; // TODO: Wire this up to the services checklist, if there is a seleted profile, set the selected services to this profile's services
                         }}
                         class="px-3 py-2 text-xs font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-xl cursor-pointer transition-all"
                       >
-                        {p.name} {p.email ? `(${p.email})` : ""}
+                        No profile selected (yet!)
                       </div>
-                    ))
-                  ) : (
-                    <div class="px-3 py-2 text-xs text-gray-400 italic">No profiles found</div>
-                  )}
                 </div>
               </div>
             )}

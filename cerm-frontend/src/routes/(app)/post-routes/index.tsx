@@ -2,7 +2,6 @@ import { component$, useSignal, useComputed$, useTask$, $ } from "@builder.io/qw
 import { useLocation, useNavigate } from "@builder.io/qwik-city";
 import { useJobsByMonth, useDeleteJob, useCreateJob, useUpdateJob, type Job } from "~/hooks/job-handling";
 import { useTeams, type Team } from "~/hooks/teams-handling";
-import { useApprovedProfiles } from "~/hooks/job-profile-handling";
 import { CalendarHeader } from "./components/calendar-header";
 import { CalendarDayCell } from "./components/calendar-day-cell";
 import { CreateModal } from "./components/create-modal";
@@ -12,14 +11,13 @@ import { useAmendServices, type Service } from "~/hooks/amend-api-handling";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export { useJobsByMonth, useTeams, useApprovedProfiles, useDeleteJob, useCreateJob, useUpdateJob, useAmendServices };
+export { useJobsByMonth, useTeams, useDeleteJob, useCreateJob, useUpdateJob, useAmendServices };
 
 export default component$(() => {
   const loc = useLocation();
   const nav = useNavigate();
   const jobsLoader = useJobsByMonth();
   const teamsLoader = useTeams();
-  const profilesLoader = useApprovedProfiles();
   const deleteAction = useDeleteJob();
   const createAction = useCreateJob();
   const updateAction = useUpdateJob();
@@ -111,7 +109,6 @@ export default component$(() => {
   });
 
   const teamsList = Array.isArray(teamsLoader.value) ? teamsLoader.value : [];
-  const profilesList = Array.isArray(profilesLoader.value) ? profilesLoader.value : [];
 
   return (
     <div class="max-w-7xl mx-auto px-3 sm:px-6 pt-2 pb-6">
@@ -163,7 +160,6 @@ export default component$(() => {
       {creatingDateStr.value && (
         <CreateModal
           selectedDateStr={creatingDateStr.value}
-          profiles={profilesList}
           teams={teamsList}
           availableServices={availableServices}
           createAction={createAction}
