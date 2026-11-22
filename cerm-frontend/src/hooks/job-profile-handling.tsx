@@ -25,22 +25,50 @@ export interface JobProfile {
   updated_at: string;
 }
 
-export const useApprovedProfiles = routeLoader$(async ({ cookie, redirect }) => {
+export interface ApprovedJobProfileItem {
+  profile: JobProfile;
+  days_since_last_job: number | null;
+  has_no_jobs: boolean;
+}
+
+export interface PaginatedApprovedJobProfilesResponse {
+  items: ApprovedJobProfileItem[];
+  total_count: number;
+  limit: number;
+  offset: number;
+}
+
+export const useApprovedProfiles = routeLoader$(async ({ cookie, query, redirect }) => {
   const token = cookie.get("cerm_token");
 
   if (!token) {
     throw redirect(302, "/");
   }
 
+  const url = new URL(`${API_BASE}/api/job-profiles/approved`);
+  const limit = query.get("limit");
+  const offset = query.get("offset");
+
+  if (limit !== null) url.searchParams.set("limit", limit);
+  if (offset !== null) url.searchParams.set("offset", offset);
+
   try {
-    const res = await fetch(`${API_BASE}/api/job-profiles/approved`, {
+    const res = await fetch(url.toString(), {
       headers: { Authorization: `Bearer ${token.value}` },
     });
 
-    if (!res.ok) throw new Error("Failed to fetch approved profiles");
+    if (!res.ok) {
+      throw new Error("Failed to fetch approved profiles");
+    }
 
-    const profiles: JobProfile[] = await res.json();
-    return profiles ?? [];
+    const data: PaginatedApprovedJobProfilesResponse = await res.json();
+
+    return {
+      items: data.items ?? [],
+      totalCount: data.total_count ?? 0,
+      limit: data.limit ?? 20,
+      offset: data.offset ?? 0,
+    };
   } catch {
     throw redirect(302, "/");
   }

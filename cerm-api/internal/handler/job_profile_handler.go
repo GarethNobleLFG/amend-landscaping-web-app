@@ -60,11 +60,28 @@ func (h *JobProfileHandler) Update(c *fiber.Ctx) error {
 
 // GET /api/job-profiles/approved
 func (h *JobProfileHandler) GetApproved(c *fiber.Ctx) error {
-	profiles, err := h.service.GetApprovedJobProfiles(c.UserContext())
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	limit, err := strconv.Atoi(c.Query("limit", "20"))
+	if err != nil || limit < 1 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid limit query parameter",
+		})
 	}
-	return c.Status(fiber.StatusOK).JSON(profiles)
+
+	offset, err := strconv.Atoi(c.Query("offset", "0"))
+	if err != nil || offset < 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid offset query parameter",
+		})
+	}
+
+	result, err := h.service.GetAllApprovedProfilesWithLatestJob(c.UserContext(), limit, offset)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(result)
 }
 
 // GET /api/job-profiles/unapproved

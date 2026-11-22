@@ -1,4 +1,5 @@
 import { component$, useSignal, $ } from "@builder.io/qwik";
+import { useNavigate } from "@builder.io/qwik-city";
 import {
   useApprovedProfiles,
   useCreateJobProfile,
@@ -24,6 +25,7 @@ const IconSearch = component$((props: { class?: string }) => (
 ));
 
 export default component$(() => {
+  const nav = useNavigate();
   const profilesSignal = useApprovedProfiles();
   const servicesSignal = useAmendServices();
   const createAction = useCreateJobProfile();
@@ -90,23 +92,41 @@ export default component$(() => {
     }
   });
 
-  const profiles = profilesSignal.value || [];
+  const paginated = profilesSignal.value;
+  const entries = paginated?.items || [];
+  const totalCount = paginated?.totalCount ?? 0;
+  const limit = paginated?.limit ?? 20;
+  const offset = paginated?.offset ?? 0;
+
   const availableServices = servicesSignal.value || [];
   const query = searchQuery.value.trim().toLowerCase();
 
-  // 1. Filter profiles by Commercial / Non-Commercial tab selection
-  const tabFilteredProfiles = profiles.filter((p) => {
+  // 1. Filter entries by Commercial / Non-Commercial tab selection
+  const tabFilteredEntries = entries.filter(({ profile }) => {
     if (activeTab.value === "commercial") {
-      return Boolean(p.is_commercial);
+      return Boolean(profile.is_commercial);
     }
-    return !p.is_commercial;
+    return !profile.is_commercial;
   });
 
-  // 2. Filter profiles by search query present anywhere in the name
-  const filteredProfiles = tabFilteredProfiles.filter((p) => {
+  // 2. Filter entries by search query present anywhere in the name
+  const filteredEntries = tabFilteredEntries.filter(({ profile }) => {
     if (!query) return true;
-    return (p.name || "").toLowerCase().includes(query);
+    return (profile.name || "").toLowerCase().includes(query);
   });
+
+  const goToOffset = $((nextOffset: number) => {
+    const safeOffset = Math.max(0, nextOffset);
+    const params = new URLSearchParams(window.location.search);
+    params.set("limit", String(limit));
+    params.set("offset", String(safeOffset));
+    nav(`?${params.toString()}`);
+  });
+
+  const hasPrev = offset > 0;
+  const hasNext = offset + limit < totalCount;
+  const showingStart = totalCount === 0 ? 0 : offset + 1;
+  const showingEnd = Math.min(offset + entries.length, totalCount);
 
   return (
     <div class="space-y-6">
@@ -162,15 +182,17 @@ export default component$(() => {
 
       {/* Grid Display Container: Flows naturally with page scroll */}
       <div class="w-full pb-4 space-y-3">
-        {filteredProfiles.length === 0 ? (
+        {filteredEntries.length === 0 ? (
           <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
             No job profiles found
           </div>
         ) : (
-          filteredProfiles.map((profile) => (
+          filteredEntries.map(({ profile, days_since_last_job, has_no_jobs }) => (
             <JobCard
               key={profile.id}
               profile={profile}
+              daysSinceLastJob={days_since_last_job}
+              hasNoJobs={has_no_jobs}
               onView$={openViewModal}
               onEdit$={openEditModal}
               onDelete$={openDeleteModal}
@@ -178,6 +200,31 @@ export default component$(() => {
           ))
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {totalCount > 0 && (
+        <div class="flex items-center justify-between pt-2 text-sm text-gray-600">
+          <span>
+            Showing {showingStart}–{showingEnd} of {totalCount}
+          </span>
+          <div class="flex items-center gap-2">
+            <button
+              disabled={!hasPrev}
+              onClick$={() => goToOffset(offset - limit)}
+              class="px-4 py-2 rounded-full bg-slate-200/80 hover:bg-slate-300 text-gray-900 font-medium disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+            >
+              Previous
+            </button>
+            <button
+              disabled={!hasNext}
+              onClick$={() => goToOffset(offset + limit)}
+              class="px-4 py-2 rounded-full bg-slate-200/80 hover:bg-slate-300 text-gray-900 font-medium disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       {activeModal.value === "create" && (

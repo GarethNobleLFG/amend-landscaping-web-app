@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"cerm-api/internal/model"
 )
@@ -11,13 +12,22 @@ import (
 type JobProfileRepository interface {
 	Create(ctx context.Context, profile *model.JobProfile) error
 	Update(ctx context.Context, id int64, profile *model.JobProfile) error
-	GetApproved(ctx context.Context) ([]model.JobProfile, error)
+	GetAllApprovedWithLatestJob(
+		ctx context.Context,
+		limit int,
+		offset int,
+	) ([]JobProfileWithLastJob, int, error)
 	GetUnapproved(ctx context.Context) ([]model.JobProfile, error)
 	Delete(ctx context.Context, id int64) error
 }
 
 type postgresJobProfileRepo struct {
 	db *sql.DB
+}
+
+type JobProfileWithLastJob struct {
+	Profile          model.JobProfile
+	LastScheduledDay *time.Time
 }
 
 func NewJobProfileRepository(db *sql.DB) JobProfileRepository {
@@ -89,43 +99,86 @@ func (r *postgresJobProfileRepo) Update(ctx context.Context, id int64, profile *
 	return nil
 }
 
-func (r *postgresJobProfileRepo) GetApproved(ctx context.Context) ([]model.JobProfile, error) {
+func (r *postgresJobProfileRepo) GetAllApprovedWithLatestJob(
+	ctx context.Context,
+	limit int,
+	offset int,
+) ([]JobProfileWithLastJob, int, error) {
 	query := `
-        SELECT id, name, email, phone_number, address, city, state, zip,
-               services_requested, scheduled_date, description, approved,
-               is_commercial, is_seen, referral_info, schedule, admin_notes, job_payout,
-               created_at, updated_at
-        FROM job_profiles
-        WHERE approved = true
-        ORDER BY created_at DESC`
+        WITH latest_jobs AS (
+            SELECT DISTINCT ON (job_profile_id)
+                   job_profile_id,
+                   scheduled_day
+            FROM jobs
+            ORDER BY job_profile_id, id DESC
+        )
+        SELECT jp.id, jp.name, jp.email, jp.phone_number, jp.address, jp.city,
+               jp.state, jp.zip, jp.services_requested, jp.scheduled_date,
+               jp.description, jp.approved, jp.is_commercial, jp.is_seen,
+               jp.referral_info, jp.schedule, jp.admin_notes, jp.job_payout,
+               jp.created_at, jp.updated_at,
+               lj.scheduled_day AS last_scheduled_day,
+               COUNT(*) OVER() AS total_count
+        FROM job_profiles jp
+        LEFT JOIN latest_jobs lj ON lj.job_profile_id = jp.id
+        WHERE jp.approved = true
+        ORDER BY jp.created_at DESC, jp.id DESC
+        LIMIT $1 OFFSET $2`
 
-	rows, err := r.db.QueryContext(ctx, query)
+	rows, err := r.db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch approved job profiles: %w", err)
+		return nil, 0, fmt.Errorf("failed to fetch approved job profiles with latest job: %w", err)
 	}
 	defer rows.Close()
 
-	profiles := []model.JobProfile{}
+	results := make([]JobProfileWithLastJob, 0)
+	var totalCount int
+
 	for rows.Next() {
-		var p model.JobProfile
+		var item JobProfileWithLastJob
+		var lastScheduled sql.NullTime
+
 		err := rows.Scan(
-			&p.ID, &p.Name, &p.Email, &p.PhoneNumber, &p.Address, &p.City,
-			&p.State, &p.Zip, &p.ServicesRequested, &p.ScheduledDate,
-			&p.Description, &p.Approved, &p.IsCommercial, &p.IsSeen,
-			&p.ReferralInfo, &p.Schedule, &p.AdminNotes, &p.JobPayout,
-			&p.CreatedAt, &p.UpdatedAt,
+			&item.Profile.ID,
+			&item.Profile.Name,
+			&item.Profile.Email,
+			&item.Profile.PhoneNumber,
+			&item.Profile.Address,
+			&item.Profile.City,
+			&item.Profile.State,
+			&item.Profile.Zip,
+			&item.Profile.ServicesRequested,
+			&item.Profile.ScheduledDate,
+			&item.Profile.Description,
+			&item.Profile.Approved,
+			&item.Profile.IsCommercial,
+			&item.Profile.IsSeen,
+			&item.Profile.ReferralInfo,
+			&item.Profile.Schedule,
+			&item.Profile.AdminNotes,
+			&item.Profile.JobPayout,
+			&item.Profile.CreatedAt,
+			&item.Profile.UpdatedAt,
+			&lastScheduled,
+			&totalCount,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan approved job profile row: %w", err)
+			return nil, 0, fmt.Errorf("failed to scan job profile with latest job: %w", err)
 		}
-		profiles = append(profiles, p)
+
+		if lastScheduled.Valid {
+			t := lastScheduled.Time
+			item.LastScheduledDay = &t
+		}
+
+		results = append(results, item)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating approved job profile rows: %w", err)
+		return nil, 0, fmt.Errorf("error iterating job profile rows: %w", err)
 	}
 
-	return profiles, nil
+	return results, totalCount, nil
 }
 
 func (r *postgresJobProfileRepo) GetUnapproved(ctx context.Context) ([]model.JobProfile, error) {
