@@ -166,7 +166,7 @@ export const ViewModal = component$<ViewModalProps>(({
             <div class="mb-6">
               <ServicesList
                 services={resolvedServices}
-                title="Requested Services for this Job"
+                title="Requested Services for This Job"
               />
             </div>
 

@@ -230,7 +230,7 @@ export const CreateModal = component$(({
           <ServicesChecklist
             services={selectedServices}
             availableServiceKeys={serviceKeys}
-            label="Requested Services for this Job"
+            label="Requested Services for This Job"
             titleClass="block text-xs font-semibold text-gray-500 mb-1"
           />
 

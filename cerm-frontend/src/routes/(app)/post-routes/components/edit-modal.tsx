@@ -99,7 +99,7 @@ export const EditModal = component$(({ job, availableServices = [], updateAction
           <ServicesChecklist
             services={selectedServices}
             availableServiceKeys={serviceKeys}
-            label="Requested Services for this Job"
+            label="Requested Services for This Job"
           />
 
           <div>
