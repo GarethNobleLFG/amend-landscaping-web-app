@@ -7,6 +7,7 @@ import (
 
 type Job struct {
 	ID                int64           `json:"id" db:"id"`
+	JobProfileID      int64           `json:"job_profile_id" db:"job_profile_id"`
 	TeamID            *int64          `json:"team_id,omitempty" db:"team_id"`
 	Name              *string         `json:"name,omitempty" db:"name"`
 	Email             *string         `json:"email,omitempty" db:"email"`

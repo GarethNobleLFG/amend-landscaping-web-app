@@ -83,16 +83,17 @@ func (r *jobRepo) Create(ctx context.Context, job *model.Job) (int64, error) {
 
 	query := `
 		INSERT INTO jobs (
-			team_id, name, email, phone_number, address, job_payout,
+			job_profile_id, team_id, name, email, phone_number, address, job_payout,
 			scheduled_day, start_time, end_time, completed, notes, services_requested
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 		RETURNING id
 	`
 	var id int64
 	err := r.db.QueryRowContext(
 		ctx,
 		query,
+		job.JobProfileID,
 		job.TeamID,
 		job.Name,
 		job.Email,

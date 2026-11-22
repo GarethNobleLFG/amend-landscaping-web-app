@@ -137,7 +137,7 @@ export const CalendarDayCell = component$<CalendarDayCellProps>(
               const hasValidService = typeof serviceType === "string" && serviceType.trim().length > 0;
 
               const team = job.team_id ? teamsMap.get(job.team_id) : null;
-              const teamColor = team?.team_color || "#3B82F6";
+              const teamColor = team?.team_color || "#000000ff";
               const bgTint = hexToRgba(teamColor, 0.12);
               const isCompleted = Boolean(job.completed);
 

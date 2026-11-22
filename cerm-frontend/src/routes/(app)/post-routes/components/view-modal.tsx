@@ -35,7 +35,7 @@ export const ViewModal = component$<ViewModalProps>(({
   const fullAddress = job.address?.trim() ? job.address : "N/A";
 
   const team = job.team_id ? teamsMap.get(job.team_id) : null;
-  const teamColor = team?.team_color || "#3B82F6";
+  const teamColor = team?.team_color || "#000000ff";
 
   const resolvedServices = parseServices(job.services_requested);
 
@@ -105,7 +105,7 @@ export const ViewModal = component$<ViewModalProps>(({
                   class="inline-flex items-center px-3 py-1 text-xs font-bold rounded-full text-white shadow-xs"
                   style={{ backgroundColor: teamColor }}
                 >
-                  {team ? team.name : "Unassigned Team"}
+                  {team ? team.name : "Team no longer exists"}
                 </span>
                 <span class="inline-flex items-center px-3 py-1 text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-xs">
                   {job.scheduled_day ? new Date(job.scheduled_day).toLocaleDateString() : "N/A"}

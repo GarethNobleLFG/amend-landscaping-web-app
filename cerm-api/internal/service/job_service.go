@@ -78,6 +78,7 @@ func (s *jobService) CreateJob(
 	}
 
 	job := &model.Job{
+		JobProfileID:      jobProfileID,
 		TeamID:            teamID,
 		Name:              &name,
 		Email:             &email,
