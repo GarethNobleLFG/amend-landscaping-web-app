@@ -100,7 +100,7 @@ export const ViewModal = component$<ViewModalProps>(({
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100 pr-8">
               <div>
                 <span class="text-xs font-bold uppercase tracking-wider text-gray-400">
-                  {isCommercial ? "Commercial Job" : "Job"}
+                  {isCommercial ? "Commercial Job" : "Residential Job"}
                 </span>
                 <div class="flex items-center gap-2.5 mt-0.5">
                   <h3 class={`text-2xl font-extrabold break-words ${isCompleted ? "line-through text-gray-400" : "text-gray-900"}`}>
