@@ -13,11 +13,12 @@ func main() {
 	cfg := config.LoadConfig()
 
 	app := fiber.New(fiber.Config{
-		AppName: "email-service-api",
+		AppName:      "email-service-api",
+		ErrorHandler: middleware.JSONErrorHandler,
 	})
 
-	// Register Middlewares
-	middleware.SetupMiddlewares(app)
+	app.Use(middleware.PanicRecovery())
+	app.Use(middleware.RequestLogger())
 
 	// Register Routes
 	router.SetupRoutes(app)
