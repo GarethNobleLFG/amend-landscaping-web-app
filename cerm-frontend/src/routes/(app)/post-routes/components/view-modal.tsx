@@ -146,10 +146,6 @@ export const ViewModal = component$<ViewModalProps>(({
                   <span class="text-gray-900 font-medium break-words">{fullAddress}</span>
                 </div>
                 <div>
-                  <span class="block text-xs font-semibold text-gray-500 mb-0.5">Referral Info</span>
-                  <span class="text-gray-900 font-medium break-words">{(profile as any).referral_info || "N/A"}</span>
-                </div>
-                <div>
                   <span class="block text-xs font-semibold text-gray-500 mb-0.5">
                     {isCommercial ? "Contract / Service Value" : "Average Job Payout"}
                   </span>
