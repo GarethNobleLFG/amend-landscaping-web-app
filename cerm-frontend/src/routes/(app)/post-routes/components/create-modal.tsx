@@ -280,7 +280,9 @@ export const CreateModal = component$(({
 
           {/* 2. Job Payout */}
           <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1">Job Payout ($) (Optional) (Auto fills from profile's avg. payout) </label>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">
+              Job Payout ($) (Optional) (Auto fills from profile&apos;s avg. payout)
+            </label>
             <input
               type="number"
               step="0.01"
@@ -292,7 +294,25 @@ export const CreateModal = component$(({
             />
           </div>
 
-          {/* 3. Team Typeahead Dropdown */}
+          {/* 3. Requested Services Checklist */}
+          <ServicesChecklist
+            services={selectedServices}
+            availableServiceKeys={serviceKeys}
+            label="Requested Services for This Job"
+            titleClass="block text-xs font-semibold text-gray-500 mb-1"
+          />
+
+          {/* 4. Job Notes */}
+          <AutoResizeTextarea
+            id="create-job-notes"
+            label="Job Specific Notes (Visible to Crew) (Optional)"
+            signal={notesInput}
+            rows={3}
+            minHeight={88}
+            placeholder="Instructions or notes for this job..."
+          />
+
+          {/* 5. Team Typeahead Dropdown */}
           <div class="relative">
             <label class="block text-xs font-semibold text-gray-500 mb-1">Assigned Team *</label>
             <div
@@ -344,7 +364,7 @@ export const CreateModal = component$(({
             )}
           </div>
 
-          {/* 4. Scheduled Day */}
+          {/* 6. Scheduled Day */}
           <div>
             <label class="block text-xs font-semibold text-gray-500 mb-1">Scheduled Date *</label>
             <input
@@ -355,23 +375,6 @@ export const CreateModal = component$(({
               class="w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
-
-          {/* 5. Requested Services Checklist */}
-          <ServicesChecklist
-            services={selectedServices}
-            availableServiceKeys={serviceKeys}
-            label="Requested Services for This Job"
-            titleClass="block text-xs font-semibold text-gray-500 mb-1"
-          />
-
-          <AutoResizeTextarea
-            id="create-job-notes"
-            label="Job Specific Notes (Visible to Crew)"
-            signal={notesInput}
-            rows={3}
-            minHeight={88}
-            placeholder="Instructions or notes for this job..."
-          />
         </div>
 
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
