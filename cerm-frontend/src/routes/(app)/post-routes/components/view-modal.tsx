@@ -150,6 +150,24 @@ export const ViewModal = component$<ViewModalProps>(({
               />
             </div>
 
+            {/* Customer Submitted Notes Section */}
+            <div class="mb-6">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
+                Customer Submitted Notes
+              </h4>
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+                {job.customer_submitted_notes ? (
+                  <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                    {job.customer_submitted_notes}
+                  </p>
+                ) : (
+                  <p class="text-sm text-gray-400 italic whitespace-pre-wrap break-words">
+                    Customer submitted no notes.
+                  </p>
+                )}
+              </div>
+            </div>
+
             {/* Job Notes Section */}
             <div class="mb-6">
               <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">

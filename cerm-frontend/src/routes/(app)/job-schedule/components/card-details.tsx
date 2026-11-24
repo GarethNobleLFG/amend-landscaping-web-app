@@ -86,7 +86,11 @@ export const CardDetails = component$<CardDetailsProps>((({
             Job Notes
           </h4>
           <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60">
-            <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{jobNotes || "N/A"}</p>
+            {jobNotes ? (
+              <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{jobNotes}</p>
+            ) : (
+              <p class="text-sm text-gray-400 italic whitespace-pre-wrap break-words">No job notes.</p>
+            )}
           </div>
         </div>
         <div>
@@ -94,7 +98,13 @@ export const CardDetails = component$<CardDetailsProps>((({
             {isCommercial ? "Commercial Client Notes" : "Customer Submitted Notes"}
           </h4>
           <div class="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200/60">
-            <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{clientNotes || "N/A"}</p>
+            {clientNotes ? (
+              <p class="text-sm text-gray-700 whitespace-pre-wrap break-words">{clientNotes}</p>
+            ) : (
+              <p class="text-sm text-gray-400 italic whitespace-pre-wrap break-words">
+                Customer submitted no notes.
+              </p>
+            )}
           </div>
         </div>
       </div>
