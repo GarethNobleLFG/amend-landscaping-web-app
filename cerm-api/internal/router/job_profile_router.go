@@ -21,6 +21,7 @@ func RegisterJobProfileRoutes(app *fiber.App, db *sql.DB) {
 	jobProfiles.Put("/:id", jobHandler.Update)
 	jobProfiles.Get("/approved", jobHandler.GetApproved)
 	jobProfiles.Get("/unapproved", jobHandler.GetUnapproved)
-	jobProfiles.Get("/approved/search", jobHandler.SearchApproved)
+	jobProfiles.Get("/approved/search/with-latest-job", jobHandler.SearchApprovedProfilesWithLatestJob)
+	jobProfiles.Get("/approved/search", jobHandler.SearchApprovedByName)
 	jobProfiles.Delete("/:id", jobHandler.Delete)
 }

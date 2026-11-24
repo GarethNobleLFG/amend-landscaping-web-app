@@ -1,13 +1,14 @@
-import { component$, useSignal, $ } from "@builder.io/qwik";
+import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
 import { useNavigate } from "@builder.io/qwik-city";
 import {
   useApprovedProfiles,
   useCreateJobProfile,
   useUpdateJobProfile,
   useDeleteJobProfile,
+  searchApprovedProfiles,
   type JobProfile,
+  type PaginatedApprovedJobProfilesResponse,
 } from "../../../hooks/job-profile-handling";
-import { useApprovedProfileSearch } from "./hooks/use-approved-profile-search";
 import { useAmendServices } from "../../../hooks/amend-api-handling";
 import { JobCard } from "./components/job-card";
 import { ViewModal } from "./components/view-modal";
@@ -32,7 +33,6 @@ export default component$(() => {
   const createAction = useCreateJobProfile();
   const updateAction = useUpdateJobProfile();
   const deleteAction = useDeleteJobProfile();
-  const search = useApprovedProfileSearch();
 
   const selectedProfile = useSignal<JobProfile | null>(null);
   const activeModal = useSignal<"view" | "edit" | "delete" | "create" | null>(null);
@@ -42,11 +42,82 @@ export default component$(() => {
   // Tab state: 'residential' (non-commercial) vs 'commercial'
   const activeTab = useSignal<"residential" | "commercial">("residential");
 
+  // Search state
+  const searchQuery = useSignal("");
+  const searchResults = useSignal<PaginatedApprovedJobProfilesResponse | null>(null);
+  const isSearching = useSignal(false);
+  const searchError = useSignal("");
+  const searchLimit = useSignal(20);
+  const searchOffset = useSignal(0);
+
+  const runSearch = $(async (q: string, tab: "residential" | "commercial", limit: number, offset: number) => {
+    const trimmed = q.trim();
+    if (!trimmed) {
+      searchResults.value = null;
+      searchError.value = "";
+      isSearching.value = false;
+      return;
+    }
+
+    isSearching.value = true;
+    searchError.value = "";
+    try {
+      searchResults.value = await searchApprovedProfiles({
+        q: trimmed,
+        type: tab,
+        limit,
+        offset,
+      });
+    } catch (err: any) {
+      searchError.value = err?.message || "Failed to search profiles";
+    } finally {
+      isSearching.value = false;
+    }
+  });
+
+  useVisibleTask$(({ track, cleanup }) => {
+    const q = track(() => searchQuery.value).trim();
+    const tab = track(() => activeTab.value);
+    const limit = track(() => searchLimit.value);
+    const offset = track(() => searchOffset.value);
+
+    if (!q) {
+      searchResults.value = null;
+      searchError.value = "";
+      isSearching.value = false;
+      return;
+    }
+
+    let cancelled = false;
+    isSearching.value = true;
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await searchApprovedProfiles({ q, type: tab, limit, offset });
+        if (!cancelled) {
+          searchResults.value = res;
+          searchError.value = "";
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          searchError.value = err?.message || "Failed to search profiles";
+        }
+      } finally {
+        if (!cancelled) {
+          isSearching.value = false;
+        }
+      }
+    }, 200);
+
+    cleanup(() => {
+      cancelled = true;
+      clearTimeout(timer);
+    });
+  });
+
   const handleTabChange = $((nextTab: "residential" | "commercial") => {
     activeTab.value = nextTab;
-    if (search.query.value.trim()) {
-      search.searchNow(search.query.value, nextTab);
-    }
+    searchOffset.value = 0;
   });
 
   const openCreateModal = $(() => {
@@ -95,7 +166,9 @@ export default component$(() => {
     const res = await deleteAction.submit({ id: selectedProfile.value.id });
     if (res.status === 200 || res.value?.success) {
       closeModal();
-      await search.refresh(activeTab.value);
+      if (searchQuery.value.trim()) {
+        await runSearch(searchQuery.value, activeTab.value, searchLimit.value, searchOffset.value);
+      }
     }
   });
 
@@ -107,7 +180,7 @@ export default component$(() => {
   const offset = paginated?.offset ?? 0;
 
   const availableServices = servicesSignal.value || [];
-  const isSearchActive = search.query.value.trim().length > 0;
+  const isSearchActive = searchQuery.value.trim().length > 0;
 
   // 1. Filter default paginated entries by Commercial / Non-Commercial tab selection
   const tabFilteredEntries = entries.filter(({ profile }) => {
@@ -118,7 +191,7 @@ export default component$(() => {
   });
 
   // 2. Choose search results when searching, otherwise tab-filtered loader items
-  const searchItems = search.results.value?.items ?? [];
+  const searchItems = searchResults.value?.items ?? [];
   const displayedEntries = isSearchActive ? searchItems : tabFilteredEntries;
 
   // URL pagination helpers (default browse mode)
@@ -136,13 +209,13 @@ export default component$(() => {
   const showingEnd = Math.min(offset + entries.length, totalCount);
 
   // Search pagination helpers (independent of URL query params)
-  const searchTotal = search.results.value?.total_count ?? 0;
-  const searchLimit = search.limit.value;
-  const searchOffset = search.offset.value;
-  const searchHasPrev = searchOffset > 0;
-  const searchHasNext = searchOffset + searchLimit < searchTotal;
-  const searchStart = searchTotal === 0 ? 0 : searchOffset + 1;
-  const searchEnd = Math.min(searchOffset + searchItems.length, searchTotal);
+  const searchTotal = searchResults.value?.total_count ?? 0;
+  const currentSearchLimit = searchLimit.value;
+  const currentSearchOffset = searchOffset.value;
+  const searchHasPrev = currentSearchOffset > 0;
+  const searchHasNext = currentSearchOffset + currentSearchLimit < searchTotal;
+  const searchStart = searchTotal === 0 ? 0 : currentSearchOffset + 1;
+  const searchEnd = Math.min(currentSearchOffset + searchItems.length, searchTotal);
 
   return (
     <div class="space-y-6">
@@ -180,10 +253,11 @@ export default component$(() => {
             <input
               type="text"
               placeholder="Search job profiles"
-              value={search.query.value}
-              onInput$={(e) =>
-                search.setQuery((e.target as HTMLInputElement).value, activeTab.value)
-              }
+              value={searchQuery.value}
+              onInput$={(e) => {
+                searchQuery.value = (e.target as HTMLInputElement).value;
+                searchOffset.value = 0;
+              }}
               class="w-full bg-transparent text-sm text-gray-900 placeholder:text-gray-600 focus:outline-none"
             />
           </div>
@@ -200,11 +274,11 @@ export default component$(() => {
 
       {/* Grid Display Container: Flows naturally with page scroll */}
       <div class="w-full pb-4 space-y-3">
-        {search.error.value ? (
+        {searchError.value ? (
           <div class="text-sm text-red-600 py-12 text-center bg-red-50/50 rounded-2xl border border-red-100">
-            {search.error.value}
+            {searchError.value}
           </div>
-        ) : search.isSearching.value ? (
+        ) : isSearching.value ? (
           <div class="text-sm text-gray-500 italic py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
             Searching job profiles...
           </div>
@@ -253,7 +327,7 @@ export default component$(() => {
       )}
 
       {/* Search Pagination Controls */}
-      {isSearchActive && !search.isSearching.value && searchTotal > 0 && (
+      {isSearchActive && !isSearching.value && searchTotal > 0 && (
         <div class="flex items-center justify-between pt-2 text-sm text-gray-600">
           <span>
             Showing {searchStart}–{searchEnd} of {searchTotal} matching{" "}
@@ -262,14 +336,14 @@ export default component$(() => {
           <div class="flex items-center gap-2">
             <button
               disabled={!searchHasPrev}
-              onClick$={() => search.goToOffset(searchOffset - searchLimit, activeTab.value)}
+              onClick$={() => (searchOffset.value = Math.max(0, currentSearchOffset - currentSearchLimit))}
               class="px-4 py-2 rounded-full bg-slate-200/80 hover:bg-slate-300 text-gray-900 font-medium disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
             >
               Previous
             </button>
             <button
               disabled={!searchHasNext}
-              onClick$={() => search.goToOffset(searchOffset + searchLimit, activeTab.value)}
+              onClick$={() => (searchOffset.value = currentSearchOffset + currentSearchLimit)}
               class="px-4 py-2 rounded-full bg-slate-200/80 hover:bg-slate-300 text-gray-900 font-medium disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
             >
               Next

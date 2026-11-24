@@ -1,6 +1,6 @@
 import { component$, useSignal, useVisibleTask$, $, type PropFunction } from "@builder.io/qwik";
 import type { Team } from "~/hooks/teams-handling";
-import type { JobProfile } from "~/hooks/job-profile-handling";
+import type { JobProfile, PaginatedJobProfilesResponse } from "~/hooks/job-profile-handling";
 import type { Service } from "~/hooks/amend-api-handling";
 import { IconX } from "../../../../components/ui/icons";
 import { useNotification } from "~/components/ui/notification-toast";
@@ -13,6 +13,14 @@ interface CreateModalProps {
   teams: Team[];
   availableServices?: Service[];
   createAction: any;
+  searchProfiles$?: PropFunction<
+    (params: {
+      q: string;
+      limit?: number;
+      offset?: number;
+      token?: string;
+    }) => Promise<PaginatedJobProfilesResponse>
+  >;
   onClose$: PropFunction<() => void>;
 }
 
@@ -21,54 +29,129 @@ export const CreateModal = component$(({
   teams,
   availableServices = [],
   createAction,
+  searchProfiles$,
   onClose$,
 }: CreateModalProps) => {
   const selectedTeamId = useSignal<number | null>(teams.length > 0 ? teams[0].id : null);
   const scheduledDayInput = useSignal(selectedDateStr);
   const notesInput = useSignal("");
 
-  // Requested services signal, prefilled from the initial customer profile
+  const selectedProfile = useSignal<JobProfile | null>(null);
+  const searchResults = useSignal<JobProfile[]>([]);
+  const isSearchingProfiles = useSignal(false);
+
+  // Requested services signal, prefilled from the selected customer profile
   const selectedServices = useSignal<Record<string, boolean>>({});
 
   const profileSearch = useSignal("");
   const teamSearch = useSignal("");
   const isProfileDropdownOpen = useSignal(false);
   const isTeamDropdownOpen = useSignal(false);
-
-  // TODO: Set selected service to the profile's services when a profile is selected.
+  const profileBoxRef = useSignal<HTMLElement>();
 
   const isSubmitting = useSignal(false);
   const errorMessage = useSignal("");
   const notify = useNotification();
+
+  // Close profile results dropdown when clicking outside the profile field/dropdown
+  useVisibleTask$(({ cleanup }) => {
+    const handlePointerDown = (event: PointerEvent) => {
+      const container = profileBoxRef.value;
+      const target = event.target as Node | null;
+      if (container && target && !container.contains(target)) {
+        isProfileDropdownOpen.value = false;
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    cleanup(() => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    });
+  });
+
+  // Fetch matching approved job profiles when dropdown is open and query changes
+  useVisibleTask$(({ track, cleanup }) => {
+    const query = track(() => profileSearch.value).trim();
+    const isOpen = track(() => isProfileDropdownOpen.value);
+
+    if (!isOpen || !searchProfiles$ || !query) {
+      searchResults.value = [];
+      isSearchingProfiles.value = false;
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      isSearchingProfiles.value = true;
+      try {
+        const res = await searchProfiles$({ q: query, limit: 20, offset: 0 });
+        if (!cancelled) {
+          searchResults.value = res.items ?? [];
+        }
+      } catch {
+        if (!cancelled) {
+          searchResults.value = [];
+        }
+      } finally {
+        if (!cancelled) {
+          isSearchingProfiles.value = false;
+        }
+      }
+    }, 200);
+
+    cleanup(() => {
+      cancelled = true;
+      clearTimeout(timer);
+    });
+  });
 
   const filteredTeams = teams.filter((t) =>
     (t.name || "").toLowerCase().includes(teamSearch.value.toLowerCase())
   );
   const activeTeam = teams.find((t) => t.id === selectedTeamId.value);
 
-  // Available service keys: uses the master service list from useAmendServices, falling back to profile keys
   const serviceKeys = availableServices.length > 0
     ? availableServices.map((s) => s.name)
     : [];
 
+  const applyProfileServices = $((profile: JobProfile | null) => {
+    if (!profile) {
+      selectedServices.value = {};
+      return;
+    }
+
+    const parsed = parseServices(profile.services_requested);
+    const nextServices: Record<string, boolean> = {};
+    for (const key of serviceKeys) {
+      nextServices[key] = Boolean(parsed[key]);
+    }
+    for (const [key, val] of Object.entries(parsed)) {
+      if (!(key in nextServices)) {
+        nextServices[key] = Boolean(val);
+      }
+    }
+    selectedServices.value = nextServices;
+  });
+
   const handleSubmit = $(async () => {
     if (isSubmitting.value) return;
-    if (!scheduledDayInput.value) {
+    if (!selectedProfile.value || !scheduledDayInput.value) {
       errorMessage.value = "Customer profile and scheduled day are required.";
       return;
     }
 
+    errorMessage.value = "";
     isSubmitting.value = true;
     notify.loading("Scheduling job...");
     onClose$();
 
     try {
       const res = await createAction.submit({
-        job_profile_id: 0, // TODO: Wire this up to the profile search field
+        job_profile_id: selectedProfile.value.id,
         team_id: selectedTeamId.value,
         scheduled_day: scheduledDayInput.value,
         notes: notesInput.value ? notesInput.value : null,
-        services_requested: {}, // TODO: Wire this up to the services checklist
+        services_requested: selectedServices.value,
       });
 
       const isOk = res?.status === 200 || res?.value?.success;
@@ -105,38 +188,73 @@ export const CreateModal = component$(({
         )}
 
         <div class="space-y-5 mb-6">
-          {/* 1. Job Profile Typeahead Dropdown */}
-          <div class="relative">
+          {/* 1. Job Profile Typeahead Input + Dropdown */}
+          <div ref={profileBoxRef} class="relative">
             <label class="block text-xs font-semibold text-gray-500 mb-1">Job Profile *</label>
-            <div
-              onClick$={() => (isProfileDropdownOpen.value = !isProfileDropdownOpen.value)}
-              class="w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-gray-200 text-sm flex items-center justify-between cursor-pointer"
-            >
-              <span class="text-xs text-gray-400">&#9660;</span>
+            <div class="relative flex items-center">
+              <input
+                type="text"
+                placeholder="Search approved profiles by name..."
+                value={profileSearch.value}
+                onFocus$={() => {
+                  isProfileDropdownOpen.value = true;
+                }}
+                onInput$={(e) => {
+                  const val = (e.target as HTMLInputElement).value;
+                  profileSearch.value = val;
+                  if (selectedProfile.value && val !== selectedProfile.value.name) {
+                    selectedProfile.value = null;
+                  }
+                  isProfileDropdownOpen.value = true;
+                }}
+                class="w-full px-3.5 py-2.5 pr-9 bg-slate-50 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+              {selectedProfile.value && (
+                <button
+                  type="button"
+                  onClick$={async () => {
+                    selectedProfile.value = null;
+                    profileSearch.value = "";
+                    searchResults.value = [];
+                    isProfileDropdownOpen.value = false;
+                    await applyProfileServices(null);
+                  }}
+                  aria-label="Clear selected profile"
+                  class="absolute right-2.5 p-1 text-gray-400 hover:text-gray-600 cursor-pointer"
+                >
+                  <IconX class="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {isProfileDropdownOpen.value && (
-              <div class="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-2xl shadow-xl p-2 space-y-2">
-                <input
-                  type="text"
-                  placeholder="Search profiles..."
-                  value={profileSearch.value}
-                  onInput$={(e) => (profileSearch.value = (e.target as HTMLInputElement).value)}
-                  class="w-full px-3 py-1.5 bg-slate-50 rounded-xl border border-gray-200 text-xs focus:outline-none"
-                />
-                <div class="max-h-48 overflow-y-auto space-y-1">
-                      <div
-                        key={0} // TODO: Wire this up to the profile search field
-                        onClick$={() => {
-                          isProfileDropdownOpen.value = false;
-                          // Pre-check the services that this customer specifically requested
-                          selectedServices.value = {}; // TODO: Wire this up to the services checklist, if there is a seleted profile, set the selected services to this profile's services
-                        }}
-                        class="px-3 py-2 text-xs font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-xl cursor-pointer transition-all"
-                      >
-                        No profile selected (yet!)
-                      </div>
-                </div>
+              <div class="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-2xl shadow-xl p-2 max-h-48 overflow-y-auto space-y-1">
+                {!profileSearch.value.trim() ? (
+                  <div class="px-3 py-2 text-xs text-gray-400 italic">Start searching</div>
+                ) : isSearchingProfiles.value ? (
+                  <div class="px-3 py-2 text-xs text-gray-400 italic">Searching profiles...</div>
+                ) : searchResults.value.length > 0 ? (
+                  searchResults.value.map((profile) => (
+                    <div
+                      key={profile.id}
+                      onClick$={async () => {
+                        selectedProfile.value = profile;
+                        profileSearch.value = profile.name;
+                        isProfileDropdownOpen.value = false;
+                        await applyProfileServices(profile);
+                      }}
+                      class="px-3 py-2 text-xs font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-xl cursor-pointer transition-all flex items-center justify-between"
+                    >
+                      <span class="font-semibold">{profile.name}</span>
+                      <span class="text-[11px] text-gray-400">
+                        {profile.is_commercial ? "Commercial" : "Residential"}
+                        {profile.city ? ` • ${profile.city}` : profile.address ? ` • ${profile.address}` : ""}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div class="px-3 py-2 text-xs text-gray-400 italic">No matching profiles found</div>
+                )}
               </div>
             )}
           </div>

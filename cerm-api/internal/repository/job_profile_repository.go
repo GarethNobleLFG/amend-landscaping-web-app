@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"cerm-api/internal/model"
@@ -20,15 +21,22 @@ type JobProfileRepository interface {
 		offset int,
 	) ([]JobProfileWithLastJob, int, error)
 	GetUnapproved(ctx context.Context) ([]model.JobProfile, error)
-	SearchApprovedByName(
+	SearchApprovedByNameWithLatestJob(
 		ctx context.Context,
 		nameQuery string,
 		isCommercial bool,
 		limit int,
 		offset int,
 	) ([]JobProfileWithLastJob, int, error)
+	SearchApprovedByName(
+		ctx context.Context,
+		nameQuery string,
+		limit int,
+		offset int,
+	) ([]model.JobProfile, int, error)
 	Delete(ctx context.Context, id int64) error
 }
+
 type postgresJobProfileRepo struct {
 	db *sql.DB
 }
@@ -255,7 +263,7 @@ func (r *postgresJobProfileRepo) GetUnapproved(ctx context.Context) ([]model.Job
 	return profiles, nil
 }
 
-func (r *postgresJobProfileRepo) SearchApprovedByName(
+func (r *postgresJobProfileRepo) SearchApprovedByNameWithLatestJob(
 	ctx context.Context,
 	nameQuery string,
 	isCommercial bool,
@@ -318,6 +326,58 @@ func (r *postgresJobProfileRepo) SearchApprovedByName(
 	}
 
 	return results, totalCount, nil
+}
+
+func (r *postgresJobProfileRepo) SearchApprovedByName(
+	ctx context.Context,
+	nameQuery string,
+	limit int,
+	offset int,
+) ([]model.JobProfile, int, error) {
+	escaped := strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(nameQuery)
+	pattern := "%" + escaped + "%"
+
+	query := `
+		SELECT id, name, email, phone_number, address, city, state, zip,
+		       services_requested, scheduled_date, description, approved,
+		       is_commercial, is_seen, referral_info, schedule, admin_notes, job_payout,
+		       created_at, updated_at,
+		       COUNT(*) OVER() AS total_count
+		FROM job_profiles
+		WHERE approved = true
+		  AND name ILIKE $1 ESCAPE '\'
+		ORDER BY created_at DESC, id DESC
+		LIMIT $2 OFFSET $3`
+
+	rows, err := r.db.QueryContext(ctx, query, pattern, limit, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("search approved profiles by name: %w", err)
+	}
+	defer rows.Close()
+
+	profiles := make([]model.JobProfile, 0)
+	var totalCount int
+
+	for rows.Next() {
+		var p model.JobProfile
+		if err := rows.Scan(
+			&p.ID, &p.Name, &p.Email, &p.PhoneNumber, &p.Address, &p.City,
+			&p.State, &p.Zip, &p.ServicesRequested, &p.ScheduledDate,
+			&p.Description, &p.Approved, &p.IsCommercial, &p.IsSeen,
+			&p.ReferralInfo, &p.Schedule, &p.AdminNotes, &p.JobPayout,
+			&p.CreatedAt, &p.UpdatedAt,
+			&totalCount,
+		); err != nil {
+			return nil, 0, fmt.Errorf("scan searched job profile: %w", err)
+		}
+		profiles = append(profiles, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("iterate searched job profile rows: %w", err)
+	}
+
+	return profiles, totalCount, nil
 }
 
 func (r *postgresJobProfileRepo) Delete(ctx context.Context, id int64) error {

@@ -20,8 +20,16 @@ type JobProfileService interface {
 	UpdateJobProfile(ctx context.Context, id int64, profile *model.JobProfile) error
 	GetAllApprovedProfilesWithLatestJob(ctx context.Context, limit int, offset int) (PaginatedApprovedJobProfilesResponse, error)
 	GetUnapprovedJobProfiles(ctx context.Context) ([]model.JobProfile, error)
-	SearchApprovedProfiles(ctx context.Context, nameQuery string, profileType string, limit int, offset int) (PaginatedApprovedJobProfilesResponse, error)
+	SearchApprovedProfilesWithLatestJob(ctx context.Context, nameQuery string, profileType string, limit int, offset int) (PaginatedApprovedJobProfilesResponse, error)
+	SearchApprovedJobProfilesByName(ctx context.Context, nameQuery string, limit int, offset int) (PaginatedJobProfilesResponse, error)
 	DeleteJobProfile(ctx context.Context, id int64) error
+}
+
+type PaginatedJobProfilesResponse struct {
+	Items      []model.JobProfile `json:"items"`
+	TotalCount int                `json:"total_count"`
+	Limit      int                `json:"limit"`
+	Offset     int                `json:"offset"`
 }
 
 type jobProfileService struct {
@@ -136,7 +144,7 @@ func (s *jobProfileService) GetUnapprovedJobProfiles(ctx context.Context) ([]mod
 	return s.repo.GetUnapproved(ctx)
 }
 
-func (s *jobProfileService) SearchApprovedProfiles(
+func (s *jobProfileService) SearchApprovedProfilesWithLatestJob(
 	ctx context.Context,
 	nameQuery string,
 	profileType string,
@@ -158,13 +166,41 @@ func (s *jobProfileService) SearchApprovedProfiles(
 		return PaginatedApprovedJobProfilesResponse{}, errors.New("profile type must be 'residential' or 'commercial'")
 	}
 
-	rawItems, totalCount, err := s.repo.SearchApprovedByName(ctx, trimmedName, isCommercial, limit, offset)
+	rawItems, totalCount, err := s.repo.SearchApprovedByNameWithLatestJob(ctx, trimmedName, isCommercial, limit, offset)
 	if err != nil {
 		return PaginatedApprovedJobProfilesResponse{}, fmt.Errorf("failed to search approved job profiles: %w", err)
 	}
 
 	return PaginatedApprovedJobProfilesResponse{
 		Items:      buildApprovedJobProfileItems(rawItems, time.Now()),
+		TotalCount: totalCount,
+		Limit:      limit,
+		Offset:     offset,
+	}, nil
+}
+
+func (s *jobProfileService) SearchApprovedJobProfilesByName(
+	ctx context.Context,
+	nameQuery string,
+	limit int,
+	offset int,
+) (PaginatedJobProfilesResponse, error) {
+	trimmedName := strings.TrimSpace(nameQuery)
+	if trimmedName == "" {
+		return PaginatedJobProfilesResponse{}, errors.New("search query cannot be empty")
+	}
+
+	profiles, totalCount, err := s.repo.SearchApprovedByName(ctx, trimmedName, limit, offset)
+	if err != nil {
+		return PaginatedJobProfilesResponse{}, fmt.Errorf("failed to search approved job profiles by name: %w", err)
+	}
+
+	if profiles == nil {
+		profiles = make([]model.JobProfile, 0)
+	}
+
+	return PaginatedJobProfilesResponse{
+		Items:      profiles,
 		TotalCount: totalCount,
 		Limit:      limit,
 		Offset:     offset,

@@ -2,6 +2,7 @@ import { component$, useSignal, useComputed$, useTask$, $ } from "@builder.io/qw
 import { useLocation, useNavigate } from "@builder.io/qwik-city";
 import { useJobsByMonth, useDeleteJob, useCreateJob, useUpdateJob, type Job } from "~/hooks/job-handling";
 import { useTeams, type Team } from "~/hooks/teams-handling";
+import { searchApprovedProfilesByName } from "~/hooks/job-profile-handling";
 import { CalendarHeader } from "./components/calendar-header";
 import { CalendarDayCell } from "./components/calendar-day-cell";
 import { CreateModal } from "./components/create-modal";
@@ -163,6 +164,7 @@ export default component$(() => {
           teams={teamsList}
           availableServices={availableServices}
           createAction={createAction}
+          searchProfiles$={searchApprovedProfilesByName}
           onClose$={() => (creatingDateStr.value = null)}
         />
       )}

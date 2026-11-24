@@ -40,6 +40,13 @@ export interface PaginatedApprovedJobProfilesResponse {
 
 export type ProfileCategory = "residential" | "commercial";
 
+export interface PaginatedJobProfilesResponse {
+  items: JobProfile[];
+  total_count: number;
+  limit: number;
+  offset: number;
+}
+
 export const useApprovedProfiles = routeLoader$(async ({ cookie, query, redirect }) => {
   const token = cookie.get("cerm_token");
 
@@ -220,7 +227,7 @@ export const searchApprovedProfiles = server$(
       };
     }
 
-    const url = new URL(`${API_BASE}/api/job-profiles/approved/search`);
+    const url = new URL(`${API_BASE}/api/job-profiles/approved/search/with-latest-job`);
     url.searchParams.set("q", trimmedQuery);
     url.searchParams.set("type", params.type);
     url.searchParams.set("limit", String(limit));
@@ -248,6 +255,55 @@ export const searchApprovedProfiles = server$(
     };
   }
 );
+
+export const searchApprovedProfilesByName = server$(
+  async function (params: {
+    q: string;
+    limit?: number;
+    offset?: number;
+    token?: string;
+  }): Promise<PaginatedJobProfilesResponse> {
+    const trimmedQuery = params.q.trim();
+    const limit = params.limit ?? 20;
+    const offset = params.offset ?? 0;
+
+    if (!trimmedQuery) {
+      return {
+        items: [],
+        total_count: 0,
+        limit,
+        offset,
+      };
+    }
+
+    const url = new URL(`${API_BASE}/api/job-profiles/approved/search`);
+    url.searchParams.set("q", trimmedQuery);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("offset", String(offset));
+
+    const token = params.token ?? this.cookie.get("cerm_token")?.value;
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch(url.toString(), { headers });
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error ?? "Failed to search approved profiles by name");
+    }
+
+    const data: PaginatedJobProfilesResponse = await res.json();
+
+    return {
+      items: data.items ?? [],
+      total_count: data.total_count ?? 0,
+      limit: data.limit ?? limit,
+      offset: data.offset ?? offset,
+    };
+  }
+);
+
 export const useDeleteJobProfile = globalAction$(
   async (data, { fail, cookie }) => {
     const token = cookie.get("cerm_token");

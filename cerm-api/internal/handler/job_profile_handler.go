@@ -94,7 +94,7 @@ func (h *JobProfileHandler) GetUnapproved(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(profiles)
 }
 
-func (h *JobProfileHandler) SearchApproved(c *fiber.Ctx) error {
+func (h *JobProfileHandler) SearchApprovedProfilesWithLatestJob(c *fiber.Ctx) error {
 	nameQuery := strings.TrimSpace(c.Query("q", ""))
 	if nameQuery == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -123,7 +123,40 @@ func (h *JobProfileHandler) SearchApproved(c *fiber.Ctx) error {
 		})
 	}
 
-	result, err := h.service.SearchApprovedProfiles(c.UserContext(), nameQuery, profileType, limit, offset)
+	result, err := h.service.SearchApprovedProfilesWithLatestJob(c.UserContext(), nameQuery, profileType, limit, offset)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(result)
+}
+
+// GET /api/job-profiles/search
+func (h *JobProfileHandler) SearchApprovedByName(c *fiber.Ctx) error {
+	nameQuery := strings.TrimSpace(c.Query("q", ""))
+	if nameQuery == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "q query parameter is required",
+		})
+	}
+
+	limit, err := strconv.Atoi(c.Query("limit", "20"))
+	if err != nil || limit < 1 || limit > 100 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid limit query parameter",
+		})
+	}
+
+	offset, err := strconv.Atoi(c.Query("offset", "0"))
+	if err != nil || offset < 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid offset query parameter",
+		})
+	}
+
+	result, err := h.service.SearchApprovedJobProfilesByName(c.UserContext(), nameQuery, limit, offset)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
