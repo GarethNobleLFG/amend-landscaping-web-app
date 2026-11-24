@@ -83,6 +83,16 @@ func (s *jobProfileService) GetJobProfileByID(ctx context.Context, id int64) (*m
 	return profile, nil
 }
 
+func jobProfileSortTier(item ApprovedJobProfileItem) int {
+	if item.DaysSinceLastJob != nil {
+		return 0 // 1. Has days count (sorted highest first)
+	}
+	if item.HasNoJobs {
+		return 1 // 2. Days is nil and never scheduled (HasNoJobs == true)
+	}
+	return 2 // 3. Days is nil and HasNoJobs == false (e.g., future scheduled job)
+}
+
 func buildApprovedJobProfileItems(
 	rawItems []repository.JobProfileWithLastJob,
 	now time.Time,
@@ -104,19 +114,18 @@ func buildApprovedJobProfileItems(
 	}
 
 	sort.SliceStable(items, func(i, j int) bool {
-		a := items[i].DaysSinceLastJob
-		b := items[j].DaysSinceLastJob
+		tierA := jobProfileSortTier(items[i])
+		tierB := jobProfileSortTier(items[j])
 
-		if a == nil && b == nil {
-			return false
+		if tierA != tierB {
+			return tierA < tierB
 		}
-		if a == nil {
-			return false
+
+		if tierA == 0 {
+			return *items[i].DaysSinceLastJob > *items[j].DaysSinceLastJob
 		}
-		if b == nil {
-			return true
-		}
-		return *a > *b
+
+		return false
 	})
 
 	return items

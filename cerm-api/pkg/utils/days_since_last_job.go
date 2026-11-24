@@ -18,8 +18,8 @@ func CalculateDaysSinceLastJob(lastScheduledDay *time.Time, now time.Time) *int 
 	}
 
 	days := int(nowMidnight.Sub(schedMidnight).Hours() / 24)
-	if days < 0 {
-		days = 0
+	if days <= 0 {
+		return nil
 	}
 	return &days
 }
