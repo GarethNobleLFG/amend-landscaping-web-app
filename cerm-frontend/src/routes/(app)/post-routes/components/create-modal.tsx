@@ -34,6 +34,7 @@ export const CreateModal = component$(({
 }: CreateModalProps) => {
   const selectedTeamId = useSignal<number | null>(teams.length > 0 ? teams[0].id : null);
   const scheduledDayInput = useSignal(selectedDateStr);
+  const jobPayoutInput = useSignal("");
   const notesInput = useSignal("");
 
   const selectedProfile = useSignal<JobProfile | null>(null);
@@ -114,11 +115,17 @@ export const CreateModal = component$(({
     ? availableServices.map((s) => s.name)
     : [];
 
-  const applyProfileServices = $((profile: JobProfile | null) => {
+  const applyProfileDefaults = $((profile: JobProfile | null) => {
     if (!profile) {
       selectedServices.value = {};
+      jobPayoutInput.value = "";
       return;
     }
+
+    jobPayoutInput.value =
+      profile.job_payout != null && !Number.isNaN(Number(profile.job_payout))
+        ? String(profile.job_payout)
+        : "";
 
     const parsed = parseServices(profile.services_requested);
     const nextServices: Record<string, boolean> = {};
@@ -140,6 +147,17 @@ export const CreateModal = component$(({
       return;
     }
 
+    const trimmedPayout = jobPayoutInput.value.trim();
+    let parsedPayout: number | null = null;
+    if (trimmedPayout !== "") {
+      const numericPayout = Number(trimmedPayout);
+      if (Number.isNaN(numericPayout) || numericPayout < 0) {
+        errorMessage.value = "Job payout must be a valid non-negative number.";
+        return;
+      }
+      parsedPayout = numericPayout;
+    }
+
     errorMessage.value = "";
     isSubmitting.value = true;
     notify.loading("Scheduling job...");
@@ -149,6 +167,7 @@ export const CreateModal = component$(({
       const res = await createAction.submit({
         job_profile_id: selectedProfile.value.id,
         team_id: selectedTeamId.value,
+        job_payout: trimmedPayout === "" ? null : parsedPayout,
         scheduled_day: scheduledDayInput.value,
         notes: notesInput.value ? notesInput.value : null,
         services_requested: selectedServices.value,
@@ -217,7 +236,7 @@ export const CreateModal = component$(({
                     profileSearch.value = "";
                     searchResults.value = [];
                     isProfileDropdownOpen.value = false;
-                    await applyProfileServices(null);
+                    await applyProfileDefaults(null);
                   }}
                   aria-label="Clear selected profile"
                   class="absolute right-2.5 p-1 text-gray-400 hover:text-gray-600 cursor-pointer"
@@ -241,7 +260,7 @@ export const CreateModal = component$(({
                         selectedProfile.value = profile;
                         profileSearch.value = profile.name;
                         isProfileDropdownOpen.value = false;
-                        await applyProfileServices(profile);
+                        await applyProfileDefaults(profile);
                       }}
                       class="px-3 py-2 text-xs font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 rounded-xl cursor-pointer transition-all flex items-center justify-between"
                     >
@@ -259,7 +278,21 @@ export const CreateModal = component$(({
             )}
           </div>
 
-          {/* 2. Team Typeahead Dropdown */}
+          {/* 2. Job Payout */}
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Job Payout ($) (Optional) (Auto fills from profile's avg. payout) </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="0.00"
+              value={jobPayoutInput.value}
+              onInput$={(e) => (jobPayoutInput.value = (e.target as HTMLInputElement).value)}
+              class="w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          {/* 3. Team Typeahead Dropdown */}
           <div class="relative">
             <label class="block text-xs font-semibold text-gray-500 mb-1">Assigned Team *</label>
             <div
@@ -311,7 +344,7 @@ export const CreateModal = component$(({
             )}
           </div>
 
-          {/* 3. Scheduled Day */}
+          {/* 4. Scheduled Day */}
           <div>
             <label class="block text-xs font-semibold text-gray-500 mb-1">Scheduled Date *</label>
             <input
@@ -323,7 +356,7 @@ export const CreateModal = component$(({
             />
           </div>
 
-          {/* 4. Requested Services Checklist */}
+          {/* 5. Requested Services Checklist */}
           <ServicesChecklist
             services={selectedServices}
             availableServiceKeys={serviceKeys}

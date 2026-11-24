@@ -5,8 +5,10 @@ import { CardDetails } from "./card-details";
 import { CompleteJobModal } from "./complete-job-modal";
 import { parseServices } from "~/utils/service-utils";
 
-export interface JobProfile {
-  id?: number | null;
+export interface JobRecord {
+  id?: number | string | null;
+  job_profile_id?: number | null;
+  team_id?: number | null;
   name?: string | null;
   email?: string | null;
   phone_number?: string | null;
@@ -14,24 +16,17 @@ export interface JobProfile {
   city?: string | null;
   state?: string | null;
   zip?: string | null;
-  services_requested?: Record<string, boolean> | string | null;
   is_commercial?: boolean | null;
   description?: string | null;
-  [key: string]: any;
-}
-
-export interface JobRecord {
-  id?: number | string | null;
-  job_profile_id?: number | null;
-  team_id?: number | null;
+  job_payout?: number | null;
   scheduled_day?: string | null;
   start_time?: string | null;
   end_time?: string | null;
   completed?: boolean | null;
   notes?: string | null;
+  customer_submitted_notes?: string | null;
   completed_notes?: string | null;
   services_requested?: Record<string, boolean> | string | null;
-  job_profile?: JobProfile | null;
   [key: string]: any;
 }
 
@@ -53,8 +48,7 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job, isTeamLead =
 
   const updateJobAction = useUpdateJob();
 
-  const profile = job.job_profile;
-  const isCommercial = Boolean(profile?.is_commercial);
+  const isCommercial = Boolean(job.is_commercial);
   const isCompleted = localCompleted.value;
   const isJobRunning = Boolean(localStartTime.value && !isCompleted);
 
@@ -74,14 +68,13 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job, isTeamLead =
 
   const durationStr = getDurationString(localStartTime.value, localEndTime.value);
 
-  const getFullAddress = (p?: JobProfile | null) => {
-    if (!p) return "";
-    return [p.address, p.city, p.state, p.zip]
+  const getFullAddress = (j: JobRecord) => {
+    return [j.address, j.city, j.state, j.zip]
       .filter((v): v is string => Boolean(v && typeof v === "string" && v.trim() !== ""))
       .join(", ");
   };
 
-  const fullAddress = getFullAddress(profile);
+  const fullAddress = getFullAddress(job);
 
   const copyAddress$ = $(async (e: Event) => {
     e.stopPropagation();
@@ -156,16 +149,13 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job, isTeamLead =
     return false;
   });
 
-  // Priority: Job's specific services -> fallback to profile's services
-  const jobServices = parseServices(job.services_requested);
-  const profileServices = parseServices(profile?.services_requested);
-  const resolvedServices = Object.keys(jobServices).length > 0 ? jobServices : profileServices;
+  const resolvedServices = parseServices(job.services_requested);
 
   return (
     <>
       <div class={`w-full bg-white rounded-xl overflow-hidden border-0 shadow-none transition-opacity ${isCompleted ? "opacity-75" : ""}`}>
         <CardHeader
-          title={profile?.name || "Unnamed Job"}
+          title={job.name || "Unnamed Job"}
           isCompleted={isCompleted}
           isJobRunning={isJobRunning}
           durationStr={durationStr}
@@ -185,11 +175,11 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job, isTeamLead =
             startTime={localStartTime.value}
             endTime={localEndTime.value}
             isCommercial={isCommercial}
-            email={profile?.email}
-            phoneNumber={profile?.phone_number}
+            email={job.email}
+            phoneNumber={job.phone_number}
             services={resolvedServices}
             jobNotes={job.notes}
-            clientNotes={profile?.description}
+            clientNotes={job.customer_submitted_notes ?? job.description}
           />
         )}
       </div>
@@ -197,7 +187,7 @@ export const DailyJobsCard = component$<DailyJobsCardProps>(({ job, isTeamLead =
       {/* Completion Modal */}
       {isCompleteModalOpen.value && (
         <CompleteJobModal
-          jobTitle={profile?.name || "Unnamed Job"}
+          jobTitle={job.name || "Unnamed Job"}
           onClose$={() => (isCompleteModalOpen.value = false)}
           onConfirm$={handleConfirmCompletion$}
         />

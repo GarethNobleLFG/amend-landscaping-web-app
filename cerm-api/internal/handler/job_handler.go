@@ -21,6 +21,7 @@ func NewJobHandler(svc service.JobService) *JobHandler {
 type createJobRequest struct {
 	JobProfileID      int64           `json:"job_profile_id" form:"job_profile_id"`
 	TeamID            *int64          `json:"team_id" form:"team_id"`
+	JobPayout         *float64        `json:"job_payout" form:"job_payout"`
 	ScheduledDay      string          `json:"scheduled_day" form:"scheduled_day"` // Expected format: "YYYY-MM-DD"
 	StartTime         *string         `json:"start_time" form:"start_time"`       // Expected format: RFC3339
 	EndTime           *string         `json:"end_time" form:"end_time"`           // Expected format: RFC3339
@@ -30,19 +31,20 @@ type createJobRequest struct {
 }
 
 type updateJobRequest struct {
-	TeamID            *int64          `json:"team_id" form:"team_id"`
-	Name              *string         `json:"name" form:"name"`
-	Email             *string         `json:"email" form:"email"`
-	PhoneNumber       *string         `json:"phone_number" form:"phone_number"`
-	Address           *string         `json:"address" form:"address"`
-	JobPayout         *float64        `json:"job_payout" form:"job_payout"`
-	ScheduledDay      string          `json:"scheduled_day" form:"scheduled_day"` // Expected format: "YYYY-MM-DD"
-	StartTime         *string         `json:"start_time" form:"start_time"`       // Expected format: RFC3339
-	EndTime           *string         `json:"end_time" form:"end_time"`           // Expected format: RFC3339
-	Completed         bool            `json:"completed" form:"completed"`
-	Notes             *string         `json:"notes" form:"notes"`
-	CompletedNotes    *string         `json:"completed_notes" form:"completed_notes"`
-	ServicesRequested json.RawMessage `json:"services_requested" form:"services_requested"`
+	TeamID                 *int64          `json:"team_id" form:"team_id"`
+	Name                   *string         `json:"name" form:"name"`
+	Email                  *string         `json:"email" form:"email"`
+	PhoneNumber            *string         `json:"phone_number" form:"phone_number"`
+	Address                *string         `json:"address" form:"address"`
+	JobPayout              *float64        `json:"job_payout" form:"job_payout"`
+	ScheduledDay           string          `json:"scheduled_day" form:"scheduled_day"` // Expected format: "YYYY-MM-DD"
+	StartTime              *string         `json:"start_time" form:"start_time"`       // Expected format: RFC3339
+	EndTime                *string         `json:"end_time" form:"end_time"`           // Expected format: RFC3339
+	Completed              bool            `json:"completed" form:"completed"`
+	Notes                  *string         `json:"notes" form:"notes"`
+	CustomerSubmittedNotes *string         `json:"customer_submitted_notes" form:"customer_submitted_notes"`
+	CompletedNotes         *string         `json:"completed_notes" form:"completed_notes"`
+	ServicesRequested      json.RawMessage `json:"services_requested" form:"services_requested"`
 }
 
 // POST /api/jobs
@@ -87,6 +89,7 @@ func (h *JobHandler) Create(c *fiber.Ctx) error {
 		c.UserContext(),
 		req.JobProfileID,
 		req.TeamID,
+		req.JobPayout,
 		scheduledDay,
 		startTime,
 		endTime,
@@ -243,6 +246,7 @@ func (h *JobHandler) Update(c *fiber.Ctx) error {
 		endTime,
 		req.Completed,
 		req.Notes,
+		req.CustomerSubmittedNotes,
 		req.CompletedNotes,
 		req.ServicesRequested,
 	)

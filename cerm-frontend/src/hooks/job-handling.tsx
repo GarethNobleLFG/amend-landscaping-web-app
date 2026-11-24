@@ -39,8 +39,10 @@ export interface Job {
   end_time?: string | null;
   completed: boolean;
   notes?: string | null;
+  customer_submitted_notes?: string | null;
   completed_notes?: string | null;
   services_requested?: Record<string, boolean> | string | null;
+  job_profile_id?: number | null;
 }
 
 export const useJobs = routeLoader$<Job[]>(async ({ cookie, redirect }) => {
@@ -189,6 +191,7 @@ export const useCreateJob = globalAction$(
   zod$({
     job_profile_id: z.coerce.number().min(1, "Job profile ID is required"),
     team_id: z.coerce.number().optional().nullable(),
+    job_payout: z.coerce.number().optional().nullable(),
     scheduled_day: z.string().min(1, "Scheduled day is required"),
     start_time: z.string().optional().nullable(),
     end_time: z.string().optional().nullable(),
@@ -228,6 +231,7 @@ export const useUpdateJob = globalAction$(
   },
   zod$({
     id: z.coerce.number(),
+    job_profile_id: z.coerce.number().optional().nullable(),
     team_id: z.coerce.number().optional().nullable(),
     name: z.string().optional().nullable(),
     email: z.string().optional().nullable(),
@@ -239,6 +243,7 @@ export const useUpdateJob = globalAction$(
     end_time: z.string().optional().nullable(),
     completed: z.boolean().optional().default(false),
     notes: z.string().optional().nullable(),
+    customer_submitted_notes: z.string().optional().nullable(),
     completed_notes: z.string().optional().nullable(),
     services_requested: z.union([z.record(z.boolean()), z.string()]).optional().nullable(),
   })

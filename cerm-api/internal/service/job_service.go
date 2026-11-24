@@ -12,12 +12,12 @@ import (
 )
 
 type JobService interface {
-	CreateJob(ctx context.Context, jobProfileID int64, teamID *int64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, servicesRequested json.RawMessage) (int64, error)
+	CreateJob(ctx context.Context, jobProfileID int64, teamID *int64, jobPayout *float64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, servicesRequested json.RawMessage) (int64, error)
 	GetJobByID(ctx context.Context, id int64) (*repository.JobWithProfile, error)
 	GetAllJobs(ctx context.Context) ([]repository.JobWithProfile, error)
 	GetByMonthAndYear(ctx context.Context, month int, year int) ([]repository.JobWithProfile, error)
 	GetByWeekAndTeam(ctx context.Context, teamID int64, startDate time.Time, endDate time.Time) ([]repository.JobWithProfile, error)
-	UpdateJob(ctx context.Context, id int64, teamID *int64, name *string, email *string, phoneNumber *string, address *string, jobPayout *float64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, completedNotes *string, servicesRequested json.RawMessage) error
+	UpdateJob(ctx context.Context, id int64, teamID *int64, name *string, email *string, phoneNumber *string, address *string, jobPayout *float64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, customerSubmittedNotes *string, completedNotes *string, servicesRequested json.RawMessage) error
 	DeleteJob(ctx context.Context, id int64) error
 }
 
@@ -38,6 +38,7 @@ func (s *jobService) CreateJob(
 	ctx context.Context,
 	jobProfileID int64,
 	teamID *int64,
+	jobPayout *float64,
 	scheduledDay time.Time,
 	startTime *time.Time,
 	endTime *time.Time,
@@ -47,6 +48,9 @@ func (s *jobService) CreateJob(
 ) (int64, error) {
 	if jobProfileID <= 0 {
 		return 0, fmt.Errorf("invalid job profile ID")
+	}
+	if jobPayout != nil && *jobPayout < 0 {
+		return 0, fmt.Errorf("invalid job payout: cannot be negative")
 	}
 
 	profile, err := s.jobProfileRepo.GetJobProfileByID(ctx, jobProfileID)
@@ -62,13 +66,16 @@ func (s *jobService) CreateJob(
 	phoneNumber := profile.PhoneNumber
 	address := utils.FormatProfileAddress(profile.Address, profile.City, profile.State, profile.Zip)
 
-	var jobPayout *float64
-	if profile.JobPayout != nil {
-		if *profile.JobPayout < 0 {
-			return 0, fmt.Errorf("invalid job payout on profile: cannot be negative")
-		}
-		payoutCopy := *profile.JobPayout
-		jobPayout = &payoutCopy
+	var payoutCopy *float64
+	if jobPayout != nil {
+		val := *jobPayout
+		payoutCopy = &val
+	}
+
+	var customerSubmittedNotes *string
+	if profile.Description != nil {
+		descCopy := *profile.Description
+		customerSubmittedNotes = &descCopy
 	}
 
 	// If no per-job services were explicitly passed, default to the profile's requested services
@@ -78,19 +85,20 @@ func (s *jobService) CreateJob(
 	}
 
 	job := &model.Job{
-		JobProfileID:      jobProfileID,
-		TeamID:            teamID,
-		Name:              &name,
-		Email:             &email,
-		PhoneNumber:       &phoneNumber,
-		Address:           &address,
-		JobPayout:         jobPayout,
-		ScheduledDay:      scheduledDay,
-		StartTime:         startTime,
-		EndTime:           endTime,
-		Completed:         completed,
-		Notes:             notes,
-		ServicesRequested: resolvedServices,
+		JobProfileID:           jobProfileID,
+		TeamID:                 teamID,
+		Name:                   &name,
+		Email:                  &email,
+		PhoneNumber:            &phoneNumber,
+		Address:                &address,
+		JobPayout:              payoutCopy,
+		ScheduledDay:           scheduledDay,
+		StartTime:              startTime,
+		EndTime:                endTime,
+		Completed:              completed,
+		Notes:                  notes,
+		CustomerSubmittedNotes: customerSubmittedNotes,
+		ServicesRequested:      resolvedServices,
 	}
 
 	id, err := s.jobRepo.Create(ctx, job)
@@ -156,7 +164,7 @@ func (s *jobService) GetByWeekAndTeam(ctx context.Context, teamID int64, startDa
 }
 
 // UpdateJob updates an existing job record
-func (s *jobService) UpdateJob(ctx context.Context, id int64, teamID *int64, name *string, email *string, phoneNumber *string, address *string, jobPayout *float64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, completedNotes *string, servicesRequested json.RawMessage) error {
+func (s *jobService) UpdateJob(ctx context.Context, id int64, teamID *int64, name *string, email *string, phoneNumber *string, address *string, jobPayout *float64, scheduledDay time.Time, startTime *time.Time, endTime *time.Time, completed bool, notes *string, customerSubmittedNotes *string, completedNotes *string, servicesRequested json.RawMessage) error {
 	if id <= 0 {
 		return fmt.Errorf("invalid job ID")
 	}
@@ -165,20 +173,21 @@ func (s *jobService) UpdateJob(ctx context.Context, id int64, teamID *int64, nam
 	}
 
 	job := &model.Job{
-		ID:                id,
-		TeamID:            teamID,
-		Name:              name,
-		Email:             email,
-		PhoneNumber:       phoneNumber,
-		Address:           address,
-		JobPayout:         jobPayout,
-		ScheduledDay:      scheduledDay,
-		StartTime:         startTime,
-		EndTime:           endTime,
-		Completed:         completed,
-		Notes:             notes,
-		CompletedNotes:    completedNotes,
-		ServicesRequested: servicesRequested,
+		ID:                     id,
+		TeamID:                 teamID,
+		Name:                   name,
+		Email:                  email,
+		PhoneNumber:            phoneNumber,
+		Address:                address,
+		JobPayout:              jobPayout,
+		ScheduledDay:           scheduledDay,
+		StartTime:              startTime,
+		EndTime:                endTime,
+		Completed:              completed,
+		Notes:                  notes,
+		CustomerSubmittedNotes: customerSubmittedNotes,
+		CompletedNotes:         completedNotes,
+		ServicesRequested:      servicesRequested,
 	}
 
 	err := s.jobRepo.Update(ctx, job)

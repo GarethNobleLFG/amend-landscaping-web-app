@@ -25,20 +25,21 @@ type jobRepo struct {
 }
 
 type JobWithProfile struct {
-	ID                int64           `json:"id"`
-	TeamID            *int64          `json:"team_id,omitempty"`
-	Name              *string         `json:"name,omitempty"`
-	Email             *string         `json:"email,omitempty"`
-	PhoneNumber       *string         `json:"phone_number,omitempty"`
-	Address           *string         `json:"address,omitempty"`
-	JobPayout         *float64        `json:"job_payout,omitempty"`
-	ScheduledDay      time.Time       `json:"scheduled_day"`
-	StartTime         *time.Time      `json:"start_time,omitempty"`
-	EndTime           *time.Time      `json:"end_time,omitempty"`
-	Completed         bool            `json:"completed"`
-	Notes             *string         `json:"notes,omitempty"`
-	CompletedNotes    *string         `json:"completed_notes,omitempty"`
-	ServicesRequested json.RawMessage `json:"services_requested"`
+	ID                     int64           `json:"id"`
+	TeamID                 *int64          `json:"team_id,omitempty"`
+	Name                   *string         `json:"name,omitempty"`
+	Email                  *string         `json:"email,omitempty"`
+	PhoneNumber            *string         `json:"phone_number,omitempty"`
+	Address                *string         `json:"address,omitempty"`
+	JobPayout              *float64        `json:"job_payout,omitempty"`
+	ScheduledDay           time.Time       `json:"scheduled_day"`
+	StartTime              *time.Time      `json:"start_time,omitempty"`
+	EndTime                *time.Time      `json:"end_time,omitempty"`
+	Completed              bool            `json:"completed"`
+	Notes                  *string         `json:"notes,omitempty"`
+	CustomerSubmittedNotes *string         `json:"customer_submitted_notes,omitempty"`
+	CompletedNotes         *string         `json:"completed_notes,omitempty"`
+	ServicesRequested      json.RawMessage `json:"services_requested"`
 }
 
 func NewJobRepository(db *sql.DB) JobRepository {
@@ -47,7 +48,7 @@ func NewJobRepository(db *sql.DB) JobRepository {
 
 const jobSelectColumns = `
 	id, team_id, name, email, phone_number, address, job_payout,
-	scheduled_day, start_time, end_time, completed, notes, completed_notes, services_requested
+	scheduled_day, start_time, end_time, completed, notes, customer_submitted_notes, completed_notes, services_requested
 `
 
 type rowScanner interface {
@@ -69,6 +70,7 @@ func scanJobRow(scanner rowScanner) (JobWithProfile, error) {
 		&res.EndTime,
 		&res.Completed,
 		&res.Notes,
+		&res.CustomerSubmittedNotes,
 		&res.CompletedNotes,
 		&res.ServicesRequested,
 	)
@@ -84,9 +86,9 @@ func (r *jobRepo) Create(ctx context.Context, job *model.Job) (int64, error) {
 	query := `
 		INSERT INTO jobs (
 			job_profile_id, team_id, name, email, phone_number, address, job_payout,
-			scheduled_day, start_time, end_time, completed, notes, services_requested
+			scheduled_day, start_time, end_time, completed, notes, customer_submitted_notes, services_requested
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 		RETURNING id
 	`
 	var id int64
@@ -105,6 +107,7 @@ func (r *jobRepo) Create(ctx context.Context, job *model.Job) (int64, error) {
 		job.EndTime,
 		job.Completed,
 		job.Notes,
+		job.CustomerSubmittedNotes,
 		job.ServicesRequested,
 	).Scan(&id)
 
@@ -248,9 +251,10 @@ func (r *jobRepo) Update(ctx context.Context, job *model.Job) error {
 		    end_time = $9,
 		    completed = $10,
 		    notes = $11,
-		    completed_notes = $12,
-		    services_requested = $13
-		WHERE id = $14
+		    customer_submitted_notes = $12,
+		    completed_notes = $13,
+		    services_requested = $14
+		WHERE id = $15
 	`
 	result, err := r.db.ExecContext(
 		ctx,
@@ -266,6 +270,7 @@ func (r *jobRepo) Update(ctx context.Context, job *model.Job) error {
 		job.EndTime,
 		job.Completed,
 		job.Notes,
+		job.CustomerSubmittedNotes,
 		job.CompletedNotes,
 		job.ServicesRequested,
 		job.ID,
